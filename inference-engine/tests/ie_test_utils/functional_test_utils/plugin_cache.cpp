@@ -42,7 +42,7 @@ std::shared_ptr<InferenceEngine::Core> PluginCache::ie(const std::string &device
         std::cout << "'DISABLE_PLUGIN_CACHE' environment variable is set. New Core object will be created!"
                   << std::endl;
 #endif
-        return std::make_shared<InferenceEngine::Core>();
+        return std::make_shared<InferenceEngine::Core>("plaidml/bridge/openvino/plugins.xml");
     }
 #ifndef NDEBUG
     std::cout << "Access PluginCache ie core. IE Core use count: " << ie_core.use_count() << std::endl;
@@ -52,7 +52,7 @@ std::shared_ptr<InferenceEngine::Core> PluginCache::ie(const std::string &device
 #ifndef NDEBUG
         std::cout << "Created ie core." << std::endl;
 #endif
-        ie_core = std::make_shared<InferenceEngine::Core>();
+        ie_core = std::make_shared<InferenceEngine::Core>("plaidml/bridge/openvino/plugins.xml");
     }
     assert(0 != ie_core.use_count());
 
