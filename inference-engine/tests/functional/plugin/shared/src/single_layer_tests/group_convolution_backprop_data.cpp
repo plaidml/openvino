@@ -1,4 +1,4 @@
-// Copyright (C) 2019 Intel Corporation
+// Copyright (C) 2020 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 //
 
@@ -16,21 +16,21 @@
 #include "functional_test_utils/plugin_cache.hpp"
 #include "functional_test_utils/layer_test_utils.hpp"
 
-#include "single_layer_tests/convolution.hpp"
+#include "single_layer_tests/group_convolution_backprop_data.hpp"
 
 namespace LayerTestsDefinitions {
 
-std::string ConvolutionLayerTest::getTestCaseName(testing::TestParamInfo<convLayerTestParamsSet> obj) {
-    convSpecificParams convParams;
+std::string GroupConvBackpropDataLayerTest::getTestCaseName(testing::TestParamInfo<groupConvBackpropDataLayerTestParamsSet> obj) {
+    groupConvBackpropDataSpecificParams groupConvBackpropDataParams;
     InferenceEngine::Precision netPrecision;
     InferenceEngine::SizeVector inputShapes;
     std::string targetDevice;
-    std::tie(convParams, netPrecision, inputShapes, targetDevice) = obj.param;
+    std::tie(groupConvBackpropDataParams, netPrecision, inputShapes, targetDevice) = obj.param;
     ngraph::op::PadType padType;
     InferenceEngine::SizeVector kernel, stride, dilation;
     std::vector<ptrdiff_t> padBegin, padEnd;
-    size_t convOutChannels;
-    std::tie(kernel, stride, padBegin, padEnd, dilation, convOutChannels, padType) = convParams;
+    size_t convOutChannels, numGroups;
+    std::tie(kernel, stride, padBegin, padEnd, dilation, convOutChannels, numGroups, padType) = groupConvBackpropDataParams;
 
     std::ostringstream result;
     result << "IS=" << CommonTestUtils::vec2str(inputShapes) << "_";
@@ -40,34 +40,35 @@ std::string ConvolutionLayerTest::getTestCaseName(testing::TestParamInfo<convLay
     result << "PE" << CommonTestUtils::vec2str(padEnd) << "_";
     result << "D=" << CommonTestUtils::vec2str(dilation) << "_";
     result << "O=" << convOutChannels << "_";
+    result << "G=" << numGroups << "_";
     result << "AP=" << padType << "_";
     result << "netPRC=" << netPrecision.name() << "_";
     result << "targetDevice=" << targetDevice;
     return result.str();
 }
 
-void ConvolutionLayerTest::SetUp() {
-    convSpecificParams convParams;
+void GroupConvBackpropDataLayerTest::SetUp() {
+    groupConvBackpropDataSpecificParams groupConvBackpropDataParams;
     std::vector<size_t> inputShape;
-    auto netPrecision   = InferenceEngine::Precision::UNSPECIFIED;
-    std::tie(convParams, netPrecision, inputShape, targetDevice) = this->GetParam();
+    auto netPrecision = InferenceEngine::Precision::UNSPECIFIED;
+    std::tie(groupConvBackpropDataParams, netPrecision, inputShape, targetDevice) = this->GetParam();
     ngraph::op::PadType padType;
     InferenceEngine::SizeVector kernel, stride, dilation;
     std::vector<ptrdiff_t> padBegin, padEnd;
-    size_t convOutChannels;
-    std::tie(kernel, stride, padBegin, padEnd, dilation, convOutChannels, padType) = convParams;
+    size_t convOutChannels, numGroups;
+    std::tie(kernel, stride, padBegin, padEnd, dilation, convOutChannels, numGroups, padType) = groupConvBackpropDataParams;
     auto ngPrc = FuncTestUtils::PrecisionUtils::convertIE2nGraphPrc(netPrecision);
     auto params = ngraph::builder::makeParams(ngPrc, {inputShape});
     auto paramOuts = ngraph::helpers::convert2OutputVector(
             ngraph::helpers::castOps2Nodes<ngraph::op::Parameter>(params));
-    auto conv = std::dynamic_pointer_cast<ngraph::opset1::Convolution>(
-            ngraph::builder::makeConvolution(paramOuts[0], ngPrc, kernel, stride, padBegin,
-                                             padEnd, dilation, padType, convOutChannels));
-    ngraph::ResultVector results{std::make_shared<ngraph::opset1::Result>(conv)};
-    function = std::make_shared<ngraph::Function>(results, params, "convolution");
+    auto groupConvBackpropData = std::dynamic_pointer_cast<ngraph::opset1::GroupConvolutionBackpropData>(
+            ngraph::builder::makeGroupConvolutionBackpropData(paramOuts[0], ngPrc, kernel, stride, padBegin,
+                                             padEnd, dilation, padType, convOutChannels, numGroups));
+    ngraph::ResultVector results{std::make_shared<ngraph::opset1::Result>(groupConvBackpropData)};
+    function = std::make_shared<ngraph::Function>(results, params, "GroupConvolutionBackpropData");
 }
 
-TEST_P(ConvolutionLayerTest, CompareWithRefs) {
+TEST_P(GroupConvBackpropDataLayerTest, CompareWithRefs) {
     Run();
 }
 }  // namespace LayerTestsDefinitions

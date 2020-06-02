@@ -1,4 +1,4 @@
-// Copyright (C) 2018-2020 Intel Corporation
+// Copyright (C) 2019 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 //
 
@@ -16,14 +16,14 @@
 namespace LayerTestsDefinitions {
 
 using concatParamsTuple = typename std::tuple<
+        //TODO: according to specification axis have to be int, negative values are allowed
         size_t,                            // Concat axis
         std::vector<std::vector<size_t>>,  // Input shapes
-        InferenceEngine::Precision,        // Input precision
         InferenceEngine::Precision,        // Network precision
         std::string>;                      // Device name
 
-class ConcatLayerTest
-        : public LayerTestsUtils::LayerTestsCommonClass<concatParamsTuple> {
+class ConcatLayerTest : public testing::WithParamInterface<concatParamsTuple>,
+                        public LayerTestsUtils::LayerTestsCommon {
 public:
     static std::string getTestCaseName(const testing::TestParamInfo<concatParamsTuple> &obj);
 

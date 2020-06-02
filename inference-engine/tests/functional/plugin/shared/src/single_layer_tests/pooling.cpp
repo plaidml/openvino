@@ -1,4 +1,5 @@
-// Copyright (C) 2018-2020 Intel Corporation
+// Copyright (C) 2019 Intel Corporation
+//
 // SPDX-License-Identifier: Apache-2.0
 //
 
@@ -23,10 +24,10 @@ namespace LayerTestsDefinitions {
 
 std::string PoolingLayerTest::getTestCaseName(testing::TestParamInfo<poolLayerTestParamsSet> obj) {
     poolSpecificParams poolParams;
-    InferenceEngine::Precision inputPrecision, netPrecision;
+    InferenceEngine::Precision netPrecision;
     std::vector<size_t> inputShapes, newInputShapes;
     std::string targetDevice;
-    std::tie(poolParams, inputPrecision, netPrecision, inputShapes, targetDevice) = obj.param;
+    std::tie(poolParams, netPrecision, inputShapes, targetDevice) = obj.param;
     ngraph::helpers::PoolingTypes poolType;
     std::vector<size_t> kernel, stride;
     std::vector<size_t> padBegin, padEnd;
@@ -48,13 +49,12 @@ std::string PoolingLayerTest::getTestCaseName(testing::TestParamInfo<poolLayerTe
     }
     result << "K" << CommonTestUtils::vec2str(kernel) << "_";
     result << "S" << CommonTestUtils::vec2str(stride) << "_";
-    result << "PB" << CommonTestUtils::vec2str(padBegin) << "_";;
+    result << "PB" << CommonTestUtils::vec2str(padBegin) << "_";
     result << "PE" << CommonTestUtils::vec2str(padEnd) << "_";
     if (padType == ngraph::op::PadType::EXPLICIT) {
         result << "Rounding=" << roundingType << "_";
     }
     result << "AutoPad=" << padType << "_";
-    result << "inPRC=" << inputPrecision.name() << "_";
     result << "netPRC=" << netPrecision.name() << "_";
     result << "targetDevice=" << targetDevice;
     return result.str();
@@ -63,7 +63,8 @@ std::string PoolingLayerTest::getTestCaseName(testing::TestParamInfo<poolLayerTe
 void PoolingLayerTest::SetUp() {
     poolSpecificParams poolParams;
     std::vector<size_t> inputShape;
-    std::tie(poolParams, inputPrecision, netPrecision, inputShape, targetDevice) = this->GetParam();
+    InferenceEngine::Precision netPrecision;
+    std::tie(poolParams, netPrecision, inputShape, targetDevice) = this->GetParam();
     ngraph::helpers::PoolingTypes poolType;
     std::vector<size_t> kernel, stride;
     std::vector<size_t> padBegin, padEnd;
@@ -91,10 +92,10 @@ void PoolingLayerTest::SetUp() {
     }
 
     ngraph::ResultVector results{std::make_shared<ngraph::opset1::Result>(pooling)};
-    fnPtr = std::make_shared<ngraph::Function>(results, params, "pooling");
+    function = std::make_shared<ngraph::Function>(results, params, "pooling");
 }
 
 TEST_P(PoolingLayerTest, CompareWithRefs) {
-    inferAndValidate();
+    Run();
 }
 }  // namespace LayerTestsDefinitions

@@ -1,4 +1,5 @@
-// Copyright (C) 2018-2020 Intel Corporation
+// Copyright (C) 2020 Intel Corporation
+//
 // SPDX-License-Identifier: Apache-2.0
 //
 
@@ -52,7 +53,6 @@ void ActivationLayerTest::SetUp() {
 }
 
 TEST_P(ActivationLayerTest, CompareWithRefs) {
-    SKIP_IF_CURRENT_TEST_IS_DISABLED()
     InferenceEngine::CNNNetwork cnnNet(fnPtr);
     setNetInOutPrecision(cnnNet, inputPrecision);
     std::string inputName = cnnNet.getInputsInfo().begin()->first;
@@ -101,11 +101,12 @@ TEST_P(ActivationLayerTest, CompareWithRefs) {
     convertFuncToF32(fnPtr, netPrecision);
     auto refOutData = ngraph::helpers::inferFnWithInterp<ngraph::element::Type_t::f32>(fnPtr, inRawData);
     auto thr = FuncTestUtils::GetComparisonThreshold(netPrecision);
+
     size_t outElementsCount = std::accumulate(begin(fnPtr->get_output_shape(0)), end(fnPtr->get_output_shape(0)), 1,
                                               std::multiplies<size_t>());
-    FuncTestUtils::compareRawBuffers(outBlob->cbuffer().as<float *>(), *refOutData[0], outElementsCount,
-                                     outElementsCount,
-                                     thr);
+    FuncTestUtils::compareRawBuffers(outBlob->cbuffer().as<float *>(), *refOutData[0],
+                                                     outElementsCount, outElementsCount,
+                                                     thr);
     fnPtr.reset();
 }
 
