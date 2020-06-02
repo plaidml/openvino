@@ -37,10 +37,10 @@ std::string ActivationLayerTest::getTestCaseName(const testing::TestParamInfo<ac
     std::ostringstream result;
     const char separator = '_';
     result << activationNames[activationType] << separator;
-    result << "IS=" << CommonTestUtils::vec2str(inputShapes) << separator;
-    result << "inPRC=" << inputPrecision.name() << separator;
-    result << "netPRC=" << netPrecision.name() << separator;
-    result << "targetDevice=" << targetDevice;
+    result << "IS_" << CommonTestUtils::vec2str(inputShapes) << separator;
+    result << "inPRC_" << inputPrecision.name() << separator;
+    result << "netPRC_" << netPrecision.name() << separator;
+    result << "targetDevice_" << targetDevice;
     return result.str();
 }
 
