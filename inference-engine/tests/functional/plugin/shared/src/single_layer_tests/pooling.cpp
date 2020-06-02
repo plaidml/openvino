@@ -37,14 +37,14 @@ std::string PoolingLayerTest::getTestCaseName(testing::TestParamInfo<poolLayerTe
     std::tie(poolType, kernel, stride, padBegin, padEnd, roundingType, padType, excludePad) = poolParams;
 
     std::ostringstream result;
-    result << "IS=" << CommonTestUtils::vec2str(inputShapes) << "_";
+    result << "IS_" << CommonTestUtils::vec2str(inputShapes) << "_";
     switch (poolType) {
         case ngraph::helpers::PoolingTypes::MAX:
             result << "MaxPool_";
             break;
         case ngraph::helpers::PoolingTypes::AVG:
             result << "AvgPool_";
-            result << "ExcludePad=" << excludePad << "_";
+            result << "ExcludePad_" << excludePad << "_";
             break;
     }
     result << "K" << CommonTestUtils::vec2str(kernel) << "_";
@@ -52,11 +52,11 @@ std::string PoolingLayerTest::getTestCaseName(testing::TestParamInfo<poolLayerTe
     result << "PB" << CommonTestUtils::vec2str(padBegin) << "_";
     result << "PE" << CommonTestUtils::vec2str(padEnd) << "_";
     if (padType == ngraph::op::PadType::EXPLICIT) {
-        result << "Rounding=" << roundingType << "_";
+        result << "Rounding_" << roundingType << "_";
     }
-    result << "AutoPad=" << padType << "_";
-    result << "netPRC=" << netPrecision.name() << "_";
-    result << "targetDevice=" << targetDevice;
+    result << "AutoPad_" << padType << "_";
+    result << "netPRC_" << netPrecision.name() << "_";
+    result << "targetDevice_" << targetDevice;
     return result.str();
 }
 
@@ -92,10 +92,10 @@ void PoolingLayerTest::SetUp() {
     }
 
     ngraph::ResultVector results{std::make_shared<ngraph::opset1::Result>(pooling)};
-    function = std::make_shared<ngraph::Function>(results, params, "pooling");
+    fnPtr = std::make_shared<ngraph::Function>(results, params, "pooling");
 }
 
 TEST_P(PoolingLayerTest, CompareWithRefs) {
-    Run();
+    inferAndValidate();
 }
 }  // namespace LayerTestsDefinitions

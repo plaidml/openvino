@@ -26,12 +26,12 @@ std::string SpaceToBatchLayerTest::getTestCaseName(const testing::TestParamInfo<
     std::string targetName;
     std::tie(blockShape, padsBegin, padsEnd, inShapes, netPrc, targetName) = obj.param;
     std::ostringstream result;
-    result << "IS=" << CommonTestUtils::vec2str(inShapes) << "_";
-    result << "netPRC=" << netPrc.name() << "_";
-    result << "BS=" << CommonTestUtils::vec2str(blockShape) << "_";
-    result << "PB=" << CommonTestUtils::vec2str(padsBegin) << "_";
-    result << "PE=" << CommonTestUtils::vec2str(padsEnd) << "_";
-    result << "targetDevice=" << targetName << "_";
+    result << "IS_" << CommonTestUtils::vec2str(inShapes) << "_";
+    result << "netPRC_" << netPrc.name() << "_";
+    result << "BS_" << CommonTestUtils::vec2str(blockShape) << "_";
+    result << "PB_" << CommonTestUtils::vec2str(padsBegin) << "_";
+    result << "PE_" << CommonTestUtils::vec2str(padsEnd) << "_";
+    result << "targetDevice_" << targetName << "_";
     return result.str();
 }
 
@@ -46,11 +46,11 @@ void SpaceToBatchLayerTest::SetUp() {
             ngraph::helpers::castOps2Nodes<ngraph::op::Parameter>(params));
     auto s2b = ngraph::builder::makeSpaceToBatch(paramOuts[0], ngPrc, blockShape, padsBegin, padsEnd);
     ngraph::ResultVector results{std::make_shared<ngraph::opset1::Result>(s2b)};
-    function = std::make_shared<ngraph::Function>(results, params, "SpaceToBatch");
+    fnPtr = std::make_shared<ngraph::Function>(results, params, "SpaceToBatch");
 }
 
 TEST_P(SpaceToBatchLayerTest, CompareWithRefs) {
-    Run();
+    inferAndValidate();
 }
 
 }  // namespace LayerTestsDefinitions

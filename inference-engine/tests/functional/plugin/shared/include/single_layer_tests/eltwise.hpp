@@ -40,8 +40,7 @@ typedef std::tuple<
     std::map<std::string, std::string>         // Additional network configuration
 > eltwiseLayerTestParamsSet;
 
-class EltwiseLayerTest : public testing::WithParamInterface<eltwiseLayerTestParamsSet>,
-    public LayerTestsUtils::LayerTestsCommon {
+class EltwiseLayerTest : public LayerTestsUtils::LayerTestsCommonClass<eltwiseLayerTestParamsSet> {
 protected:
     void SetUp() override;
 

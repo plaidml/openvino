@@ -24,13 +24,13 @@ std::string ExtractImagePatchesTest::getTestCaseName(const testing::TestParamInf
     std::string targetName;
     std::tie(inputShape, kernel, strides, rates, pad_type, netPrc, targetName) = obj.param;
     std::ostringstream result;
-    result << "IS=" << CommonTestUtils::vec2str(inputShape) << "_";
-    result << "netPRC=" << netPrc.name() << "_";
-    result << "K=" << CommonTestUtils::vec2str(kernel) << "_";
-    result << "S=" << CommonTestUtils::vec2str(strides) << "_";
-    result << "R=" << CommonTestUtils::vec2str(rates) << "_";
-    result << "P=" << pad_type << "_";
-    result << "targetDevice=" << targetName;
+    result << "IS_" << CommonTestUtils::vec2str(inputShape) << "_";
+    result << "netPRC_" << netPrc.name() << "_";
+    result << "K_" << CommonTestUtils::vec2str(kernel) << "_";
+    result << "S_" << CommonTestUtils::vec2str(strides) << "_";
+    result << "R_" << CommonTestUtils::vec2str(rates) << "_";
+    result << "P_" << pad_type << "_";
+    result << "targetDevice_" << targetName;
     return result.str();
 }
 
@@ -47,11 +47,11 @@ void ExtractImagePatchesTest::SetUp() {
     auto extImgPatches = std::make_shared<ngraph::opset3::ExtractImagePatches>(
         inputNode, ngraph::Shape(kernel), ngraph::Strides(strides), ngraph::Shape(rates), pad_type);
     ngraph::ResultVector results{std::make_shared<ngraph::opset1::Result>(extImgPatches)};
-    function = std::make_shared<ngraph::Function>(results, params, "ExtractImagePatches");
+    fnPtr = std::make_shared<ngraph::Function>(results, params, "ExtractImagePatches");
 }
 
 TEST_P(ExtractImagePatchesTest, CompareWithRefs) {
-    Run();
+    inferAndValidate();
 };
 
 }  // namespace LayerTestsDefinitions

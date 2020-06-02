@@ -18,12 +18,10 @@ namespace LayerTestsDefinitions {
     typedef std::tuple<
             InferenceEngine::Precision,         // Network precision
             std::vector<std::vector<size_t>>,   // Input shapes
-            std::string,                        // Device name
-            std::map<std::string, std::string>  // Config
+            std::string                        // Device name
             > addParams;
 
-class AddLayerTest : public testing::WithParamInterface<addParams>,
-                     public LayerTestsUtils::LayerTestsCommon {
+class AddLayerTest : public LayerTestsUtils::LayerTestsCommonClass<addParams> {
 public:
     static std::string getTestCaseName(testing::TestParamInfo<addParams> obj);
 protected:

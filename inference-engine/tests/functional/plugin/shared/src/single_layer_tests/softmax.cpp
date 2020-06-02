@@ -26,27 +26,26 @@ std::string SoftMaxLayerTest::getTestCaseName(testing::TestParamInfo<softMaxLaye
     InferenceEngine::SizeVector inputShape;
     size_t axis;
     std::string targetDevice;
-    std::map<std::string, std::string> config;
-    std::tie(netPrecision, inputLayout, inputShape, axis, targetDevice, config) = obj.param;
+    std::tie(netPrecision, inputLayout, inputShape, axis, targetDevice) = obj.param;
 
     std::ostringstream result;
-    result << "netPRC=" << netPrecision.name() << "_";
-    result << "inPRC=" << inputPrecision.name() << "_";
-    result << "inLayout=" << inputLayout << "_";
-    result << "IS=" << CommonTestUtils::vec2str(inputShape) << "_";
-    result << "axis=" << axis << "_";
-    result << "targetDevice=" << targetDevice;
+    result << "netPRC_" << netPrecision.name() << "_";
+    result << "inPRC_" << inputPrecision.name() << "_";
+    result << "inLayout_" << inputLayout << "_";
+    result << "IS_" << CommonTestUtils::vec2str(inputShape) << "_";
+    result << "axis_" << axis << "_";
+    result << "targetDevice_" << targetDevice;
 
     return result.str();
 }
 
 void SoftMaxLayerTest::SetUp() {
     InferenceEngine::SizeVector inputShape;
+    InferenceEngine::Layout inLayout;
     InferenceEngine::Precision netPrecision;
     size_t axis;
 
-    std::tie(netPrecision, inLayout, inputShape, axis, targetDevice, configuration) = GetParam();
-    outLayout = inLayout;
+    std::tie(netPrecision, inLayout, inputShape, axis, targetDevice) = GetParam();
 
     const auto ngPrc = FuncTestUtils::PrecisionUtils::convertIE2nGraphPrc(netPrecision);
 
@@ -59,11 +58,11 @@ void SoftMaxLayerTest::SetUp() {
 
     const ngraph::ResultVector results {std::make_shared<ngraph::opset1::Result>(softMax)};
 
-    function = std::make_shared<ngraph::Function>(results, params, "softMax");
+    fnPtr = std::make_shared<ngraph::Function>(results, params, "softMax");
 }
 
 TEST_P(SoftMaxLayerTest, CompareWithRefs) {
-    Run();
+    inferAndValidate();
 }
 
 }  // namespace LayerTestsDefinitions

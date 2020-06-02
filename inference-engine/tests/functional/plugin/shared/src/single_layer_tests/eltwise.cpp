@@ -27,17 +27,17 @@ std::string EltwiseLayerTest::getTestCaseName(testing::TestParamInfo<eltwiseLaye
     InputLayerType secondary_input_type;
     InferenceEngine::Precision prec;
     InferenceEngine::SizeVector vec;
-    LayerTestsUtils::TargetDevice dev;
+    std::string dev;
     std::map<std::string, std::string> additional_config;
     std::tie(op, primary_input_idx, secondary_input_type, prec, vec, dev, additional_config) = obj.param;
 
     std::ostringstream result;
-    result << "operation=" << EltwiseOpType_to_string(op) << "_";
-    result << "netPRC=" << prec.name() << "_";
-    result << "primaryInputIdx=" << primary_input_idx << "_";
-    result << "secondaryInputType=" << InputLayerType_to_string(secondary_input_type) << "_";
-    result << "inputShapes=" << CommonTestUtils::vec2str(vec) << "_";
-    result << "targetDevice=" << dev;
+    result << "operation_" << EltwiseOpType_to_string(op) << "_";
+    result << "netPRC_" << prec.name() << "_";
+    result << "primaryInputIdx_" << primary_input_idx << "_";
+    result << "secondaryInputType_" << InputLayerType_to_string(secondary_input_type) << "_";
+    result << "inputShapes_" << CommonTestUtils::vec2str(vec) << "_";
+    result << "targetDevice_" << dev;
     return result.str();
 }
 
@@ -50,7 +50,6 @@ void EltwiseLayerTest::SetUp() {
     ngraph::ParameterVector parameter_inputs;
     std::map<std::string, std::string> additional_config;
     std::tie(op, primary_input_idx, secondary_input_type, netPrecision, inputShape, targetDevice, additional_config) = this->GetParam();
-    configuration.insert(additional_config.begin(), additional_config.end());
     auto ngPrc = FuncTestUtils::PrecisionUtils::convertIE2nGraphPrc(netPrecision);
 
     std::shared_ptr<ngraph::Node> input0_node;
@@ -123,7 +122,7 @@ void EltwiseLayerTest::SetUp() {
         ASSERT_EQ(std::string("Unknown Eltwise operation type: ") + EltwiseOpType_to_string(op), "");
         break;
     }
-    function = std::make_shared<ngraph::Function>(ngraph_op, parameter_inputs, "Eltwise_op");
+    fnPtr = std::make_shared<ngraph::Function>(ngraph_op, parameter_inputs, "Eltwise_op");
 }
 
 const char* EltwiseTestNamespace::InputLayerType_to_string(InputLayerType lt) {
@@ -151,5 +150,5 @@ const char* EltwiseTestNamespace::EltwiseOpType_to_string(EltwiseOpType eOp) {
 }
 
 TEST_P(EltwiseLayerTest, basic) {
-    Run();
+    inferAndValidate();
 }

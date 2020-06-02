@@ -31,11 +31,11 @@ std::string FakeQuantizeLayerTest::getTestCaseName(testing::TestParamInfo<fqLaye
     std::tie(levels, constShape) = fqParams;
 
     std::ostringstream result;
-    result << "IS=" << CommonTestUtils::vec2str(inputShapes) << "_";
-    result << "CS=" << CommonTestUtils::vec2str(constShape) << "_";
-    result << "LEVELS=" << levels << "_";
-    result << "netPRC=" << netPrecision.name() << "_";
-    result << "targetDevice=" << targetDevice;
+    result << "IS_" << CommonTestUtils::vec2str(inputShapes) << "_";
+    result << "CS_" << CommonTestUtils::vec2str(constShape) << "_";
+    result << "LEVELS_" << levels << "_";
+    result << "netPRC_" << netPrecision.name() << "_";
+    result << "targetDevice_" << targetDevice;
     return result.str();
 }
 
@@ -55,10 +55,10 @@ void FakeQuantizeLayerTest::SetUp() {
     auto fq = std::dynamic_pointer_cast<ngraph::opset1::FakeQuantize>(ngraph::builder::makeFakeQuantize(paramOuts[0], ngPrc, levels, constShape));
 
     ngraph::ResultVector results{std::make_shared<ngraph::opset1::Result>(fq)};
-    function = std::make_shared<ngraph::Function>(results, params, "fakeQuantize");
+    fnPtr = std::make_shared<ngraph::Function>(results, params, "fakeQuantize");
 }
 
 TEST_P(FakeQuantizeLayerTest, CompareWithRefs) {
-    Run();
+    inferAndValidate();
 }
 }  // namespace LayerTestsDefinitions

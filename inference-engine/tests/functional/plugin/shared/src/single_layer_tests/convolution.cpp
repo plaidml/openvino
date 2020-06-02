@@ -33,16 +33,16 @@ std::string ConvolutionLayerTest::getTestCaseName(testing::TestParamInfo<convLay
     std::tie(kernel, stride, padBegin, padEnd, dilation, convOutChannels, padType) = convParams;
 
     std::ostringstream result;
-    result << "IS=" << CommonTestUtils::vec2str(inputShapes) << "_";
+    result << "IS_" << CommonTestUtils::vec2str(inputShapes) << "_";
     result << "K" << CommonTestUtils::vec2str(kernel) << "_";
     result << "S" << CommonTestUtils::vec2str(stride) << "_";
     result << "PB" << CommonTestUtils::vec2str(padBegin) << "_";
     result << "PE" << CommonTestUtils::vec2str(padEnd) << "_";
-    result << "D=" << CommonTestUtils::vec2str(dilation) << "_";
-    result << "O=" << convOutChannels << "_";
-    result << "AP=" << padType << "_";
-    result << "netPRC=" << netPrecision.name() << "_";
-    result << "targetDevice=" << targetDevice;
+    result << "D_" << CommonTestUtils::vec2str(dilation) << "_";
+    result << "O_" << convOutChannels << "_";
+    result << "AP_" << padType << "_";
+    result << "netPRC_" << netPrecision.name() << "_";
+    result << "targetDevice_" << targetDevice;
     return result.str();
 }
 
@@ -64,10 +64,10 @@ void ConvolutionLayerTest::SetUp() {
             ngraph::builder::makeConvolution(paramOuts[0], ngPrc, kernel, stride, padBegin,
                                              padEnd, dilation, padType, convOutChannels));
     ngraph::ResultVector results{std::make_shared<ngraph::opset1::Result>(conv)};
-    function = std::make_shared<ngraph::Function>(results, params, "convolution");
+    fnPtr = std::make_shared<ngraph::Function>(results, params, "convolution");
 }
 
 TEST_P(ConvolutionLayerTest, CompareWithRefs) {
-    Run();
+    inferAndValidate();
 }
 }  // namespace LayerTestsDefinitions

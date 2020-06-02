@@ -28,8 +28,7 @@ typedef std::tuple<
 > lrnLayerTestParamsSet;
 
 class LrnLayerTest
-        : public testing::WithParamInterface<lrnLayerTestParamsSet>,
-          public LayerTestsUtils::LayerTestsCommon {
+        : public LayerTestsUtils::LayerTestsCommonClass<lrnLayerTestParamsSet> {
 public:
     static std::string getTestCaseName(testing::TestParamInfo<lrnLayerTestParamsSet> obj);
 

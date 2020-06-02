@@ -28,17 +28,17 @@ std::string SplitLayerTest::getTestCaseName(testing::TestParamInfo<splitParams> 
     std::string targetDevice;
     std::tie(numSplits, axis, netPrecision, inputShapes, targetDevice) = obj.param;
     std::ostringstream result;
-    result << "IS=" << CommonTestUtils::vec2str(inputShapes) << "_";
-    result << "numSplits=" << numSplits << "_";
-    result << "axis=" << axis << "_";
+    result << "IS_" << CommonTestUtils::vec2str(inputShapes) << "_";
+    result << "numSplits_" << numSplits << "_";
+    result << "axis_" << axis << "_";
     result << "IS";
-    result << "netPRC=" << netPrecision.name() << "_";
-    result << "targetDevice=" << targetDevice;
+    result << "netPRC_" << netPrecision.name() << "_";
+    result << "targetDevice_" << targetDevice;
     return result.str();
 }
 
 void SplitLayerTest::SetUp() {
-    SetRefMode(LayerTestsUtils::RefMode::CONSTANT_FOLDING);
+    // SetRefMode(LayerTestsUtils::RefMode::CONSTANT_FOLDING);
     size_t axis, numSplits;
     std::vector<size_t> inputShape;
     InferenceEngine::Precision netPrecision;
@@ -53,11 +53,11 @@ void SplitLayerTest::SetUp() {
     for (int i = 0; i < numSplits; i++) {
         results.push_back(std::make_shared<ngraph::opset1::Result>(split));
     }
-    function = std::make_shared<ngraph::Function>(results, params, "split");
+    fnPtr = std::make_shared<ngraph::Function>(results, params, "split");
 }
 
 TEST_P(SplitLayerTest, CompareWithRefs) {
-    Run();
+    inferAndValidate();
 };
 
 }  // namespace LayerTestsDefinitions

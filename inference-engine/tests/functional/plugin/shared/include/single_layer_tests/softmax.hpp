@@ -22,12 +22,10 @@ using softMaxLayerTestParams = std::tuple<
         InferenceEngine::Layout,            // inputLayout
         InferenceEngine::SizeVector,        // inputShape
         size_t,                             // axis
-        std::string,                        // targetDevice
-        std::map<std::string, std::string>  // config
+        std::string                         // targetDevice
 >;
 
-class SoftMaxLayerTest : public testing::WithParamInterface<softMaxLayerTestParams>,
-                         public LayerTestsUtils::LayerTestsCommon {
+class SoftMaxLayerTest : public LayerTestsUtils::LayerTestsCommonClass<softMaxLayerTestParams> {
 public:
     static std::string getTestCaseName(testing::TestParamInfo<softMaxLayerTestParams> obj);
 

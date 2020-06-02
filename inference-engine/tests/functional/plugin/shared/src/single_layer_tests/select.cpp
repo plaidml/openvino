@@ -28,11 +28,11 @@ namespace LayerTestsDefinitions {
         std::string targetDevice;
         std::tie(dataShapes, dataType, broadcast, targetDevice) = obj.param;
         std::ostringstream result;
-        result << "COND=BOOL_" << CommonTestUtils::vec2str(dataShapes[CONDITION]);
-        result << "_THEN=" << dataType.name() << "_" << CommonTestUtils::vec2str(dataShapes[THEN]);
-        result << "_ELSE=" << dataType.name() << "_" << CommonTestUtils::vec2str(dataShapes[ELSE]);
+        result << "COND_BOOL_" << CommonTestUtils::vec2str(dataShapes[CONDITION]);
+        result << "_THEN_" << dataType.name() << "_" << CommonTestUtils::vec2str(dataShapes[THEN]);
+        result << "_ELSE_" << dataType.name() << "_" << CommonTestUtils::vec2str(dataShapes[ELSE]);
         result << "_" << broadcast.m_type;
-        result << "_targetDevice=" << targetDevice;
+        result << "_targetDevice_" << targetDevice;
         return result.str();
     }
 
@@ -56,11 +56,11 @@ namespace LayerTestsDefinitions {
 
         auto select = std::dynamic_pointer_cast<ngraph::opset1::Select>(ngraph::builder::makeSelect(paramOuts, broadcast));
         ngraph::ResultVector results{std::make_shared<ngraph::opset1::Result>(select)};
-        function = std::make_shared<ngraph::Function>(results, paramNodesVector, "select");
+        fnPtr = std::make_shared<ngraph::Function>(results, paramNodesVector, "select");
     }
 
     TEST_P(SelectLayerTest, CompareWithRefImpl) {
-        Run();
+        inferAndValidate();
 
         if (targetDevice == std::string{CommonTestUtils::DEVICE_GPU}) {
             PluginCache::get().reset();
