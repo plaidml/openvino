@@ -1,4 +1,4 @@
-// Copyright (C) 2018-2020 Intel Corporation
+// Copyright (C) 2020 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 //
 
@@ -39,7 +39,8 @@ static std::map<ngraph::helpers::ActivationTypes, std::string> activationNames =
         {ngraph::helpers::ActivationTypes::Exp,       "Exp"},
         {ngraph::helpers::ActivationTypes::Log,       "Log"},
         {ngraph::helpers::ActivationTypes::Sign,      "Sign"},
-        {ngraph::helpers::ActivationTypes::Abs,       "Abs"}
+        {ngraph::helpers::ActivationTypes::Abs,       "Abs"},
+        // {ngraph::helpers::ActivationTypes::Gelu,      "Gelu"}
 };
 
 typedef std::tuple<

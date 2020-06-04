@@ -1,4 +1,4 @@
-// Copyright (C) 2019 Intel Corporation
+// Copyright (C) 2020 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 //
 
@@ -16,21 +16,21 @@
 #include "functional_test_utils/plugin_cache.hpp"
 #include "functional_test_utils/layer_test_utils.hpp"
 
-#include "single_layer_tests/convolution.hpp"
+#include "single_layer_tests/convolution_backprop_data.hpp"
 
 namespace LayerTestsDefinitions {
 
-std::string ConvolutionLayerTest::getTestCaseName(testing::TestParamInfo<convLayerTestParamsSet> obj) {
-    convSpecificParams convParams;
+std::string ConvolutionBackpropDataLayerTest::getTestCaseName(testing::TestParamInfo<convBackpropDataLayerTestParamsSet> obj) {
+    convBackpropDataSpecificParams convBackpropDataParams;
     InferenceEngine::Precision netPrecision;
     InferenceEngine::SizeVector inputShapes;
     std::string targetDevice;
-    std::tie(convParams, netPrecision, inputShapes, targetDevice) = obj.param;
+    std::tie(convBackpropDataParams, netPrecision, inputShapes, targetDevice) = obj.param;
     ngraph::op::PadType padType;
     InferenceEngine::SizeVector kernel, stride, dilation;
     std::vector<ptrdiff_t> padBegin, padEnd;
     size_t convOutChannels;
-    std::tie(kernel, stride, padBegin, padEnd, dilation, convOutChannels, padType) = convParams;
+    std::tie(kernel, stride, padBegin, padEnd, dilation, convOutChannels, padType) = convBackpropDataParams;
 
     std::ostringstream result;
     result << "IS=" << CommonTestUtils::vec2str(inputShapes) << "_";
@@ -46,28 +46,28 @@ std::string ConvolutionLayerTest::getTestCaseName(testing::TestParamInfo<convLay
     return result.str();
 }
 
-void ConvolutionLayerTest::SetUp() {
-    convSpecificParams convParams;
+void ConvolutionBackpropDataLayerTest::SetUp() {
+    convBackpropDataSpecificParams convBackpropDataParams;
     std::vector<size_t> inputShape;
     auto netPrecision   = InferenceEngine::Precision::UNSPECIFIED;
-    std::tie(convParams, netPrecision, inputShape, targetDevice) = this->GetParam();
+    std::tie(convBackpropDataParams, netPrecision, inputShape, targetDevice) = this->GetParam();
     ngraph::op::PadType padType;
     InferenceEngine::SizeVector kernel, stride, dilation;
     std::vector<ptrdiff_t> padBegin, padEnd;
     size_t convOutChannels;
-    std::tie(kernel, stride, padBegin, padEnd, dilation, convOutChannels, padType) = convParams;
+    std::tie(kernel, stride, padBegin, padEnd, dilation, convOutChannels, padType) = convBackpropDataParams;
     auto ngPrc = FuncTestUtils::PrecisionUtils::convertIE2nGraphPrc(netPrecision);
     auto params = ngraph::builder::makeParams(ngPrc, {inputShape});
     auto paramOuts = ngraph::helpers::convert2OutputVector(
             ngraph::helpers::castOps2Nodes<ngraph::op::Parameter>(params));
-    auto conv = std::dynamic_pointer_cast<ngraph::opset1::Convolution>(
-            ngraph::builder::makeConvolution(paramOuts[0], ngPrc, kernel, stride, padBegin,
-                                             padEnd, dilation, padType, convOutChannels));
-    ngraph::ResultVector results{std::make_shared<ngraph::opset1::Result>(conv)};
-    function = std::make_shared<ngraph::Function>(results, params, "convolution");
+    auto convBackpropData = std::dynamic_pointer_cast<ngraph::opset1::ConvolutionBackpropData>(
+            ngraph::builder::makeConvolutionBackpropData(paramOuts[0], ngPrc, kernel, stride, padBegin,
+                                                         padEnd, dilation, padType, convOutChannels));
+    ngraph::ResultVector results{std::make_shared<ngraph::opset1::Result>(convBackpropData)};
+    function = std::make_shared<ngraph::Function>(results, params, "convolutionBackpropData");
 }
 
-TEST_P(ConvolutionLayerTest, CompareWithRefs) {
+TEST_P(ConvolutionBackpropDataLayerTest, CompareWithRefs) {
     Run();
 }
 }  // namespace LayerTestsDefinitions

@@ -43,8 +43,6 @@ public:
     std::shared_ptr<ngraph::Function> fnPtr;
 
     void inline inferAndValidate() {
-        // Skip test according to plugin specific disabledTestPatterns() (if any)
-        SKIP_IF_CURRENT_TEST_IS_DISABLED()
         // Create CNNNetwork from ngrpah::Function
         InferenceEngine::CNNNetwork cnnNet(fnPtr);
         // Set target input Precisions for the network

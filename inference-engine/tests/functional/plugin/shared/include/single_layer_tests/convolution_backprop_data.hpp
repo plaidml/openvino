@@ -1,4 +1,4 @@
-// Copyright (C) 2019 Intel Corporation
+// Copyright (C) 2020 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 //
 
@@ -21,20 +21,20 @@ typedef std::tuple<
         InferenceEngine::SizeVector,    // Dilation
         size_t,                         // Num out channels
         ngraph::op::PadType             // Padding type
-> convSpecificParams;
+> convBackpropDataSpecificParams;
 typedef std::tuple<
-        convSpecificParams,
+        convBackpropDataSpecificParams,
         InferenceEngine::Precision,     // Net precision
         InferenceEngine::SizeVector,    // Input shapes
         LayerTestsUtils::TargetDevice   // Device name
-> convLayerTestParamsSet;
+> convBackpropDataLayerTestParamsSet;
 namespace LayerTestsDefinitions {
 
 
-class ConvolutionLayerTest : public testing::WithParamInterface<convLayerTestParamsSet>,
-                             public LayerTestsUtils::LayerTestsCommon {
+class ConvolutionBackpropDataLayerTest : public testing::WithParamInterface<convBackpropDataLayerTestParamsSet>,
+                                         public LayerTestsUtils::LayerTestsCommon {
 public:
-    static std::string getTestCaseName(testing::TestParamInfo<convLayerTestParamsSet> obj);
+    static std::string getTestCaseName(testing::TestParamInfo<convBackpropDataLayerTestParamsSet> obj);
 
 protected:
     void SetUp() override;
