@@ -39,7 +39,6 @@ std::string CumSumLayerTest::getTestCaseName(testing::TestParamInfo<cumSumParams
 
 void CumSumLayerTest::SetUp() {
     InferenceEngine::SizeVector inputShapes;
-    InferenceEngine::Precision inputPrecision;
     bool exclusive, reverse;
     int64_t axis;
     std::tie(inputShapes, inputPrecision, axis, exclusive, reverse, targetDevice) = this->GetParam();

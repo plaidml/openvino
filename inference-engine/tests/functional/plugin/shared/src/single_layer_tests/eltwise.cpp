@@ -46,7 +46,6 @@ void EltwiseLayerTest::SetUp() {
     ParameterInputIdx primary_input_idx;
     InputLayerType secondary_input_type;
     InferenceEngine::SizeVector inputShape;
-    InferenceEngine::Precision netPrecision;
     ngraph::ParameterVector parameter_inputs;
     std::map<std::string, std::string> additional_config;
     std::tie(op, primary_input_idx, secondary_input_type, netPrecision, inputShape, targetDevice, additional_config) = this->GetParam();

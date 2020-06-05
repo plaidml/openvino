@@ -49,7 +49,6 @@ std::string ConvolutionBackpropDataLayerTest::getTestCaseName(testing::TestParam
 void ConvolutionBackpropDataLayerTest::SetUp() {
     convBackpropDataSpecificParams convBackpropDataParams;
     std::vector<size_t> inputShape;
-    auto netPrecision   = InferenceEngine::Precision::UNSPECIFIED;
     std::tie(convBackpropDataParams, netPrecision, inputShape, targetDevice) = this->GetParam();
     ngraph::op::PadType padType;
     InferenceEngine::SizeVector kernel, stride, dilation;

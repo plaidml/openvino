@@ -42,7 +42,6 @@ std::string FakeQuantizeLayerTest::getTestCaseName(testing::TestParamInfo<fqLaye
 void FakeQuantizeLayerTest::SetUp() {
     fqSpecificParams fqParams;
     std::vector<size_t> inputShape;
-    auto netPrecision = InferenceEngine::Precision::UNSPECIFIED;
     std::tie(fqParams, netPrecision, inputShape, targetDevice) = this->GetParam();
     InferenceEngine::SizeVector kernel, stride, dilation;
     size_t levels;

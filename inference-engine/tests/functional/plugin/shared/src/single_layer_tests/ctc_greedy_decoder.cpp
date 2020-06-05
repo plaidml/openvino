@@ -122,7 +122,6 @@ std::vector<std::vector<std::uint8_t>> CTCGreedyDecoderLayerTest::CalculateRefs(
 }
 
 void CTCGreedyDecoderLayerTest::SetUp() {
-    auto netPrecision = InferenceEngine::Precision::UNSPECIFIED;
     std::tie(netPrecision, inputShapes, mergeRepeated, targetDevice) = GetParam();
     sequenceLengths = { inputShapes.at(0), inputShapes.at(1) };
     auto ngPrc = FuncTestUtils::PrecisionUtils::convertIE2nGraphPrc(netPrecision);

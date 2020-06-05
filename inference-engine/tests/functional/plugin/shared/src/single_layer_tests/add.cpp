@@ -31,7 +31,6 @@ std::string AddLayerTest::getTestCaseName(testing::TestParamInfo<addParams> obj)
 
 void AddLayerTest::SetUp() {
     std::vector<InferenceEngine::SizeVector> inputShapes;
-    InferenceEngine::Precision netPrecision;
     std::tie(netPrecision, inputShapes, targetDevice) = this->GetParam();
     auto ngPrc = FuncTestUtils::PrecisionUtils::convertIE2nGraphPrc(netPrecision);
     auto paramsIn = ngraph::builder::makeParams(ngPrc, {inputShapes});

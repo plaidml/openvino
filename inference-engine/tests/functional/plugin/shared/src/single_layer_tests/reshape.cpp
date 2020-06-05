@@ -33,7 +33,6 @@ namespace LayerTestsDefinitions {
 void ReshapeLayerTest::SetUp() {
     InferenceEngine::SizeVector inputShapes, outFormShapes;
     bool specialZero;
-    InferenceEngine::Precision netPrecision;
     std::tie(specialZero, netPrecision, inputShapes, outFormShapes, targetDevice) = this->GetParam();
     auto ngPrc = FuncTestUtils::PrecisionUtils::convertIE2nGraphPrc(netPrecision);
     auto paramsIn = ngraph::builder::makeParams(ngPrc, {inputShapes});

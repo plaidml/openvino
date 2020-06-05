@@ -34,7 +34,6 @@ std::string NonZeroLayerTest::getTestCaseName(testing::TestParamInfo<NonZeroLaye
 void NonZeroLayerTest::SetUp() {
     SetRefMode(LayerTestsUtils::RefMode::CONSTANT_FOLDING);
     auto inputShape     = std::vector<std::size_t>{};
-    auto inputPrecision = InferenceEngine::Precision::UNSPECIFIED;
     std::tie(inputShape, inputPrecision, targetDevice) = GetParam();
 
     const auto& precision = FuncTestUtils::PrecisionUtils::convertIE2nGraphPrc(inputPrecision);

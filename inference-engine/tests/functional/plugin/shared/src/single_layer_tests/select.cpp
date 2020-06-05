@@ -40,7 +40,6 @@ namespace LayerTestsDefinitions {
         SetRefMode(LayerTestsUtils::RefMode::CONSTANT_FOLDING);
 
         std::vector<std::vector<size_t>> inputShapes(numOfInputs);
-        InferenceEngine::Precision inputPrecision;
         ngraph::op::AutoBroadcastSpec broadcast;
         std::tie(inputShapes, inputPrecision, broadcast, targetDevice) = this->GetParam();
 

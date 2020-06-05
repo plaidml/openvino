@@ -42,7 +42,6 @@ std::string SoftMaxLayerTest::getTestCaseName(testing::TestParamInfo<softMaxLaye
 void SoftMaxLayerTest::SetUp() {
     InferenceEngine::SizeVector inputShape;
     InferenceEngine::Layout inLayout;
-    InferenceEngine::Precision netPrecision;
     size_t axis;
 
     std::tie(netPrecision, inLayout, inputShape, axis, targetDevice) = GetParam();

@@ -63,7 +63,6 @@ std::string PoolingLayerTest::getTestCaseName(testing::TestParamInfo<poolLayerTe
 void PoolingLayerTest::SetUp() {
     poolSpecificParams poolParams;
     std::vector<size_t> inputShape;
-    InferenceEngine::Precision netPrecision;
     std::tie(poolParams, netPrecision, inputShape, targetDevice) = this->GetParam();
     ngraph::helpers::PoolingTypes poolType;
     std::vector<size_t> kernel, stride;

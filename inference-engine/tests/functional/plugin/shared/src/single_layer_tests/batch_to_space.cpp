@@ -37,7 +37,6 @@ std::string BatchToSpaceLayerTest::getTestCaseName(const testing::TestParamInfo<
 
 void BatchToSpaceLayerTest::SetUp() {
     std::vector<size_t> inputShape, blockShape, cropsBegin, cropsEnd;
-    InferenceEngine::Precision netPrecision;
     std::tie(blockShape, cropsBegin, cropsEnd, inputShape, netPrecision, targetDevice) = this->GetParam();
     auto ngPrc = FuncTestUtils::PrecisionUtils::convertIE2nGraphPrc(netPrecision);
     auto params = ngraph::builder::makeParams(ngPrc, {inputShape});
