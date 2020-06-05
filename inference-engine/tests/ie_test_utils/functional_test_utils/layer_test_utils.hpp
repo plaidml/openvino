@@ -46,6 +46,10 @@ public:
         // Create CNNNetwork from ngrpah::Function
         InferenceEngine::CNNNetwork cnnNet(fnPtr);
         // Set target input Precisions for the network
+        IE_ASSERT(netPrecision != InferenceEngine::Precision::UNSPECIFIED);
+        if (inputPrecision == InferenceEngine::Precision::UNSPECIFIED) {
+            inputPrecision = netPrecision;
+        }
         setNetInOutPrecision(cnnNet, inputPrecision);
 
         // Get Core from cache
