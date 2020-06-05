@@ -19,12 +19,10 @@ typedef std::tuple<
         InferenceEngine::Precision,         // Network precision
         std::vector<size_t>,                // Input shapes
         std::vector<size_t>,                // OutForm Shapes
-        std::string,                        // Device name
-        std::map<std::string, std::string>  // Config
+        std::string                         // Device name
 > reshapeParams;
 
-class ReshapeLayerTest : public testing::WithParamInterface<reshapeParams>,
-                         public LayerTestsUtils::LayerTestsCommon {
+class ReshapeLayerTest : public LayerTestsUtils::LayerTestsCommonClass<reshapeParams> {
 public:
     static std::string getTestCaseName(testing::TestParamInfo<reshapeParams> obj);
 

@@ -34,8 +34,7 @@ typedef std::tuple<
         std::string                     // Device name
 > poolLayerTestParamsSet;
 
-class PoolingLayerTest : public testing::WithParamInterface<poolLayerTestParamsSet>,
-                         public LayerTestsUtils::LayerTestsCommon {
+class PoolingLayerTest : public LayerTestsUtils::LayerTestsCommonClass<poolLayerTestParamsSet> {
 public:
     static std::string getTestCaseName(testing::TestParamInfo<poolLayerTestParamsSet> obj);
 

@@ -20,14 +20,13 @@ namespace LayerTestsDefinitions {
     InferenceEngine::Precision netPrecision;
     InferenceEngine::SizeVector inputShapes, outFormShapes;
     std::string targetDevice;
-    std::map<std::string, std::string> config;
     bool specialZero;
-    std::tie(specialZero, netPrecision, inputShapes, outFormShapes, targetDevice, config) = obj.param;
+    std::tie(specialZero, netPrecision, inputShapes, outFormShapes, targetDevice) = obj.param;
     std::ostringstream result;
-    result << "IS=" << CommonTestUtils::vec2str(inputShapes) << "_";
-    result << "specialZero=" << specialZero << "_";
-    result << "netPRC=" << netPrecision.name() << "_";
-    result << "targetDevice=" << targetDevice;
+    result << "IS_" << CommonTestUtils::vec2str(inputShapes) << "_";
+    result << "specialZero_" << specialZero << "_";
+    result << "netPRC_" << netPrecision.name() << "_";
+    result << "targetDevice_" << targetDevice;
     return result.str();
 }
 
@@ -35,7 +34,7 @@ void ReshapeLayerTest::SetUp() {
     InferenceEngine::SizeVector inputShapes, outFormShapes;
     bool specialZero;
     InferenceEngine::Precision netPrecision;
-    std::tie(specialZero, netPrecision, inputShapes, outFormShapes, targetDevice, configuration) = this->GetParam();
+    std::tie(specialZero, netPrecision, inputShapes, outFormShapes, targetDevice) = this->GetParam();
     auto ngPrc = FuncTestUtils::PrecisionUtils::convertIE2nGraphPrc(netPrecision);
     auto paramsIn = ngraph::builder::makeParams(ngPrc, {inputShapes});
     auto paramIn = ngraph::helpers::convert2OutputVector(
@@ -45,10 +44,10 @@ void ReshapeLayerTest::SetUp() {
     auto reshape = std::dynamic_pointer_cast<ngraph::opset1::Reshape>(
             std::make_shared<ngraph::opset1::Reshape>(paramIn[0], constNode, specialZero));
     ngraph::ResultVector results{std::make_shared<ngraph::opset1::Result>(reshape)};
-    function = std::make_shared<ngraph::Function>(results, paramsIn, "Reshape");
+    fnPtr = std::make_shared<ngraph::Function>(results, paramsIn, "Reshape");
 }
 
 TEST_P(ReshapeLayerTest, CompareWithRefsDynamicBath) {
-    Run();
+    inferAndValidate();
 }
 }  // namespace LayerTestsDefinitions

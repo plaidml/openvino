@@ -26,13 +26,12 @@ typedef std::tuple<
         convBackpropDataSpecificParams,
         InferenceEngine::Precision,     // Net precision
         InferenceEngine::SizeVector,    // Input shapes
-        LayerTestsUtils::TargetDevice   // Device name
+        std::string   // Device name
 > convBackpropDataLayerTestParamsSet;
 namespace LayerTestsDefinitions {
 
 
-class ConvolutionBackpropDataLayerTest : public testing::WithParamInterface<convBackpropDataLayerTestParamsSet>,
-                                         public LayerTestsUtils::LayerTestsCommon {
+class ConvolutionBackpropDataLayerTest : public LayerTestsUtils::LayerTestsCommonClass<convBackpropDataLayerTestParamsSet> {
 public:
     static std::string getTestCaseName(testing::TestParamInfo<convBackpropDataLayerTestParamsSet> obj);
 

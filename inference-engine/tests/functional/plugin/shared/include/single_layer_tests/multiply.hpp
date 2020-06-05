@@ -19,9 +19,7 @@ using MultiplyParamsTuple = typename std::tuple<
         InferenceEngine::Precision,       //Network precision
         std::string>;                     //Device name
 
-class MultiplyLayerTest:
-        public testing::WithParamInterface<MultiplyParamsTuple>,
-        public LayerTestsUtils::LayerTestsCommon{
+class MultiplyLayerTest : public LayerTestsUtils::LayerTestsCommonClass<MultiplyParamsTuple>{
 public:
     std::shared_ptr<ngraph::Function> fn;
     static std::string getTestCaseName(const testing::TestParamInfo<MultiplyParamsTuple> &obj);

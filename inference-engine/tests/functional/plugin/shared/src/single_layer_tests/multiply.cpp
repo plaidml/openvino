@@ -24,9 +24,9 @@ namespace LayerTestsDefinitions {
         std::tie(inputShapes, netPrecision, targetName) = obj.param;
         std::ostringstream results;
 
-        results << "IS=" << CommonTestUtils::vec2str(inputShapes) << "_";
-        results << "netPRC=" << netPrecision.name() << "_";
-        results << "targetDevice=" << targetName << "_";
+        results << "IS_" << CommonTestUtils::vec2str(inputShapes) << "_";
+        results << "netPRC_" << netPrecision.name() << "_";
+        results << "targetDevice_" << targetName << "_";
         return results.str();
     }
 
@@ -40,10 +40,10 @@ namespace LayerTestsDefinitions {
         auto input = ngraph::builder::makeParams(ngPrc, {shape_input});
         auto const_mul = ngraph::builder::makeConstant(ngPrc, ngraph::Shape{1}, std::vector<float>{-1.0f});
         auto mul = std::make_shared<ngraph::opset1::Multiply>(input[0], const_mul);
-        function = std::make_shared<ngraph::Function>(mul, input, "multiply");
+        fnPtr = std::make_shared<ngraph::Function>(mul, input, "multiply");
     }
 
     TEST_P(MultiplyLayerTest, CompareWithRefs){
-        Run();
+        inferAndValidate();
     };
 } // namespace LayerTestsDefinitions

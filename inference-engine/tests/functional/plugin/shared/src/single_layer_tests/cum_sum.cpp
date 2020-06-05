@@ -28,12 +28,12 @@ std::string CumSumLayerTest::getTestCaseName(testing::TestParamInfo<cumSumParams
     std::tie(inputShapes, inputPrecision, axis, exclusive, reverse, targetDevice) = obj.param;
 
     std::ostringstream result;
-    result << "IS=" << CommonTestUtils::vec2str(inputShapes) << "_";
-    result << "Precision=" << inputPrecision.name() << "_";
-    result << "Axis=" << axis << "_";
-    result << "Exclusive=" << (exclusive ? "TRUE" : "FALSE") << "_";
-    result << "Reverse=" << (reverse ? "TRUE" : "FALSE") << "_";
-    result << "TargetDevice=" << targetDevice;
+    result << "IS_" << CommonTestUtils::vec2str(inputShapes) << "_";
+    result << "Precision_" << inputPrecision.name() << "_";
+    result << "Axis_" << axis << "_";
+    result << "Exclusive_" << (exclusive ? "TRUE" : "FALSE") << "_";
+    result << "Reverse_" << (reverse ? "TRUE" : "FALSE") << "_";
+    result << "TargetDevice_" << targetDevice;
     return result.str();
 }
 
@@ -54,11 +54,11 @@ void CumSumLayerTest::SetUp() {
     auto cumSum = std::dynamic_pointer_cast<ngraph::op::CumSum>(ngraph::builder::makeCumSum(paramOuts[0], axisNode, exclusive, reverse));
 
     ngraph::ResultVector results{std::make_shared<ngraph::opset1::Result>(cumSum)};
-    function = std::make_shared<ngraph::Function>(results, paramVector, "cumsum");
+    fnPtr = std::make_shared<ngraph::Function>(results, paramVector, "cumsum");
 }
 
 TEST_P(CumSumLayerTest, CompareWithRefs) {
-    Run();
+    inferAndValidate();
 };
 
 }  // namespace LayerTestsDefinitions

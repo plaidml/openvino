@@ -21,13 +21,12 @@ typedef std::tuple<
         fqSpecificParams,
         InferenceEngine::Precision,   // Net precision
         InferenceEngine::SizeVector,  // Input shapes
-        LayerTestsUtils::TargetDevice // Device name
+        std::string // Device name
 > fqLayerTestParamsSet;
 namespace LayerTestsDefinitions {
 
 
-class FakeQuantizeLayerTest : public testing::WithParamInterface<fqLayerTestParamsSet>,
-                              public LayerTestsUtils::LayerTestsCommon {
+class FakeQuantizeLayerTest : public LayerTestsUtils::LayerTestsCommonClass<fqLayerTestParamsSet> {
 public:
     static std::string getTestCaseName(testing::TestParamInfo<fqLayerTestParamsSet> obj);
 

@@ -26,12 +26,11 @@ typedef std::tuple<
         groupConvSpecificParams,
         InferenceEngine::Precision,
         InferenceEngine::SizeVector,
-        LayerTestsUtils::TargetDevice> groupConvLayerTestParamsSet;
+        std::string> groupConvLayerTestParamsSet;
 
 namespace LayerTestsDefinitions {
 
-class GroupConvolutionLayerTest : public testing::WithParamInterface<groupConvLayerTestParamsSet>,
-                                  public LayerTestsUtils::LayerTestsCommon {
+class GroupConvolutionLayerTest : public LayerTestsUtils::LayerTestsCommonClass<groupConvLayerTestParamsSet> {
 public:
     static std::string getTestCaseName(testing::TestParamInfo<groupConvLayerTestParamsSet> obj);
 

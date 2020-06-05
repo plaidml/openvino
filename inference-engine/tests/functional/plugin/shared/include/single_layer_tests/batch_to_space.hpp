@@ -21,8 +21,7 @@ using batchToSpaceParamsTuple = typename std::tuple<
         InferenceEngine::Precision,        // Network precision
         std::string>;                      // Device name>;
 
-class BatchToSpaceLayerTest : public testing::WithParamInterface<batchToSpaceParamsTuple>,
-                              public LayerTestsUtils::LayerTestsCommon {
+class BatchToSpaceLayerTest : public LayerTestsUtils::LayerTestsCommonClass<batchToSpaceParamsTuple> {
 public:
     static std::string getTestCaseName(const testing::TestParamInfo<batchToSpaceParamsTuple> &obj);
 

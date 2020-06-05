@@ -20,7 +20,7 @@ typedef std::tuple<
         double,                      // Epsilon
         std::string> mvnParams;      // Device name
 
-class MvnLayerTest : public testing::WithParamInterface<mvnParams>, public LayerTestsUtils::LayerTestsCommon {
+class MvnLayerTest : public LayerTestsUtils::LayerTestsCommonClass<mvnParams> {
 public:
     static std::string getTestCaseName(testing::TestParamInfo<mvnParams> obj);
 

@@ -29,12 +29,12 @@ std::string MvnLayerTest::getTestCaseName(testing::TestParamInfo<mvnParams> obj)
     std::string targetDevice;
     std::tie(inputShapes, inputPrecision, acrossChannels, normalizeVariance, eps, targetDevice) = obj.param;
     std::ostringstream result;
-    result << "IS=" << CommonTestUtils::vec2str(inputShapes) << "_";
-    result << "Precision=" << inputPrecision.name() << "_";
-    result << "AcrossChannels=" << (acrossChannels ? "TRUE" : "FALSE") << "_";
-    result << "NormalizeVariance=" << (normalizeVariance ? "TRUE" : "FALSE") << "_";
-    result << "Epsilon=" << eps << "_";
-    result << "TargetDevice=" << targetDevice;
+    result << "IS_" << CommonTestUtils::vec2str(inputShapes) << "_";
+    result << "Precision_" << inputPrecision.name() << "_";
+    result << "AcrossChannels_" << (acrossChannels ? "TRUE" : "FALSE") << "_";
+    result << "NormalizeVariance_" << (normalizeVariance ? "TRUE" : "FALSE") << "_";
+    result << "Epsilon_" << eps << "_";
+    result << "TargetDevice_" << targetDevice;
     return result.str();
 }
 
@@ -49,11 +49,11 @@ void MvnLayerTest::SetUp() {
     auto paramOuts = ngraph::helpers::convert2OutputVector(ngraph::helpers::castOps2Nodes<ngraph::op::Parameter>(param));
     auto mvn = std::dynamic_pointer_cast<ngraph::op::MVN>(ngraph::builder::makeMVN(paramOuts[0], acrossChanels, normalizeVariance, eps));
     ngraph::ResultVector results{std::make_shared<ngraph::opset1::Result>(mvn)};
-    function = std::make_shared<ngraph::Function>(results, param, "mvn");
+    fnPtr = std::make_shared<ngraph::Function>(results, param, "mvn");
 }
 
 TEST_P(MvnLayerTest, CompareWithRefs) {
-    Run();
+    inferAndValidate();
 };
 
 }  // namespace LayerTestsDefinitions

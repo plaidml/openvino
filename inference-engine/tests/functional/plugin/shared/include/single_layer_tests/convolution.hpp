@@ -26,13 +26,12 @@ typedef std::tuple<
         convSpecificParams,
         InferenceEngine::Precision,     // Net precision
         InferenceEngine::SizeVector,    // Input shapes
-        LayerTestsUtils::TargetDevice   // Device name
+        std::string   // Device name
 > convLayerTestParamsSet;
 namespace LayerTestsDefinitions {
 
 
-class ConvolutionLayerTest : public testing::WithParamInterface<convLayerTestParamsSet>,
-                             public LayerTestsUtils::LayerTestsCommon {
+class ConvolutionLayerTest : public LayerTestsUtils::LayerTestsCommonClass<convLayerTestParamsSet> {
 public:
     static std::string getTestCaseName(testing::TestParamInfo<convLayerTestParamsSet> obj);
 

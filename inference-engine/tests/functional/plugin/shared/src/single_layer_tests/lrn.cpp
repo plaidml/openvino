@@ -22,13 +22,13 @@ std::string LrnLayerTest::getTestCaseName(testing::TestParamInfo<lrnLayerTestPar
 
     std::ostringstream result;
     const char separator = '_';
-    result << "IS=" << CommonTestUtils::vec2str(inputShapes) << separator;
-    result << "Alpha=" << alpha << separator;
-    result << "Beta=" << beta << separator;
-    result << "Bias=" << bias << separator;
-    result << "Size=" << size << separator;
-    result << "netPRC=" << netPrecision.name() << separator;
-    result << "targetDevice=" << targetDevice;
+    result << "IS_" << CommonTestUtils::vec2str(inputShapes) << separator;
+    result << "Alpha__in_ppm__" << alpha * 10e6 << separator;
+    result << "Beta_" << beta << separator;
+    result << "Bias_" << bias << separator;
+    result << "Size_" << size << separator;
+    result << "netPRC_" << netPrecision.name() << separator;
+    result << "targetDevice_" << targetDevice;
 
     return result.str();
 }
@@ -46,10 +46,10 @@ void LrnLayerTest::SetUp() {
 
     auto lrn = std::make_shared<ngraph::opset1::LRN>(paramIn[0], alpha, beta, bias, size);
     ngraph::ResultVector results {std::make_shared<ngraph::opset1::Result>(lrn)};
-    function = std::make_shared<ngraph::Function>(results, params, "lrn");
+    fnPtr = std::make_shared<ngraph::Function>(results, params, "lrn");
 }
 
 TEST_P(LrnLayerTest, CompareWithRefs) {
-    Run();
+    inferAndValidate();
 }
 }  // namespace LayerTestsDefinitions

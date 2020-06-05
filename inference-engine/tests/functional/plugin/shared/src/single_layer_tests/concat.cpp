@@ -27,10 +27,10 @@ std::string ConcatLayerTest::getTestCaseName(const testing::TestParamInfo<concat
     std::string targetName;
     std::tie(axis, inputShapes, netPrecision, targetName) = obj.param;
     std::ostringstream result;
-    result << "IS=" << CommonTestUtils::vec2str(inputShapes) << "_";
-    result << "axis=" << axis << "_";
-    result << "netPRC=" << netPrecision.name() << "_";
-    result << "targetDevice=" << targetName << "_";
+    result << "IS_" << CommonTestUtils::vec2str(inputShapes) << "_";
+    result << "axis_" << axis << "_";
+    result << "netPRC_" << netPrecision.name() << "_";
+    result << "targetDevice_" << targetName << "_";
     return result.str();
 }
 
@@ -45,11 +45,11 @@ void ConcatLayerTest::SetUp() {
             ngraph::helpers::castOps2Nodes<ngraph::op::Parameter>(params));
     auto concat = std::make_shared<ngraph::opset1::Concat>(paramOuts, axis);
     ngraph::ResultVector results{std::make_shared<ngraph::opset1::Result>(concat)};
-    function = std::make_shared<ngraph::Function>(results, params, "concat");
+    fnPtr = std::make_shared<ngraph::Function>(results, params, "concat");
 }
 
 
 TEST_P(ConcatLayerTest, CompareWithRefs) {
-    Run();
+    inferAndValidate();
 };
 }  // namespace LayerTestsDefinitions

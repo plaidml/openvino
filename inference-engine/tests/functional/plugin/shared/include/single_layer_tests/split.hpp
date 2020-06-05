@@ -22,8 +22,7 @@ typedef std::tuple<
         std::string                     // Target device name
 > splitParams;
 
-class SplitLayerTest : public testing::WithParamInterface<splitParams>,
-                       public LayerTestsUtils::LayerTestsCommon {
+class SplitLayerTest : public LayerTestsUtils::LayerTestsCommonClass<splitParams> {
 public:
     static std::string getTestCaseName(testing::TestParamInfo<splitParams> obj);
 
