@@ -40,7 +40,6 @@ std::string MvnLayerTest::getTestCaseName(testing::TestParamInfo<mvnParams> obj)
 
 void MvnLayerTest::SetUp() {
     InferenceEngine::SizeVector inputShapes;
-    InferenceEngine::Precision inputPrecision;
     bool acrossChanels, normalizeVariance;
     double eps;
     std::tie(inputShapes, inputPrecision, acrossChanels, normalizeVariance, eps, targetDevice) = this->GetParam();

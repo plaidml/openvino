@@ -37,7 +37,6 @@ std::string ExtractImagePatchesTest::getTestCaseName(const testing::TestParamInf
 void ExtractImagePatchesTest::SetUp() {
     std::vector<size_t> inputShape, kernel, strides, rates;
     ngraph::op::PadType pad_type;
-    InferenceEngine::Precision netPrecision;
     std::tie(inputShape, kernel, strides, rates, pad_type, netPrecision, targetDevice) = this->GetParam();
     auto ngPrc = FuncTestUtils::PrecisionUtils::convertIE2nGraphPrc(netPrecision);
 

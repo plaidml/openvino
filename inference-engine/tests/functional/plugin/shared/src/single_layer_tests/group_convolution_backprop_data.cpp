@@ -50,7 +50,6 @@ std::string GroupConvBackpropDataLayerTest::getTestCaseName(testing::TestParamIn
 void GroupConvBackpropDataLayerTest::SetUp() {
     groupConvBackpropDataSpecificParams groupConvBackpropDataParams;
     std::vector<size_t> inputShape;
-    auto netPrecision = InferenceEngine::Precision::UNSPECIFIED;
     std::tie(groupConvBackpropDataParams, netPrecision, inputShape, targetDevice) = this->GetParam();
     ngraph::op::PadType padType;
     InferenceEngine::SizeVector kernel, stride, dilation;

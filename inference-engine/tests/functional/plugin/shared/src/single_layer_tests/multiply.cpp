@@ -32,7 +32,6 @@ namespace LayerTestsDefinitions {
 
     void MultiplyLayerTest::SetUp() {
         std::vector<std::vector<size_t>> inputShapes;
-        InferenceEngine::Precision netPrecision;
         std::tie(inputShapes, netPrecision, targetDevice) = this->GetParam();
         const std::size_t input_dim = InferenceEngine::details::product(inputShapes[0]);
         auto ngPrc = FuncTestUtils::PrecisionUtils::convertIE2nGraphPrc(netPrecision);

@@ -35,7 +35,6 @@ std::string LrnLayerTest::getTestCaseName(testing::TestParamInfo<lrnLayerTestPar
 
 void LrnLayerTest::SetUp() {
     std::vector<size_t> inputShapes;
-    auto netPrecision   = InferenceEngine::Precision::UNSPECIFIED;
     size_t alpha, beta, bias, size;
     std::tie(alpha, beta, bias, size, netPrecision, inputShapes, targetDevice) = GetParam();
 

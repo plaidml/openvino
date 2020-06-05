@@ -47,7 +47,6 @@ void StridedSliceLayerTest::SetUp() {
     InferenceEngine::SizeVector inputShape;
     std::vector<int64_t> begin, end, stride;
     std::vector<int64_t> begin_mask, end_mask, new_axis_mask, shrink_mask, ellipsis_mask;
-    InferenceEngine::Precision netPrecision;
     std::tie(inputShape, begin, end, stride, begin_mask, end_mask, new_axis_mask, shrink_mask, ellipsis_mask,
              netPrecision, targetDevice) = this->GetParam();
 

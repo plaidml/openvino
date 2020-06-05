@@ -36,8 +36,6 @@ std::string EqualLayerTest::getTestCaseName(const testing::TestParamInfo<EqualTe
 
 void EqualLayerTest::SetUp() {
     std::vector<InferenceEngine::SizeVector> inputShapes;
-    InferenceEngine::Precision inputPrecision = InferenceEngine::Precision::UNSPECIFIED;
-
     std::tie(inputShapes, inputPrecision, outPrc, targetDevice) = this->GetParam();
 
     auto ngPrc = FuncTestUtils::PrecisionUtils::convertIE2nGraphPrc(inputPrecision);

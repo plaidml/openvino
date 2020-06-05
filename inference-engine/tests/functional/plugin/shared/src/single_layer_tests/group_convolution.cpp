@@ -50,7 +50,6 @@ std::string GroupConvolutionLayerTest::getTestCaseName(testing::TestParamInfo<gr
 void GroupConvolutionLayerTest::SetUp() {
     groupConvSpecificParams groupConvParams;
     std::vector<size_t> inputShape;
-    auto netPrecision   = InferenceEngine::Precision::UNSPECIFIED;
     std::tie(groupConvParams, netPrecision, inputShape, targetDevice) = this->GetParam();
     ngraph::op::PadType padType;
     InferenceEngine::SizeVector kernel, stride, dilation;

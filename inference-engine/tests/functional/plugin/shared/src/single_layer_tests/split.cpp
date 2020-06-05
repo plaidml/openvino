@@ -41,7 +41,6 @@ void SplitLayerTest::SetUp() {
     // SetRefMode(LayerTestsUtils::RefMode::CONSTANT_FOLDING);
     size_t axis, numSplits;
     std::vector<size_t> inputShape;
-    InferenceEngine::Precision netPrecision;
     std::tie(numSplits, axis, netPrecision, inputShape, targetDevice) = this->GetParam();
     auto ngPrc = FuncTestUtils::PrecisionUtils::convertIE2nGraphPrc(netPrecision);
     auto params = ngraph::builder::makeParams(ngPrc, {inputShape});
