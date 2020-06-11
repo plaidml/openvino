@@ -23,17 +23,17 @@ namespace LayerTestsDefinitions {
 
 std::string MvnLayerTest::getTestCaseName(testing::TestParamInfo<mvnParams> obj) {
     InferenceEngine::SizeVector inputShapes;
-    InferenceEngine::Precision inputPrecision;
+    InferenceEngine::Precision netPrecision;
     bool acrossChannels, normalizeVariance;
     double eps;
     std::string targetDevice;
-    std::tie(inputShapes, inputPrecision, acrossChannels, normalizeVariance, eps, targetDevice) = obj.param;
+    std::tie(inputShapes, netPrecision, acrossChannels, normalizeVariance, eps, targetDevice) = obj.param;
     std::ostringstream result;
     result << "IS_" << CommonTestUtils::vec2str(inputShapes) << "_";
-    result << "Precision_" << inputPrecision.name() << "_";
+    result << "Precision_" << netPrecision.name() << "_";
     result << "AcrossChannels_" << (acrossChannels ? "TRUE" : "FALSE") << "_";
     result << "NormalizeVariance_" << (normalizeVariance ? "TRUE" : "FALSE") << "_";
-    result << "Epsilon_" << eps << "_";
+    result << "EpsilonTimes1000000000_" << eps * 1000000000 << "_";
     result << "TargetDevice_" << targetDevice;
     return result.str();
 }
@@ -42,8 +42,8 @@ void MvnLayerTest::SetUp() {
     InferenceEngine::SizeVector inputShapes;
     bool acrossChanels, normalizeVariance;
     double eps;
-    std::tie(inputShapes, inputPrecision, acrossChanels, normalizeVariance, eps, targetDevice) = this->GetParam();
-    auto inType = FuncTestUtils::PrecisionUtils::convertIE2nGraphPrc(inputPrecision);
+    std::tie(inputShapes, netPrecision, acrossChanels, normalizeVariance, eps, targetDevice) = this->GetParam();
+    auto inType = FuncTestUtils::PrecisionUtils::convertIE2nGraphPrc(netPrecision);
     auto param = ngraph::builder::makeParams(inType, {inputShapes});
     auto paramOuts = ngraph::helpers::convert2OutputVector(ngraph::helpers::castOps2Nodes<ngraph::op::Parameter>(param));
     auto mvn = std::dynamic_pointer_cast<ngraph::op::MVN>(ngraph::builder::makeMVN(paramOuts[0], acrossChanels, normalizeVariance, eps));
