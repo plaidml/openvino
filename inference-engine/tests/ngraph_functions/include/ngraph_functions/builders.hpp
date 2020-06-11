@@ -33,6 +33,11 @@ std::shared_ptr<ngraph::Node> makeConvolution(const ngraph::Output<Node> &in,
                                               const std::vector<float> &filterWeights = {},
                                               const std::vector<float> &biasesWeights = {});
 
+std::shared_ptr<ngraph::Node> makeMVN(const ngraph::Output<Node> &in,
+                                      bool acrossChannels,
+                                      bool normalizeVariance,
+                                      double eps);
+
 std::shared_ptr<ngraph::Node> makeSplit(const ngraph::Output<Node> &in,
                                         const element::Type &type,
                                         size_t numSplits,
