@@ -42,6 +42,12 @@ std::shared_ptr<ngraph::Node> makeActivation(const ngraph::Output<Node> &in,
                                              const element::Type &type,
                                              ngraph::helpers::ActivationTypes activationType);
 
+std::shared_ptr<ngraph::Node> makeMatMul(const ngraph::Output<Node>& A,
+                                         const ngraph::Output<Node>& B);
+
+std::shared_ptr<ngraph::Node> makeSelect(std::vector<ngraph::Output<Node>> &in,
+                                         const ngraph::op::AutoBroadcastSpec& auto_broadcast);
+
 std::shared_ptr<ngraph::Node> makeBatchToSpace(const ngraph::Output<Node> &in,
                                                const element::Type &type,
                                                const std::vector<size_t> &blockShape,
@@ -53,5 +59,9 @@ std::shared_ptr<ngraph::Node> makeSpaceToBatch(const ngraph::Output<Node> &in,
                                                const std::vector<size_t> &blockShape,
                                                const std::vector<size_t> &padsBegin,
                                                const std::vector<size_t> &padsEnd);
+
+std::shared_ptr<ngraph::Node> makeSpaceToDepth(const ngraph::Output<Node> &in,
+                                               ngraph::opset1::SpaceToDepth::SpaceToDepthMode mode,
+                                               size_t blockSize);
 }  // namespace builder
 }  // namespace ngraph
