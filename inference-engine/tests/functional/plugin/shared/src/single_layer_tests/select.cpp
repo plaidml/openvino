@@ -37,8 +37,6 @@ namespace LayerTestsDefinitions {
     }
 
     void SelectLayerTest::SetUp() {
-        SetRefMode(LayerTestsUtils::RefMode::CONSTANT_FOLDING);
-
         std::vector<std::vector<size_t>> inputShapes(numOfInputs);
         ngraph::op::AutoBroadcastSpec broadcast;
         std::tie(inputShapes, inputPrecision, broadcast, targetDevice) = this->GetParam();
