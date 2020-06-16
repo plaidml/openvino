@@ -26,7 +26,7 @@ typedef std::tuple<
         groupConvBackpropDataSpecificParams,
         InferenceEngine::Precision,
         InferenceEngine::SizeVector,
-        LayerTestsUtils::TargetDevice> groupConvBackpropDataLayerTestParamsSet;
+        std::string> groupConvBackpropDataLayerTestParamsSet;
 
 namespace LayerTestsDefinitions {
 

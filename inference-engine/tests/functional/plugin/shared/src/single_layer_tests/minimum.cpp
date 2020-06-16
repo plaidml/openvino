@@ -14,10 +14,10 @@
 #include "functional_test_utils/precision_utils.hpp"
 #include "functional_test_utils/plugin_cache.hpp"
 #include "functional_test_utils/skip_tests_config.hpp"
-#include "single_layer_tests/maximum.hpp"
+#include "single_layer_tests/minimum.hpp"
 
 namespace LayerTestsDefinitions {
-    std::string MaximumLayerTest::getTestCaseName(const testing::TestParamInfo<MaximumParamsTuple> &obj) {
+    std::string MinimumLayerTest::getTestCaseName(const testing::TestParamInfo<MinimumParamsTuple> &obj) {
         std::vector<std::vector<size_t>> inputShapes;
         InferenceEngine::Precision netPrecision;
         std::string targetName;
@@ -30,7 +30,7 @@ namespace LayerTestsDefinitions {
         return results.str();
     }
 
-    void MaximumLayerTest::SetUp() {
+    void MinimumLayerTest::SetUp() {
         std::vector<std::vector<size_t>> inputShapes;
         std::tie(inputShapes, netPrecision, targetDevice) = this->GetParam();
         const std::size_t inputDim = InferenceEngine::details::product(inputShapes[0]);
@@ -38,11 +38,11 @@ namespace LayerTestsDefinitions {
         std::vector<size_t> shapeInput{1, inputDim};
         auto input = ngraph::builder::makeParams(ngPrc, {shapeInput});
         auto constMul = ngraph::builder::makeConstant(ngPrc, ngraph::Shape{1}, std::vector<float>{-1.0f});
-        auto max = std::make_shared<ngraph::opset1::Maximum>(input[0], constMul);
-        fnPtr = std::make_shared<ngraph::Function>(max, input, "maximum");
+        auto minimum = std::make_shared<ngraph::opset1::Minimum>(input[0], constMul);
+        fnPtr = std::make_shared<ngraph::Function>(minimum, input, "minimum");
     }
 
-    TEST_P(MaximumLayerTest, CompareWithRefs){
+    TEST_P(MinimumLayerTest, CompareWithRefs){
         inferAndValidate();
     };
 } // namespace LayerTestsDefinitions
