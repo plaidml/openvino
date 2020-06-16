@@ -17,14 +17,14 @@
 
 namespace LayerTestsDefinitions {
 
-using EqualTestParam = typename std::tuple<
+using NotEqualTestParam = typename std::tuple<
         std::vector<InferenceEngine::SizeVector>,  // Input shapes
         InferenceEngine::Precision,                // Net precision
         std::string>;                              // Config
 
-class EqualLayerTest : public LayerTestsUtils::LayerTestsCommonClass<EqualTestParam>  {
+class NotEqualLayerTest : public LayerTestsUtils::LayerTestsCommonClass<NotEqualTestParam>  {
 public:
-    static std::string getTestCaseName(const testing::TestParamInfo<EqualTestParam>& obj);
+    static std::string getTestCaseName(const testing::TestParamInfo<NotEqualTestParam>& obj);
 
 protected:
     void SetUp() override;
