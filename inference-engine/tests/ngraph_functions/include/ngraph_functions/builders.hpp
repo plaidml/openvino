@@ -122,6 +122,10 @@ std::shared_ptr<ngraph::Node> makeBatchToSpace(const ngraph::Output<Node> &in,
                                                const std::vector<size_t> &cropsBegin,
                                                const std::vector<size_t> &cropsEnd);
 
+std::shared_ptr<ngraph::Node> makeDepthToSpace(const ngraph::Output<Node> &in,
+                                               ngraph::opset1::DepthToSpace::DepthToSpaceMode mode,
+                                               size_t blockSize);
+
 std::shared_ptr<ngraph::Node> makeSpaceToBatch(const ngraph::Output<Node> &in,
                                                const element::Type &type,
                                                const std::vector<size_t> &blockShape,

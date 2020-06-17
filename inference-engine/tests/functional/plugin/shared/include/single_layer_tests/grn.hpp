@@ -36,9 +36,7 @@ typedef std::tuple<
     float,
     std::string> grnParams;
 
-class GrnLayerTest
-    : public testing::WithParamInterface<grnParams>,
-      public LayerTestsUtils::LayerTestsCommon{
+class GrnLayerTest : public LayerTestsUtils::LayerTestsCommonClass<grnParams> {
 public:
     static std::string getTestCaseName(const testing::TestParamInfo<grnParams>& obj);
 
