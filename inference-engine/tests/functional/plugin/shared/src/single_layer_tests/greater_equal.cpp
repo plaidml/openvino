@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-#include "single_layer_tests/greater.hpp"
+#include "single_layer_tests/greater_equal.hpp"
 
 #include "functional_test_utils/blob_utils.hpp"
 #include "functional_test_utils/layer_test_utils.hpp"
@@ -17,7 +17,7 @@
 
 namespace LayerTestsDefinitions {
 
-std::string GreaterLayerTest::getTestCaseName(const testing::TestParamInfo<GreaterTestParam>& obj) {
+std::string GreaterEqualLayerTest::getTestCaseName(const testing::TestParamInfo<GreaterEqualTestParam>& obj) {
     InferenceEngine::Precision netPrecision;
     std::vector<InferenceEngine::SizeVector> inputShapes;
     std::string targetDevice;
@@ -32,7 +32,7 @@ std::string GreaterLayerTest::getTestCaseName(const testing::TestParamInfo<Great
     return result.str();
 }
 
-void GreaterLayerTest::SetUp() {
+void GreaterEqualLayerTest::SetUp() {
     std::vector<InferenceEngine::SizeVector> inputShapes;
     std::tie(inputShapes, netPrecision, targetDevice) = this->GetParam();
 
@@ -40,13 +40,13 @@ void GreaterLayerTest::SetUp() {
     auto paramsVector = ngraph::builder::makeParams(ngPrc, {inputShapes});
     IE_ASSERT(paramsVector.size() == 2);
 
-    auto greaterOp = std::make_shared<ngraph::opset1::Greater>(paramsVector[0], paramsVector[1]);
-    ngraph::ResultVector results{std::make_shared<ngraph::opset1::Result>(greaterOp)};
+    auto greaterEqualOp = std::make_shared<ngraph::opset1::GreaterEqual>(paramsVector[0], paramsVector[1]);
+    ngraph::ResultVector results{std::make_shared<ngraph::opset1::Result>(greaterEqualOp)};
 
-    fnPtr = std::make_shared<ngraph::Function>(results, paramsVector, "Greater");
+    fnPtr = std::make_shared<ngraph::Function>(results, paramsVector, "GreaterEqual");
 }
 
-TEST_P(GreaterLayerTest, CompareWithRefs) {
+TEST_P(GreaterEqualLayerTest, CompareWithRefs) {
     inferAndValidate();
 }
 }  // namespace LayerTestsDefinitions

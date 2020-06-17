@@ -50,10 +50,10 @@ void GrnLayerTest::SetUp() {
         ngraph::helpers::castOps2Nodes<ngraph::op::Parameter>(paramsIn));
     auto grn = std::make_shared<ngraph::opset1::GRN>(paramsOut[0], bias);
     ngraph::ResultVector results{ std::make_shared<ngraph::opset1::Result>(grn) };
-    function = std::make_shared<ngraph::Function>(results, paramsIn, "Grn");
+    fnPtr = std::make_shared<ngraph::Function>(results, paramsIn, "Grn");
 }
 
 TEST_P(GrnLayerTest, CompareWithRefs) {
-    Run();
+    inferAndValidate();
 };
 }  // namespace LayerTestsDefinitions
