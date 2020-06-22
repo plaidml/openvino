@@ -39,9 +39,8 @@ void SquaredDifferenceLayerTest::SetUp() {
     auto ngPrc = FuncTestUtils::PrecisionUtils::convertIE2nGraphPrc(netPrecision);
     auto params = ngraph::builder::makeParams(ngPrc, {inputShapes});
 
-    auto paramsIn = ngraph::builder::makeParams(ngPrc, {inputShapes});
     auto paramOuts = ngraph::helpers::convert2OutputVector(
-            ngraph::helpers::castOps2Nodes<ngraph::op::Parameter>(paramsIn));
+            ngraph::helpers::castOps2Nodes<ngraph::op::Parameter>(params));
     IE_ASSERT(paramOuts.size() == 2);
     const auto squared_difference = std::make_shared<ngraph::opset1::SquaredDifference>(paramOuts.at(0), paramOuts.at(1));
 
