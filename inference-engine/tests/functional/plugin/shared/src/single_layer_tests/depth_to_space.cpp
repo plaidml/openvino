@@ -40,12 +40,12 @@ std::string DepthToSpaceLayerTest::getTestCaseName(const testing::TestParamInfo<
     std::vector<size_t> inShape;
     DepthToSpace::DepthToSpaceMode mode;
     std::size_t blockSize;
-    InferenceEngine::Precision inputPrecision;
+    InferenceEngine::Precision netPrecision;
     std::string targetName;
-    std::tie(inShape, inputPrecision, mode, blockSize, targetName) = obj.param;
+    std::tie(inShape, netPrecision, mode, blockSize, targetName) = obj.param;
     std::ostringstream result;
     result << "IS_" << CommonTestUtils::vec2str(inShape) << "_";
-    result << "inPrc_" << inputPrecision.name() << "_";
+    result << "inPrc_" << netPrecision.name() << "_";
     result << "M_" << DepthToSpaceModeToString(mode) << "_";
     result << "BS_" << blockSize << "_";
     result << "targetDevice_" << targetName << "_";
@@ -56,9 +56,8 @@ void DepthToSpaceLayerTest::SetUp() {
     std::vector<size_t> inShape;
     DepthToSpace::DepthToSpaceMode mode;
     std::size_t blockSize;
-    InferenceEngine::Precision inputPrecision;
-    std::tie(inShape, inputPrecision, mode, blockSize, targetDevice) = this->GetParam();
-    auto inPrc = FuncTestUtils::PrecisionUtils::convertIE2nGraphPrc(inputPrecision);
+    std::tie(inShape, netPrecision, mode, blockSize, targetDevice) = this->GetParam();
+    auto inPrc = FuncTestUtils::PrecisionUtils::convertIE2nGraphPrc(netPrecision);
     auto params = ngraph::builder::makeParams(inPrc, {inShape});
     auto paramOuts = ngraph::helpers::convert2OutputVector(ngraph::helpers::castOps2Nodes<ngraph::op::Parameter>(params));
     auto s2d = ngraph::builder::makeDepthToSpace(paramOuts[0], mode, blockSize);
