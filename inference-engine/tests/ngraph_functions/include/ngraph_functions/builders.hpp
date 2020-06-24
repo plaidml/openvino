@@ -96,6 +96,11 @@ std::shared_ptr<ngraph::Node> makeGroupConvolutionBackpropData(const ngraph::Out
                                                                bool addBiases = false,
                                                                const std::vector<float> &biasesWeights = {});
 
+std::shared_ptr<Node> makeFakeQuantize(const ngraph::Output<Node> &in,
+                                       const element::Type &type,
+                                       std::size_t levels,
+                                       std::vector<size_t> constShapes);
+
 std::shared_ptr<ngraph::Node> makeMVN(const ngraph::Output<Node> &in,
                                       bool acrossChannels,
                                       bool normalizeVariance,
