@@ -31,7 +31,7 @@ std::string MatMulTest::getTestCaseName(const testing::TestParamInfo<MatMulLayer
 void MatMulTest::SetUp() {
     InferenceEngine::SizeVector inputShape0;
     InferenceEngine::SizeVector inputShape1;
-    auto netPrecision = InferenceEngine::Precision::UNSPECIFIED;
+    //auto netPrecision = InferenceEngine::Precision::UNSPECIFIED;
     std::tie(netPrecision, inputShape0, inputShape1, targetDevice) = this->GetParam();
     auto ngPrc = FuncTestUtils::PrecisionUtils::convertIE2nGraphPrc(netPrecision);
     auto params = ngraph::builder::makeParams(ngPrc, {inputShape0, inputShape1});
