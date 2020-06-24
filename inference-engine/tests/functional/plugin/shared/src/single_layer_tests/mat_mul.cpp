@@ -37,7 +37,7 @@ void MatMulTest::SetUp() {
     auto params = ngraph::builder::makeParams(ngPrc, {inputShape0, inputShape1});
     auto paramOuts = ngraph::helpers::convert2OutputVector(
             ngraph::helpers::castOps2Nodes<ngraph::op::Parameter>(params));
-    auto MatMul = std::dynamic_pointer_cast<ngraph::opset1::MatMul>(
+    auto MatMul = std::dynamic_pointer_cast<ngraph::opset1::MatfasdMul>(
             ngraph::builder::makeMatMul(paramOuts[0], paramOuts[1]));
     ngraph::ResultVector results{std::make_shared<ngraph::opset1::Result>(MatMul)};
     fnPtr = std::make_shared<ngraph::Function>(results, params, "MatMudsfalkjdafl");
