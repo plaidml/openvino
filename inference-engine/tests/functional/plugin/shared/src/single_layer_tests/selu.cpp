@@ -34,7 +34,10 @@ std::string SeluLayerTest::getTestCaseName(testing::TestParamInfo<seluParams> ob
     result << "L_" << lambda << "_";
     result << "netPRC_" << netPrecision.name() << "_";
     result << "targetDevice_" << targetDevice;
-    return result.str();
+    auto string = result.str();
+    std::replace(string.begin(), string.end(), '-', '_');
+    std::replace(string.begin(), string.end(), '.', '_');
+    return string;
 }
 
 void SeluLayerTest::SetUp() {
@@ -51,9 +54,9 @@ void SeluLayerTest::SetUp() {
     alpha_vec.push_back(alpha);
     lambda_vec.push_back(lambda);
 
-    const auto AlphaOp = std::make_shared<ngraph::opset1::Constant>(ngraph::element::Type_t::i64, ngraph::Shape{1},
+    const auto AlphaOp = std::make_shared<ngraph::opset1::Constant>(ngraph::element::Type_t::f32, ngraph::Shape{1},
                                                                       alpha_vec);
-    const auto LambdaOp = std::make_shared<ngraph::opset1::Constant>(ngraph::element::Type_t::i64, ngraph::Shape{1},
+    const auto LambdaOp = std::make_shared<ngraph::opset1::Constant>(ngraph::element::Type_t::f32, ngraph::Shape{1},
                                                                        lambda_vec);
     const auto selu = std::make_shared<ngraph::opset1::Selu>(paramOuts.at(0), AlphaOp, LambdaOp);
 
