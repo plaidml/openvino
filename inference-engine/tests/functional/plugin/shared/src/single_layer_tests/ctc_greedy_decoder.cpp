@@ -36,10 +36,10 @@ std::string CTCGreedyDecoderLayerTest::getTestCaseName(
     std::ostringstream result;
     const char separator = '_';
 
-    result << "IS="     << CommonTestUtils::vec2str(inputShapes) << separator;
-    result << "netPRC=" << netPrecision.name() << separator;
-    result << "merge_repeated=" << std::boolalpha << mergeRepeated << separator;
-    result << "targetDevice=" << targetDevice;
+    result << "IS_"     << CommonTestUtils::vec2str(inputShapes) << separator;
+    result << "netPRC_" << netPrecision.name() << separator;
+    result << "merge_repeated_" << std::boolalpha << mergeRepeated << separator;
+    result << "targetDevice_" << targetDevice;
 
     return result.str();
 }

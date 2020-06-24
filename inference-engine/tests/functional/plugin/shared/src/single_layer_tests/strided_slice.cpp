@@ -29,17 +29,17 @@ std::string StridedSliceLayerTest::getTestCaseName(const testing::TestParamInfo<
     std::tie(inputShape, begin, end, stride, begin_mask, end_mask, new_axis_mask, shrink_mask, ellipsis_mask, netPrc,
              targetName) = obj.param;
     std::ostringstream result;
-    result << "inShape=" << CommonTestUtils::vec2str(inputShape) << "_";
-    result << "netPRC=" << netPrc.name() << "_";
-    result << "begin=" << CommonTestUtils::vec2str(begin) << "_";
-    result << "end=" << CommonTestUtils::vec2str(end) << "_";
-    result << "stride=" << CommonTestUtils::vec2str(stride) << "_";
-    result << "begin_m=" << CommonTestUtils::vec2str(begin_mask) << "_";
-    result << "end_m=" << CommonTestUtils::vec2str(end_mask) << "_";
-    result << "new_axis_m=" << CommonTestUtils::vec2str(new_axis_mask) << "_";
-    result << "shrink_m=" << CommonTestUtils::vec2str(shrink_mask) << "_";
-    result << "ellipsis_m=" << CommonTestUtils::vec2str(ellipsis_mask) << "_";
-    result << "targetDevice=" << targetName << "_";
+    result << "inShape_" << CommonTestUtils::vec2str(inputShape) << "_";
+    result << "netPRC_" << netPrc.name() << "_";
+    result << "begin_" << CommonTestUtils::vec2str(begin) << "_";
+    result << "end_" << CommonTestUtils::vec2str(end) << "_";
+    result << "stride_" << CommonTestUtils::vec2str(stride) << "_";
+    result << "begin_m_" << CommonTestUtils::vec2str(begin_mask) << "_";
+    result << "end_m_" << CommonTestUtils::vec2str(end_mask) << "_";
+    result << "new_axis_m_" << CommonTestUtils::vec2str(new_axis_mask) << "_";
+    result << "shrink_m_" << CommonTestUtils::vec2str(shrink_mask) << "_";
+    result << "ellipsis_m_" << CommonTestUtils::vec2str(ellipsis_mask) << "_";
+    result << "targetDevice_" << targetName << "_";
     return result.str();
 }
 

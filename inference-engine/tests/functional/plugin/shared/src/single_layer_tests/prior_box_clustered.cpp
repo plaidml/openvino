@@ -48,21 +48,21 @@ std::string PriorBoxClusteredLayerTest::getTestCaseName(const testing::TestParam
     std::ostringstream result;
     const char separator = '_';
 
-    result << "IS="      << CommonTestUtils::vec2str(inputShapes) << separator;
-    result << "imageS="  << CommonTestUtils::vec2str(imageShapes) << separator;
-    result << "netPRC="  << netPrecision.name()   << separator;
-    result << "widths="  << CommonTestUtils::vec2str(widths)  << separator;
-    result << "heights=" << CommonTestUtils::vec2str(heights) << separator;
-    result << "variances=";
+    result << "IS_"      << CommonTestUtils::vec2str(inputShapes) << separator;
+    result << "imageS_"  << CommonTestUtils::vec2str(imageShapes) << separator;
+    result << "netPRC_"  << netPrecision.name()   << separator;
+    result << "widths_"  << CommonTestUtils::vec2str(widths)  << separator;
+    result << "heights_" << CommonTestUtils::vec2str(heights) << separator;
+    result << "variances_";
     if (variances.empty())
         result << "()" << separator;
     else
         result << CommonTestUtils::vec2str(variances) << separator;
-    result << "stepWidth="  << step_width  << separator;
-    result << "stepHeight=" << step_height << separator;
-    result << "offset="     << offset      << separator;
-    result << "clip=" << std::boolalpha << clip << separator;
-    result << "targetDevice=" << targetDevice;
+    result << "stepWidth_"  << step_width  << separator;
+    result << "stepHeight_" << step_height << separator;
+    result << "offset_"     << offset      << separator;
+    result << "clip_" << std::boolalpha << clip << separator;
+    result << "targetDevice_" << targetDevice;
     return result.str();
 }
 
