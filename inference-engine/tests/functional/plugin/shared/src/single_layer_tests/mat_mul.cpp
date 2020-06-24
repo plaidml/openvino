@@ -40,7 +40,7 @@ void MatMulTest::SetUp() {
     auto MatMul = std::dynamic_pointer_cast<ngraph::opset1::MatMul>(
             ngraph::builder::makeMatMul(paramOuts[0], paramOuts[1]));
     ngraph::ResultVector results{std::make_shared<ngraph::opset1::Result>(MatMul)};
-    fnPtr = std::make_shared<ngraph::Function>(results, params, "MatMul");
+    fnPtr = std::make_shared<ngraph::Function>(results, params, "MatMudsfalkjdafl");
 }
 
 TEST_P(MatMulTest, CompareWithRefs) {
