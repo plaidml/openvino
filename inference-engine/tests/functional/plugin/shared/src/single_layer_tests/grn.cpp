@@ -35,10 +35,10 @@ std::string GrnLayerTest::getTestCaseName(const testing::TestParamInfo<grnParams
     std::ostringstream result;
     const char separator = '_';
 
-    result << "IS="     << CommonTestUtils::vec2str(inputShapes) << separator;
-    result << "netPRC=" << netPrecision.name() << separator;
-    result << "bias="   << bias << separator;
-    result << "targetDevice=" << targetDevice;
+    result << "IS_"     << CommonTestUtils::vec2str(inputShapes) << separator;
+    result << "netPRC_" << netPrecision.name() << separator;
+    result << "bias_"   << bias << separator;
+    result << "targetDevice_" << targetDevice;
     return result.str();
 }
 

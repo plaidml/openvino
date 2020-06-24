@@ -21,10 +21,10 @@ std::string MatMulTest::getTestCaseName(const testing::TestParamInfo<MatMulLayer
     std::tie(netPrecision, inputShape0, inputShape1, targetDevice) = obj.param;
 
     std::ostringstream result;
-    result << "IS0=" << CommonTestUtils::vec2str(inputShape0) << "_";
-    result << "IS1=" << CommonTestUtils::vec2str(inputShape1) << "_";
-    result << "netPRC=" << netPrecision.name() << "_";
-    result << "targetDevice=" << targetDevice;
+    result << "IS0_" << CommonTestUtils::vec2str(inputShape0) << "_";
+    result << "IS1_" << CommonTestUtils::vec2str(inputShape1) << "_";
+    result << "netPRC_" << netPrecision.name() << "_";
+    result << "targetDevice_" << targetDevice;
     return result.str();
 }
 

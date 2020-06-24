@@ -25,9 +25,9 @@ std::string EqualLayerTest::getTestCaseName(const testing::TestParamInfo<EqualTe
     std::tie(inputShapes, netPrecision, targetDevice) = obj.param;
 
     std::ostringstream result;
-    result << "IS=" << CommonTestUtils::vec2str(inputShapes) << "_";
-    result << "netPrc=" << netPrecision.name() << "_";
-    result << "targetDevice=" << targetDevice;
+    result << "IS_" << CommonTestUtils::vec2str(inputShapes) << "_";
+    result << "netPrc_" << netPrecision.name() << "_";
+    result << "targetDevice_" << targetDevice;
 
     return result.str();
 }
