@@ -40,7 +40,10 @@ std::string StridedSliceLayerTest::getTestCaseName(const testing::TestParamInfo<
     result << "shrink_m_" << CommonTestUtils::vec2str(shrink_mask) << "_";
     result << "ellipsis_m_" << CommonTestUtils::vec2str(ellipsis_mask) << "_";
     result << "targetDevice_" << targetName << "_";
-    return result.str();
+    auto string = result.str();
+    std::replace(string.begin(), string.end(), '-', '_');
+    std::replace(string.begin(), string.end(), '.', '_');
+    return string;
 }
 
 void StridedSliceLayerTest::SetUp() {
@@ -57,11 +60,11 @@ void StridedSliceLayerTest::SetUp() {
     auto ss = ngraph::builder::makeStridedSlice(paramOuts[0], begin, end, stride, ngPrc, begin_mask, end_mask,
                                                 new_axis_mask, shrink_mask, ellipsis_mask);
     ngraph::ResultVector results{std::make_shared<ngraph::opset1::Result>(ss)};
-    function = std::make_shared<ngraph::Function>(results, params, "StridedSlice");
+    fnPtr = std::make_shared<ngraph::Function>(results, params, "StridedSlice");
 }
 
 TEST_P(StridedSliceLayerTest, CompareWithRefs) {
-    Run();
+    inferAndValidate();
 }
 
 }  // namespace LayerTestsDefinitions
