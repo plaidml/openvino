@@ -52,7 +52,7 @@ public:
         }
         setNetInOutPrecision(cnnNet, inputPrecision);
 
-        IE_ASSERT(1=2);
+        IE_ASSERT(1==2);
 
         // Get Core from cache
         auto ie = PluginCache::get().ie();
@@ -61,7 +61,7 @@ public:
         // Create InferRequest
         auto req = execNet.CreateInferRequest();
 
-        IE_ASSERT(1=3);
+        IE_ASSERT(1==3);
 
         // Create and set input blobs
         std::vector<InferenceEngine::Blob::Ptr> inBlobs;
@@ -71,7 +71,7 @@ public:
             inBlobs.push_back(currentBlob);
         }
 
-        IE_ASSERT(1=4);
+        IE_ASSERT(1==4);
 
         // Create input vector with raw data for reference calculation
         std::vector<const float *> inRawData;
