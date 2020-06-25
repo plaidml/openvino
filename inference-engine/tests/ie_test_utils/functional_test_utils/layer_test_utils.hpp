@@ -43,7 +43,6 @@ public:
     std::shared_ptr<ngraph::Function> fnPtr;
 
     void inline inferAndValidate() {
-        //IE_ASSERT(1 == 2);
         // Create CNNNetwork from ngrpah::Function
         InferenceEngine::CNNNetwork cnnNet(fnPtr);
         // Set target input Precisions for the network
@@ -53,12 +52,16 @@ public:
         }
         setNetInOutPrecision(cnnNet, inputPrecision);
 
+        IE_ASSERT(1=2);
+
         // Get Core from cache
         auto ie = PluginCache::get().ie();
         // Load CNNNetwork to target plugins
         auto execNet = ie->LoadNetwork(cnnNet, targetDevice);
         // Create InferRequest
         auto req = execNet.CreateInferRequest();
+
+        IE_ASSERT(1=3);
 
         // Create and set input blobs
         std::vector<InferenceEngine::Blob::Ptr> inBlobs;
@@ -68,7 +71,7 @@ public:
             inBlobs.push_back(currentBlob);
         }
 
-        IE_ASSERT(1 == 2);
+        IE_ASSERT(1=4);
 
         // Create input vector with raw data for reference calculation
         std::vector<const float *> inRawData;
@@ -94,8 +97,6 @@ public:
                                     std::multiplies<float>()));
         }
 
-        IE_ASSERT(1 == 3);
-
         // Convert initial ngraph::Function to fp32 for references calculation
         convertFuncToF32(fnPtr, netPrecision);;
         // Run ngraph Interpreter backend to calculate references
@@ -106,8 +107,6 @@ public:
 
         // Deallocate ngraph::Function pointer
         fnPtr.reset();
-
-        IE_ASSERT(1 == 4);
     }
 
 protected:
