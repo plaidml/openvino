@@ -4,26 +4,26 @@
 
 #pragma once
 
-#include <memory>
-#include <string>
 #include <tuple>
+#include <string>
 #include <vector>
+#include <map>
+#include <memory>
+#include "ngraph_functions/builders.hpp"
+#include "ngraph_functions/utils/ngraph_helpers.hpp"
 
 #include "functional_test_utils/layer_test_utils.hpp"
 
-typedef std::tuple<
-        InferenceEngine::Precision,
-        InferenceEngine::SizeVector,
-        InferenceEngine::SizeVector,
-        std::string
-> MatMulLayerTestParamsSet;
-
 namespace LayerTestsDefinitions {
+    typedef std::tuple<
+            InferenceEngine::Precision,         // Network precision
+            std::vector<std::vector<size_t>>,   // Input shapes
+            std::string                        // Device name
+            > matmulParams;
 
-class MatMulTest : public LayerTestsUtils::LayerTestsCommonClass<MatMulLayerTestParamsSet>  {
+class MatMulLayerTest : public LayerTestsUtils::LayerTestsCommonClass<matmulParams> {
 public:
-    static std::string getTestCaseName(const testing::TestParamInfo<MatMulLayerTestParamsSet> &obj);
-
+    static std::string getTestCaseName(testing::TestParamInfo<matmulParams> obj);
 protected:
     void SetUp() override;
 };

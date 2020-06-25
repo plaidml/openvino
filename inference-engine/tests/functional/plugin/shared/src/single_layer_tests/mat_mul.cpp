@@ -2,49 +2,47 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-#include <functional>
-#include <memory>
-#include <string>
 #include <tuple>
+#include <string>
 #include <vector>
+#include <memory>
+#include <map>
+#include <ie_core.hpp>
 
+#include "functional_test_utils/blob_utils.hpp"
+#include "functional_test_utils/layer_test_utils.hpp"
+#include "common_test_utils/common_utils.hpp"
 #include "single_layer_tests/mat_mul.hpp"
-#include "ngraph_functions/builders.hpp"
 
 namespace LayerTestsDefinitions {
 
-std::string MatMulTest::getTestCaseName(const testing::TestParamInfo<MatMulLayerTestParamsSet> &obj) {
+std::string MatMulLayerTest::getTestCaseName(testing::TestParamInfo<matmulParams> obj) {
     InferenceEngine::Precision netPrecision;
-    InferenceEngine::SizeVector inputShape0;
-    InferenceEngine::SizeVector inputShape1;
+    std::vector<InferenceEngine::SizeVector> inputShapes;
     std::string targetDevice;
-    std::tie(netPrecision, inputShape0, inputShape1, targetDevice) = obj.param;
-
+    std::map<std::string, std::string> config;
+    std::tie(netPrecision, inputShapes, targetDevice) = obj.param;
     std::ostringstream result;
-    result << "IS0_" << CommonTestUtils::vec2str(inputShape0) << "_";
-    result << "IS1_" << CommonTestUtils::vec2str(inputShape1) << "_";
+    result << "IS_" << CommonTestUtils::vec2str(inputShapes) << "_";
     result << "netPRC_" << netPrecision.name() << "_";
     result << "targetDevice_" << targetDevice;
     return result.str();
 }
 
-void MatMulTest::SetUp() {
-    InferenceEngine::SizeVector inputShape0;
-    InferenceEngine::SizeVector inputShape1;
-    //auto netPrecision = InferenceEngine::Precision::UNSPECIFIED;
-    std::tie(netPrecision, inputShape0, inputShape1, targetDevice) = this->GetParam();
+void MatMulLayerTest::SetUp() {
+    std::vector<InferenceEngine::SizeVector> inputShapes;
+    std::tie(netPrecision, inputShapes, targetDevice) = this->GetParam();
     auto ngPrc = FuncTestUtils::PrecisionUtils::convertIE2nGraphPrc(netPrecision);
-    auto params = ngraph::builder::makeParams(ngPrc, {inputShape0, inputShape1});
-    auto paramOuts = ngraph::helpers::convert2OutputVector(
-            ngraph::helpers::castOps2Nodes<ngraph::op::Parameter>(params));
-    auto MatMul = std::dynamic_pointer_cast<ngraph::opset1::MatMul>(
-            ngraph::builder::makeMatMul(paramOuts[0], paramOuts[1]));
-    ngraph::ResultVector results{std::make_shared<ngraph::opset1::Result>(MatMul)};
-    fnPtr = std::make_shared<ngraph::Function>(results, params, "MatMul");
+    auto paramsIn = ngraph::builder::makeParams(ngPrc, {inputShapes});
+    auto paramIn = ngraph::helpers::convert2OutputVector(
+            ngraph::helpers::castOps2Nodes<ngraph::op::Parameter>(paramsIn));
+    IE_ASSERT(paramIn.size() == 2);
+    auto matmul = std::make_shared<ngraph::opset1::MatMul>(paramsIn[0], paramsIn[1]);
+    ngraph::ResultVector results{std::make_shared<ngraph::opset1::Result>(matmul)};
+    fnPtr = std::make_shared<ngraph::Function>(results, paramsIn, "MatMul");
 }
 
-TEST_P(MatMulTest, CompareWithRefs) {
+TEST_P(MatMulLayerTest, CompareWithRefs) {
     inferAndValidate();
-};
-
+}
 }  // namespace LayerTestsDefinitions
