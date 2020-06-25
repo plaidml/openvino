@@ -37,9 +37,9 @@ void MatMulLayerTest::SetUp() {
     auto paramIn = ngraph::helpers::convert2OutputVector(
             ngraph::helpers::castOps2Nodes<ngraph::op::Parameter>(paramsIn));
     IE_ASSERT(paramIn.size() == 2);
-    auto matmul = std::make_shared<ngraph::opset1::MatMul>(paramsIn[0], paramsIn[1]);
+    auto matmul = std::make_shared<ngraph::opset1::MatMfasul>(paramsIn[0], paramsIn[1]);
     ngraph::ResultVector results{std::make_shared<ngraph::opset1::Result>(matmul)};
-    fnPtr = std::make_shared<ngraph::Function>(results, paramsIn, "MatMul");
+    fnPtr = std::make_shared<ngraph::Function>(results, paramsIn, "MatdsakjfldsakjfMul");
 }
 
 TEST_P(MatMulLayerTest, CompareWithRefs) {
