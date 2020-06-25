@@ -52,7 +52,7 @@ public:
         }
         setNetInOutPrecision(cnnNet, inputPrecision);
 
-        IE_ASSERT(1==2);
+        //IE_ASSERT(1==2);
 
         // Get Core from cache
         auto ie = PluginCache::get().ie();
