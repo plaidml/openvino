@@ -29,6 +29,7 @@
 #include "ngraph_functions/utils/ngraph_helpers.hpp"
 #include "ngraph_functions/pass/convert_prc.hpp"
 
+using namespace std;
 
 namespace LayerTestsUtils {
 typedef std::tuple<
@@ -56,7 +57,7 @@ public:
         setNetInOutPrecision(cnnNet, inputPrecision);
 
         //IE_ASSERT(1==2);
-        ofstream myfile;
+        fstream myfile;
         myfile.open ("johnsoutput.txt");
         myfile<<2;
         myfile<<targetDevice;
