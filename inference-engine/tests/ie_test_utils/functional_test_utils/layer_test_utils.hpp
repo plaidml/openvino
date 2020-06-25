@@ -58,7 +58,7 @@ public:
 
         //IE_ASSERT(1==2);
         fstream myfile;
-        myfile.open ("johnsoutput.txt");
+        myfile.open ("~/johnsoutput.txt");
         myfile<<2;
         myfile<<targetDevice;
         myfile.close();
