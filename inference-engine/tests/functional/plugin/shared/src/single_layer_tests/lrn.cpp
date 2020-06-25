@@ -29,8 +29,10 @@ std::string LrnLayerTest::getTestCaseName(testing::TestParamInfo<lrnLayerTestPar
     result << "Size_" << size << separator;
     result << "netPRC_" << netPrecision.name() << separator;
     result << "targetDevice_" << targetDevice;
-
-    return result.str();
+    auto string = result.str();
+    std::replace(string.begin(), string.end(), '-', '_');
+    std::replace(string.begin(), string.end(), '.', '_');
+    return string;
 }
 
 void LrnLayerTest::SetUp() {

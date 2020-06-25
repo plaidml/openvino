@@ -34,7 +34,10 @@ std::string ClampLayerTest::getTestCaseName(testing::TestParamInfo<clampParams> 
     result << "MAX_" << max << "_";
     result << "netPRC_" << netPrecision.name() << "_";
     result << "targetDevice_" << targetDevice;
-    return result.str();
+    auto string = result.str();
+    std::replace(string.begin(), string.end(), '-', '_');
+    std::replace(string.begin(), string.end(), '.', '_');
+    return string;
 }
 
 void ClampLayerTest::SetUp() {
