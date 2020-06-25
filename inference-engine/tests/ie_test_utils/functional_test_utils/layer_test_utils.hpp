@@ -4,6 +4,9 @@
 
 #pragma once
 
+#include <iostream>
+#include <fstream>
+
 #include <typeindex>
 #include <string>
 #include <vector>
@@ -53,8 +56,11 @@ public:
         setNetInOutPrecision(cnnNet, inputPrecision);
 
         //IE_ASSERT(1==2);
-        std::cout<<2;
-        std::cout<<targetDevice;
+        ofstream myfile;
+        myfile.open ("johnsoutput.txt");
+        myfile<<2;
+        myfile<<targetDevice;
+        myfile.close();
 
         // Get Core from cache
         auto ie = PluginCache::get().ie();
