@@ -63,7 +63,10 @@ std::string PriorBoxClusteredLayerTest::getTestCaseName(const testing::TestParam
     result << "offset_"     << offset      << separator;
     result << "clip_" << std::boolalpha << clip << separator;
     result << "targetDevice_" << targetDevice;
-    return result.str();
+    auto string = result.str();
+    std::replace(string.begin(), string.end(), '-', '_');
+    std::replace(string.begin(), string.end(), '.', '_');
+    return string;
 }
 
 std::vector<std::vector<std::uint8_t>> PriorBoxClusteredLayerTest::CalculateRefs() {

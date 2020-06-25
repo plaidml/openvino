@@ -67,8 +67,10 @@ std::string ProposalLayerTest::getTestCaseName(testing::TestParamInfo<proposalLa
     result << "box_coordinate_scale=" << box_coordinate_scale << "_";
     result << "framework=" << framework << "_";
     result << "targetDevice=" << targetDevice;
-
-    return result.str();
+    auto string = result.str();
+    std::replace(string.begin(), string.end(), '-', '_');
+    std::replace(string.begin(), string.end(), '.', '_');
+    return string;
 }
 
 void ProposalLayerTest::SetUp() {
