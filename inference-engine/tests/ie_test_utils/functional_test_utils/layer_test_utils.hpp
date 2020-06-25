@@ -4,9 +4,6 @@
 
 #pragma once
 
-#include <iostream>
-#include <fstream>
-
 #include <typeindex>
 #include <string>
 #include <vector>
@@ -29,7 +26,6 @@
 #include "ngraph_functions/utils/ngraph_helpers.hpp"
 #include "ngraph_functions/pass/convert_prc.hpp"
 
-using namespace std;
 
 namespace LayerTestsUtils {
 typedef std::tuple<
@@ -56,21 +52,12 @@ public:
         }
         setNetInOutPrecision(cnnNet, inputPrecision);
 
-        //IE_ASSERT(1==2);
-        fstream myfile;
-        myfile.open ("~/johnsoutput.txt");
-        myfile<<2;
-        myfile<<targetDevice;
-        myfile.close();
-
         // Get Core from cache
         auto ie = PluginCache::get().ie();
         // Load CNNNetwork to target plugins
         auto execNet = ie->LoadNetwork(cnnNet, targetDevice);
         // Create InferRequest
         auto req = execNet.CreateInferRequest();
-
-        IE_ASSERT(1==3);
 
         // Create and set input blobs
         std::vector<InferenceEngine::Blob::Ptr> inBlobs;
@@ -79,8 +66,6 @@ public:
             req.SetBlob(inputItem.first, currentBlob);
             inBlobs.push_back(currentBlob);
         }
-
-        IE_ASSERT(1==4);
 
         // Create input vector with raw data for reference calculation
         std::vector<const float *> inRawData;
