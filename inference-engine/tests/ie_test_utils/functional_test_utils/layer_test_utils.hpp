@@ -53,6 +53,8 @@ public:
         setNetInOutPrecision(cnnNet, inputPrecision);
 
         //IE_ASSERT(1==2);
+        std::cout<<2;
+        std::cout<<targetDevice;
 
         // Get Core from cache
         auto ie = PluginCache::get().ie();
