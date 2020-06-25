@@ -34,7 +34,10 @@ std::string HardSigmoidLayerTest::getTestCaseName(testing::TestParamInfo<hardSig
     result << "B_" << beta << "_";
     result << "netPRC_" << netPrecision.name() << "_";
     result << "targetDevice_" << targetDevice;
-    return result.str();
+    auto string = result.str();
+    std::replace(string.begin(), string.end(), '-', '_');
+    std::replace(string.begin(), string.end(), '.', '_');
+    return string;
 }
 
 void HardSigmoidLayerTest::SetUp() {

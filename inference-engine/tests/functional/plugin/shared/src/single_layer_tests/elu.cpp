@@ -32,7 +32,10 @@ std::string EluLayerTest::getTestCaseName(testing::TestParamInfo<eluParams> obj)
     result << "A_" << alpha << "_";
     result << "netPRC_" << netPrecision.name() << "_";
     result << "targetDevice_" << targetDevice;
-    return result.str();
+    auto string = result.str();
+    std::replace(string.begin(), string.end(), '-', '_');
+    std::replace(string.begin(), string.end(), '.', '_');
+    return string;
 }
 
 void EluLayerTest::SetUp() {

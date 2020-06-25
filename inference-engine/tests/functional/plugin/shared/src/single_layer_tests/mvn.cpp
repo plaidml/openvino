@@ -35,7 +35,10 @@ std::string MvnLayerTest::getTestCaseName(testing::TestParamInfo<mvnParams> obj)
     result << "NormalizeVariance_" << (normalizeVariance ? "TRUE" : "FALSE") << "_";
     result << "EpsilonTimes1000000000_" << eps * 1000000000 << "_";
     result << "TargetDevice_" << targetDevice;
-    return result.str();
+    auto string = result.str();
+    std::replace(string.begin(), string.end(), '-', '_');
+    std::replace(string.begin(), string.end(), '.', '_');
+    return string;
 }
 
 void MvnLayerTest::SetUp() {
