@@ -4,17 +4,15 @@
 
 #pragma once
 
-
 #include <map>
 #include <memory>
 #include <string>
 #include <tuple>
 #include <vector>
 
+#include "functional_test_utils/layer_test_utils.hpp"
 #include "ngraph_functions/builders.hpp"
 #include "ngraph_functions/utils/ngraph_helpers.hpp"
-
-#include "functional_test_utils/layer_test_utils.hpp"
 
 namespace LayerTestsDefinitions {
     typedef std::tuple<
