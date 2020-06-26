@@ -4,11 +4,13 @@
 
 #pragma once
 
-#include <tuple>
-#include <string>
-#include <vector>
+
 #include <map>
 #include <memory>
+#include <string>
+#include <tuple>
+#include <vector>
+
 #include "ngraph_functions/builders.hpp"
 #include "ngraph_functions/utils/ngraph_helpers.hpp"
 
@@ -23,7 +25,7 @@ namespace LayerTestsDefinitions {
 
 class MatMulLayerTest : public LayerTestsUtils::LayerTestsCommonClass<matmulParams> {
 public:
-    static std::string getTestCaseName(testing::TestParamInfo<matmulParams> obj);
+    static std::string getTestCaseName(const testing::TestParamInfo<MatMulLayerTestParamsSet> &obj);
 protected:
     void SetUp() override;
 };
