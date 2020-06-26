@@ -21,11 +21,11 @@ namespace LayerTestsDefinitions {
             InferenceEngine::Precision,         // Network precision
             std::vector<std::vector<size_t>>,   // Input shapes
             std::string                        // Device name
-            > MatMulLayerTestParamsSet;
+            > matmulParams;
 
-class MatMulLayerTest : public LayerTestsUtils::LayerTestsCommonClass<MatMulLayerTestParamsSet> {
+class MatMulLayerTest : public LayerTestsUtils::LayerTestsCommonClass<matmulParams> {
 public:
-    static std::string getTestCaseName(const testing::TestParamInfo<MatMulLayerTestParamsSet> &obj);
+    static std::string getTestCaseName(testing::TestParamInfo<matmulParams> obj);
 protected:
     void SetUp() override;
 };
