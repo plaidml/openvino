@@ -23,7 +23,7 @@ namespace LayerTestsDefinitions {
             std::string                        // Device name
             > matmulParams;
 
-class MatMulLayerTest : public LayerTestsUtils::LayerTestsCommonClass<matmulParams> {
+class MatMulLayerTest : public LayerTestsUtils::LayerTestsCommonClass<MatMulLayerTestParamsSet> {
 public:
     static std::string getTestCaseName(const testing::TestParamInfo<MatMulLayerTestParamsSet> &obj);
 protected:
