@@ -25,7 +25,7 @@ namespace LayerTestsDefinitions {
 
 class MatMulLayerTest : public LayerTestsUtils::LayerTestsCommonClass<matmulParams> {
 public:
-    static std::string getTestCaseName(testing::TestParamInfo<matmulParams> obj);
+    static std::string getTestCaseName(const testing::TestParamInfo<matmulParams> &obj);
 protected:
     void SetUp() override;
 };
