@@ -21,7 +21,7 @@ namespace LayerTestsDefinitions {
             InferenceEngine::Precision,         // Network precision
             std::vector<std::vector<size_t>>,   // Input shapes
             std::string                        // Device name
-            > matmulParams;
+            > MatMulLayerTestParamsSet;
 
 class MatMulLayerTest : public LayerTestsUtils::LayerTestsCommonClass<MatMulLayerTestParamsSet> {
 public:
