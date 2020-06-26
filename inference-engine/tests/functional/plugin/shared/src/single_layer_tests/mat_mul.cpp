@@ -2,12 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-#include <tuple>
-#include <string>
-#include <vector>
-#include <memory>
-#include <map>
 #include <ie_core.hpp>
+#include <map>
+#include <memory>
+#include <string>
+#include <tuple>
+#include <vector>
 
 #include "functional_test_utils/blob_utils.hpp"
 #include "functional_test_utils/layer_test_utils.hpp"
