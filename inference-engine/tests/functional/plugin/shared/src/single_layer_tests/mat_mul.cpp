@@ -16,7 +16,7 @@
 
 namespace LayerTestsDefinitions {
 
-std::string MatMulLayerTest::getTestCaseName(testing::TestParamInfo<matmulParams> obj) {
+std::string MatMulLayerTest::getTestCaseName(testing::TestParamInfo<MatMulLayerTestParamsSet> obj) {
     InferenceEngine::Precision netPrecision;
     std::vector<InferenceEngine::SizeVector> inputShapes;
     std::string targetDevice;
