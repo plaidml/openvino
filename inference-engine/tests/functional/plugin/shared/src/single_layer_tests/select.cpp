@@ -23,14 +23,14 @@ namespace LayerTestsDefinitions {
 
     std::string SelectLayerTest::getTestCaseName(const testing::TestParamInfo<selectTestParams> &obj) {
         std::vector<std::vector<size_t>> dataShapes(3);
-        InferenceEngine::Precision dataType;
+        InferenceEngine::Precision netPrecision;
         ngraph::op::AutoBroadcastSpec broadcast;
         std::string targetDevice;
-        std::tie(dataShapes, dataType, broadcast, targetDevice) = obj.param;
+        std::tie(dataShapes, netPrecision, broadcast, targetDevice) = obj.param;
         std::ostringstream result;
         result << "COND_BOOL_" << CommonTestUtils::vec2str(dataShapes[CONDITION]);
-        result << "_THEN_" << dataType.name() << "_" << CommonTestUtils::vec2str(dataShapes[THEN]);
-        result << "_ELSE_" << dataType.name() << "_" << CommonTestUtils::vec2str(dataShapes[ELSE]);
+        result << "_THEN_" << netPrecision.name() << "_" << CommonTestUtils::vec2str(dataShapes[THEN]);
+        result << "_ELSE_" << netPrecision.name() << "_" << CommonTestUtils::vec2str(dataShapes[ELSE]);
         result << "_" << broadcast.m_type;
         result << "_targetDevice_" << targetDevice;
         return result.str();
@@ -39,12 +39,12 @@ namespace LayerTestsDefinitions {
     void SelectLayerTest::SetUp() {
         std::vector<std::vector<size_t>> inputShapes(numOfInputs);
         ngraph::op::AutoBroadcastSpec broadcast;
-        std::tie(inputShapes, inputPrecision, broadcast, targetDevice) = this->GetParam();
+        std::tie(inputShapes, netPrecision, broadcast, targetDevice) = this->GetParam();
 
         ngraph::ParameterVector paramNodesVector;
         auto paramNode = std::make_shared<ngraph::opset1::Parameter>(ngraph::element::Type_t::boolean, ngraph::Shape(inputShapes[CONDITION]));
         paramNodesVector.push_back(paramNode);
-        auto inType = FuncTestUtils::PrecisionUtils::convertIE2nGraphPrc(inputPrecision);
+        auto inType = FuncTestUtils::PrecisionUtils::convertIE2nGraphPrc(netPrecision);
         for (size_t i = 1; i < inputShapes.size(); i++) {
             paramNode = std::make_shared<ngraph::opset1::Parameter>(inType, ngraph::Shape(inputShapes[i]));
             paramNodesVector.push_back(paramNode);
