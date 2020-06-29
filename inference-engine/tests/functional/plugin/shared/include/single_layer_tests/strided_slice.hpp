@@ -26,8 +26,7 @@ using stridedSliceParamsTuple = typename std::tuple<
         InferenceEngine::Precision,        // Network precision
         std::string>;                      // Device name>;
 
-class StridedSliceLayerTest : public testing::WithParamInterface<stridedSliceParamsTuple>,
-                              public LayerTestsUtils::LayerTestsCommon {
+class StridedSliceLayerTest : public LayerTestsUtils::LayerTestsCommonClass<stridedSliceParamsTuple> {
 public:
     static std::string getTestCaseName(const testing::TestParamInfo<stridedSliceParamsTuple> &obj);
 

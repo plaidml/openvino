@@ -140,5 +140,17 @@ std::shared_ptr<ngraph::Node> makeSpaceToBatch(const ngraph::Output<Node> &in,
 std::shared_ptr<ngraph::Node> makeSpaceToDepth(const ngraph::Output<Node> &in,
                                                ngraph::opset1::SpaceToDepth::SpaceToDepthMode mode,
                                                size_t blockSize);
+
+std::shared_ptr<ngraph::Node> makeStridedSlice(const ngraph::Output<Node> &in,
+                                               const std::vector<int64_t> &begin,
+                                               const std::vector<int64_t> &end,
+                                               const std::vector<int64_t> &stride,
+                                               const element::Type &type,
+                                               const std::vector<int64_t> &begin_mask,
+                                               const std::vector<int64_t> &end_mask,
+                                               const std::vector<int64_t> &new_axis_mask = std::vector<int64_t>{},
+                                               const std::vector<int64_t> &shrink_mask = std::vector<int64_t>{},
+                                               const std::vector<int64_t> &ellipsis_mask = std::vector<int64_t>{});
+
 }  // namespace builder
 }  // namespace ngraph
