@@ -14,16 +14,21 @@
 #include "ngraph_functions/builders.hpp"
 #include "ngraph_functions/utils/ngraph_helpers.hpp"
 
+typedef std::tuple<
+        bool,
+        bool> transposeParams;
+typedef std::tuple<
+        transposeParams,
+        InferenceEngine::Precision,
+        InferenceEngine::SizeVector,
+        std::string> matmulParams;
+
 namespace LayerTestsDefinitions {
-    typedef std::tuple<
-            InferenceEngine::Precision,         // Network precision
-            std::vector<std::vector<size_t>>,   // Input shapes
-            std::string                        // Device name
-            > matmulParams;
 
 class MatMulLayerTest : public LayerTestsUtils::LayerTestsCommonClass<matmulParams> {
 public:
     static std::string getTestCaseName(const testing::TestParamInfo<matmulParams> &obj);
+
 protected:
     void SetUp() override;
 };

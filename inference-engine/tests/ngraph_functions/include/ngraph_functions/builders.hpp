@@ -116,7 +116,10 @@ std::shared_ptr<ngraph::Node> makeActivation(const ngraph::Output<Node> &in,
                                              ngraph::helpers::ActivationTypes activationType);
 
 std::shared_ptr<ngraph::Node> makeMatMul(const ngraph::Output<Node>& A,
-                                         const ngraph::Output<Node>& B);
+                                         const ngraph::Output<Node>& B,
+                                         const element::Type &type,
+                                         const bool &transpose_a,
+                                         const bool &transpose_b);
 
 std::shared_ptr<ngraph::Node> makeSelect(std::vector<ngraph::Output<Node>> &in,
                                          const ngraph::op::AutoBroadcastSpec& auto_broadcast);
