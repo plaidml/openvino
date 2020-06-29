@@ -20,7 +20,7 @@ typedef std::tuple<
 typedef std::tuple<
         transposeParams,
         InferenceEngine::Precision,
-        InferenceEngine::SizeVector,
+        std::vector<std::vector<size_t>>,
         std::string> matmulParams;
 
 namespace LayerTestsDefinitions {
