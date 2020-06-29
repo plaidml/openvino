@@ -46,8 +46,6 @@ void MatMulLayerTest::SetUp() {
     auto paramIn = ngraph::helpers::convert2OutputVector(
             ngraph::helpers::castOps2Nodes<ngraph::op::Parameter>(paramsIn));
     IE_ASSERT(paramIn.size() == 2);
-    //auto matmul = std::dynamic_pointer_cast<ngraph::opset1::MatMul>(
-    //        ngraph::builder::makeMatMul(paramIn[0], paramIn[1], ngPrc, transA, transB));
     auto matmul = std::make_shared<ngraph::opset1::MatMul>(paramsIn[0], paramsIn[1], transA, transB);
     ngraph::ResultVector results{std::make_shared<ngraph::opset1::Result>(matmul)};
     fnPtr = std::make_shared<ngraph::Function>(results, paramsIn, "MatMul");
