@@ -15,10 +15,10 @@
 namespace LayerTestsDefinitions {
 
 typedef std::tuple<
-    double,                         // epsilon
-    InferenceEngine::Precision,     // Net precision
-    std::vector<size_t>,            // Input shapes
-    std::string                     // Target device name
+    double,                                    // epsilon
+    InferenceEngine::Precision,                // Net precision
+    std::vector<InferenceEngine::SizeVector>,  // Input shapes
+    std::string                                // Target device name
 > batchNormInferenceParams;
 
 class BatchNormInferenceLayerTest : public LayerTestsUtils::LayerTestsCommonClass<batchNormInferenceParams> {

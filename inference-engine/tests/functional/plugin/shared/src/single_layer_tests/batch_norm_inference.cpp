@@ -24,7 +24,7 @@ namespace LayerTestsDefinitions {
 std::string BatchNormInferenceLayerTest::getTestCaseName(testing::TestParamInfo<batchNormInferenceParams> obj) {
     double epsilon;
     InferenceEngine::Precision netPrecision;
-    InferenceEngine::SizeVector inputShapes;
+    std::vector<InferenceEngine::SizeVector> inputShapes;
     std::string targetDevice;
     std::tie(epsilon, netPrecision, inputShapes, targetDevice) = obj.param;
     std::ostringstream result;
@@ -40,7 +40,7 @@ std::string BatchNormInferenceLayerTest::getTestCaseName(testing::TestParamInfo<
 
 void BatchNormInferenceLayerTest::SetUp() {
     double epsilon;
-    std::vector<size_t> inputShape;
+    std::vector<InferenceEngine::SizeVector> inputShape;
     std::tie(epsilon, netPrecision, inputShape, targetDevice) = this->GetParam();
     auto ngPrc = FuncTestUtils::PrecisionUtils::convertIE2nGraphPrc(netPrecision);
     auto params = ngraph::builder::makeParams(ngPrc, {inputShape});
