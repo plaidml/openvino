@@ -115,8 +115,8 @@ std::shared_ptr<ngraph::Node> makeActivation(const ngraph::Output<Node> &in,
                                              const element::Type &type,
                                              ngraph::helpers::ActivationTypes activationType);
 
-std::shared_ptr<ngraph::Node> makeMatMul(const ngraph::Output<Node>& A,
-                                         const ngraph::Output<Node>& B,
+std::shared_ptr<ngraph::Node> makeMatMul(const ngraph::Output<Node> &A,
+                                         const ngraph::Output<Node> &B,
                                          const element::Type &type,
                                          const bool &transpose_a,
                                          const bool &transpose_b);
