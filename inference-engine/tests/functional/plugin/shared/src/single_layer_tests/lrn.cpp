@@ -13,8 +13,8 @@
 namespace LayerTestsDefinitions {
 
 std::string LrnLayerTest::getTestCaseName(testing::TestParamInfo<lrnLayerTestParamsSet> obj) {
-    double alpha;
-    size_t beta, bias, size;
+    double alpha, beta, bias;
+    size_t size;
     InferenceEngine::Precision  netPrecision;
     std::vector<size_t> inputShapes;
     std::string targetDevice;
@@ -23,7 +23,7 @@ std::string LrnLayerTest::getTestCaseName(testing::TestParamInfo<lrnLayerTestPar
     std::ostringstream result;
     const char separator = '_';
     result << "IS_" << CommonTestUtils::vec2str(inputShapes) << separator;
-    result << "Alpha__in_ppm__" << alpha * 10e6 << separator;
+    result << "Alpha_" << alpha << separator;
     result << "Beta_" << beta << separator;
     result << "Bias_" << bias << separator;
     result << "Size_" << size << separator;
@@ -37,7 +37,8 @@ std::string LrnLayerTest::getTestCaseName(testing::TestParamInfo<lrnLayerTestPar
 
 void LrnLayerTest::SetUp() {
     std::vector<size_t> inputShapes;
-    size_t alpha, beta, bias, size;
+    double alpha, beta, bias;
+    size_t size;
     std::tie(alpha, beta, bias, size, netPrecision, inputShapes, targetDevice) = GetParam();
 
     auto ngPrc = FuncTestUtils::PrecisionUtils::convertIE2nGraphPrc(netPrecision);
