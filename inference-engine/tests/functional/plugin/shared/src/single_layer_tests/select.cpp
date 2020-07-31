@@ -33,7 +33,13 @@ namespace LayerTestsDefinitions {
         result << "_ELSE=" << dataType.name() << "_" << CommonTestUtils::vec2str(dataShapes[ELSE]);
         result << "_" << broadcast.m_type;
         result << "_targetDevice=" << targetDevice;
-        return result.str();
+        auto string = result.str();
+        std::replace(string.begin(), string.end(), '-', '_');
+        std::replace(string.begin(), string.end(), '.', '_');
+        std::replace(string.begin(), string.end(), '(', '_');
+        std::replace(string.begin(), string.end(), ')', '_');
+        std::replace(string.begin(), string.end(), '=', '_');
+        return string;
     }
 
     void SelectLayerTest::SetUp() {
