@@ -43,7 +43,13 @@ std::string ConvolutionLayerTest::getTestCaseName(testing::TestParamInfo<convLay
     result << "AP=" << padType << "_";
     result << "netPRC=" << netPrecision.name() << "_";
     result << "targetDevice=" << targetDevice;
-    return result.str();
+    auto string = result.str();
+    std::replace(string.begin(), string.end(), '-', '_');
+    std::replace(string.begin(), string.end(), '.', '_');
+    std::replace(string.begin(), string.end(), '(', '_');
+    std::replace(string.begin(), string.end(), ')', '_');
+    std::replace(string.begin(), string.end(), '=', '_');
+    return string;
 }
 
 void ConvolutionLayerTest::SetUp() {
