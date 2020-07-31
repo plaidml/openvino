@@ -31,7 +31,13 @@ std::string ConcatLayerTest::getTestCaseName(const testing::TestParamInfo<concat
     result << "axis=" << axis << "_";
     result << "netPRC=" << netPrecision.name() << "_";
     result << "targetDevice=" << targetName << "_";
-    return result.str();
+    auto string = result.str();
+    std::replace(string.begin(), string.end(), '-', '_');
+    std::replace(string.begin(), string.end(), '.', '_');
+    std::replace(string.begin(), string.end(), '(', '_');
+    std::replace(string.begin(), string.end(), ')', '_');
+    std::replace(string.begin(), string.end(), '=', '_');
+    return string;
 }
 
 void ConcatLayerTest::SetUp() {
