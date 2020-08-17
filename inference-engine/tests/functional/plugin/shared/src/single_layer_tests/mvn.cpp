@@ -41,7 +41,13 @@ std::string MvnLayerTest::getTestCaseName(testing::TestParamInfo<mvnParams> obj)
             result << "configItem=" << configItem.first << "_" << configItem.second << "_";
         }
     }
-    return result.str();
+    auto string = result.str();
+    std::replace(string.begin(), string.end(), '-', '_');
+    std::replace(string.begin(), string.end(), '.', '_');
+    std::replace(string.begin(), string.end(), '(', '_');
+    std::replace(string.begin(), string.end(), ')', '_');
+    std::replace(string.begin(), string.end(), '=', '_');
+    return string;
 }
 
 void MvnLayerTest::SetUp() {
