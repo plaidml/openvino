@@ -93,7 +93,7 @@
 #include "ngraph/runtime/tensor.hpp"
 #include "ngraph/state/bernoulli_rng_state.hpp"
 #include "ngraph/state/uniform_rng_state.hpp"
-#include "op/avg_pool.hpp"
+#include "ngraph/test/runtime/op/avg_pool.hpp"
 
 namespace ngraph
 {

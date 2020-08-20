@@ -25,7 +25,13 @@ std::string ConvertLayerTest::getTestCaseName(const testing::TestParamInfo<Conve
     result << "targetPRC=" << targetPrecision.name() << "_";
     result << "inputPRC=" << inputPrecision.name() << "_";
     result << "targetDevice=" << targetName;
-    return result.str();
+    auto string = result.str();
+    std::replace(string.begin(), string.end(), '-', '_');
+    std::replace(string.begin(), string.end(), '.', '_');
+    std::replace(string.begin(), string.end(), '(', '_');
+    std::replace(string.begin(), string.end(), ')', '_');
+    std::replace(string.begin(), string.end(), '=', '_');
+    return string;
 }
 
 void ConvertLayerTest::SetUp() {

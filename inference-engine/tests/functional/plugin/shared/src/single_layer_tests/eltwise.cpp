@@ -45,7 +45,13 @@ std::string EltwiseLayerTest::getTestCaseName(testing::TestParamInfo<EltwiseTest
     results << "opType=" << opType << "_";
     results << "netPRC=" << netPrecision.name() << "_";
     results << "targetDevice=" << targetName;
-    return results.str();
+    auto string = results.str();
+    std::replace(string.begin(), string.end(), '-', '_');
+    std::replace(string.begin(), string.end(), '.', '_');
+    std::replace(string.begin(), string.end(), '(', '_');
+    std::replace(string.begin(), string.end(), ')', '_');
+    std::replace(string.begin(), string.end(), '=', '_');
+    return string;
 }
 
 void EltwiseLayerTest::SetUp() {
