@@ -549,7 +549,6 @@ protected:
             const op::EmbeddingSegmentsSum* embed =
                 static_cast<const op::EmbeddingSegmentsSum*>(&node);
             auto indicesType = embed->input(1).get_element_type();
-            size_t indices_num = shape_size(embed->get_input_shape(1));
 
             if (indicesType == element::u64 || indicesType == element::i64)
             {
