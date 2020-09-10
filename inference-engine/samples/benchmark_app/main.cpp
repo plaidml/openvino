@@ -191,6 +191,14 @@ int main(int argc, char *argv[]) {
 
         std::cout << "CHECKPOINT 4\n";
 
+        // if (FLAGS_d.find("PlaidML") != std::string::npos) {
+        //     // TODO
+        // }
+        
+        std::cout << "Config is: " << config << "\n";
+
+        std::cout << "CHECKPOINT 5\n";
+
         slog::info << "InferenceEngine: " << GetInferenceEngineVersion() << slog::endl;
         slog::info << "Device info: " << slog::endl;
         std::cout << ie.GetVersions(device_name) << std::endl;
