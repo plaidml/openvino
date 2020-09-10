@@ -161,6 +161,8 @@ int main(int argc, char *argv[]) {
         // ----------------- 2. Loading the Inference Engine -----------------------------------------------------------
         next_step();
 
+        std::cout << "CHECKPOINT 1\n";
+
         Core ie;
         if (FLAGS_d.find("CPU") != std::string::npos && !FLAGS_l.empty()) {
             // CPU (MKLDNN) extensions is loaded as a shared library and passed as a pointer to base extension
@@ -169,6 +171,8 @@ int main(int argc, char *argv[]) {
             slog::info << "CPU (MKLDNN) extensions is loaded " << FLAGS_l << slog::endl;
         }
 
+        std::cout << "CHECKPOINT 2\n";
+
         // Load clDNN Extensions
         if ((FLAGS_d.find("GPU") != std::string::npos) && !FLAGS_c.empty()) {
             // Override config if command line parameter is specified
@@ -176,11 +180,16 @@ int main(int argc, char *argv[]) {
                 config["GPU"] = {};
             config["GPU"][CONFIG_KEY(CONFIG_FILE)] = FLAGS_c;
         }
+
+        std::cout << "CHECKPOINT 3\n";
+
         if (config.count("GPU") && config.at("GPU").count(CONFIG_KEY(CONFIG_FILE))) {
             auto ext = config.at("GPU").at(CONFIG_KEY(CONFIG_FILE));
             ie.SetConfig({{ CONFIG_KEY(CONFIG_FILE), ext }}, "GPU");
             slog::info << "GPU extensions is loaded " << ext << slog::endl;
         }
+
+        std::cout << "CHECKPOINT 4\n";
 
         slog::info << "InferenceEngine: " << GetInferenceEngineVersion() << slog::endl;
         slog::info << "Device info: " << slog::endl;
