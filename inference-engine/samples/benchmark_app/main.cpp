@@ -191,11 +191,12 @@ int main(int argc, char *argv[]) {
 
         std::cout << "CHECKPOINT 4\n";
 
-        // if (FLAGS_d.find("PlaidML") != std::string::npos) {
-        //     // TODO
-        // }
+        if (FLAGS_d.find("PlaidML") != std::string::npos) {
+            ie.RegisterPlugin("PlaidML");
+        }
         
-        std::cout << "Config is: " << config << "\n";
+        // std::cout << "Config is:\n";
+
 
         std::cout << "CHECKPOINT 5\n";
 
