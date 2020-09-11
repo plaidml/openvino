@@ -176,6 +176,7 @@ CNNNetwork details::ReadNetwork(const std::string& modelPath, const std::string&
     auto fileExt = modelPath.substr(modelPath.find_last_of(".") + 1);
     std::cout << "Checking readers...\n";
     for (auto it = readers.lower_bound(fileExt); it != readers.upper_bound(fileExt); it++) {
+        std::cout << "Checking a specific reader\n";
         auto reader = it->second;
         // Check that reader supports the model
         if (reader->supportModel(modelStream)) {
