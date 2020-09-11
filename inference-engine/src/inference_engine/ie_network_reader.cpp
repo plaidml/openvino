@@ -188,6 +188,7 @@ CNNNetwork details::ReadNetwork(const std::string& modelPath, const std::string&
         auto reader = it->second;
         // Check that reader supports the model
         if (reader->supportModel(modelStream)) {
+            std::cout << "Reader supports model\n";
             // Find weights
             std::string bPath = binPath;
             if (bPath.empty()) {
@@ -222,6 +223,8 @@ CNNNetwork details::ReadNetwork(const std::string& modelPath, const std::string&
             }
             // read model without weights
             return reader->read(modelStream, exts);
+        } else {
+            std::cout << "This model is not supported by this reader\n";
         }
     }
     THROW_IE_EXCEPTION << "Unknown model format! Cannot find reader for model format: " << fileExt << " and read the model: " << modelPath <<
