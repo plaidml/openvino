@@ -108,6 +108,8 @@ void registerReaders() {
         FileUtils::FilePath libraryName = FileUtils::toFilePath(library_name);
         FileUtils::FilePath readersLibraryPath = FileUtils::makeSharedLibraryName(getInferenceEngineLibraryPath(), libraryName);
 
+        std::wcout << "readersLibraryPath: " << readersLibraryPath << std::endl;
+
         if (!FileUtils::fileExist(readersLibraryPath))
             return std::shared_ptr<Reader>();
         return std::make_shared<Reader>(name, library_name);
