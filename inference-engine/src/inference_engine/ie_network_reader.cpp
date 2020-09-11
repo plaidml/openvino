@@ -121,7 +121,13 @@ void registerReaders() {
     }
 
     // try to load IR reader v10 if library exists
+    std::cout << "About to try to create IRv10 reader...";
     auto irReaderv10 = create_if_exists("IRv10", std::string("inference_engine_ir_reader") + std::string(IE_BUILD_POSTFIX));
+    if (!irReaderv10) {
+        std::cout << "There was no IRv10 reader\n";
+    } else {
+        std::cout << "IRv10 Reader created!\n";
+    }
     if (irReaderv10)
         readers.emplace("xml", irReaderv10);
 
