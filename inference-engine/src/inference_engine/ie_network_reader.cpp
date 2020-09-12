@@ -192,6 +192,7 @@ CNNNetwork details::ReadNetwork(const std::string& modelPath, const std::string&
             // Find weights
             std::string bPath = binPath;
             if (bPath.empty()) {
+                std::cout << "No weights path, try to find them\n";
                 auto pathWoExt = modelPath;
                 auto pos = modelPath.rfind('.');
                 if (pos != std::string::npos) pathWoExt = modelPath.substr(0, pos);
@@ -205,6 +206,7 @@ CNNNetwork details::ReadNetwork(const std::string& modelPath, const std::string&
                 }
             }
             if (!bPath.empty()) {
+                std::cout << "Yes weights\n";
                 // Open weights file
 #if defined(ENABLE_UNICODE_PATH_SUPPORT) && defined(_WIN32)
                 std::wstring weights_path = InferenceEngine::details::multiByteCharToWString(bPath.c_str());
@@ -221,6 +223,7 @@ CNNNetwork details::ReadNetwork(const std::string& modelPath, const std::string&
                 modelStream.close();
                 return network;
             }
+                std::cout << "Did not find weights, read w/out\n";
             // read model without weights
             return reader->read(modelStream, exts);
         } else {
