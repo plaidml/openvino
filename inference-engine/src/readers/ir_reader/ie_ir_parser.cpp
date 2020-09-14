@@ -212,6 +212,12 @@ V10Parser::GenericLayerParams V10Parser::parseGenericParams(const pugi::xml_node
             const pugi::char_t* dimVal = node.child_value();
             std::stringstream ss(dimVal);
             if (!(ss >> dim) || dim == 0) {
+                if (ss.bad()) {
+                    std::cout << "Bad stringstream\n";
+                }
+                if (ss.fail()) {
+                    std::cout << "Failed stringstream\n";
+                }
                 std::cout << "ABOUT TO THROW\n";
                 std::cout << "Error will be: " << "dimension (" << std::flush
                         << dimVal << ") in node " << std::flush
