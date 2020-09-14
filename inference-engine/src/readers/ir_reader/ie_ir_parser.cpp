@@ -213,6 +213,8 @@ V10Parser::GenericLayerParams V10Parser::parseGenericParams(const pugi::xml_node
             std::stringstream ss(dimVal);
             if (!(ss >> dim) || dim == 0) {
                 std::cout << "ABOUT TO THROW\n";
+                std::cout << "Error will be: " << "dimension (" << dimVal << ") in node " << node.name()
+                                   << " must be a positive integer: at offset " << node.offset_debug();
                 THROW_IE_EXCEPTION << "dimension (" << dimVal << ") in node " << node.name()
                                    << " must be a positive integer: at offset " << node.offset_debug();
             }
