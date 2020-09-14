@@ -217,8 +217,8 @@ V10Parser::GenericLayerParams V10Parser::parseGenericParams(const pugi::xml_node
             std::string str(dimVal);
             std::cout << "Or direct convert (string)?: " << str << std::endl;
             #endif
-            dim = stoi(str);
-            std::cout << "Now converted dim is " << dim << "!" << std::endl;
+            auto dimTEMP = stoi(str);
+            std::cout << "Now converted dim is " << dimTEMP << "!" << std::endl;
             std::stringstream ss(dimVal);
             if (!(ss >> dim) || dim == 0) {
                 if (ss.bad()) {
