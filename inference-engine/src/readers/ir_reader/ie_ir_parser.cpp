@@ -210,6 +210,8 @@ V10Parser::GenericLayerParams V10Parser::parseGenericParams(const pugi::xml_node
         for (auto node = parentNode.child("dim"); !node.empty(); node = node.next_sibling("dim")) {
             size_t dim = 0;
             const pugi::char_t* dimVal = node.child_value();
+            auto TODOTestDim = static_cast<size_t>(dimVal);
+            std::cout << "Or just cast it?: " << TODOTestDim << std::endl;
             std::stringstream ss(dimVal);
             if (!(ss >> dim) || dim == 0) {
                 if (ss.bad()) {
