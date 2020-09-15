@@ -240,6 +240,8 @@ V10Parser::GenericLayerParams V10Parser::parseGenericParams(const pugi::xml_node
             std::cout << "Apparently yes...\n";
             dim--;
             std::cout << "and subtract!\n";
+            size_t test_const = 47;
+            std::cout << "I can cout a normal size_t like " << test_const << ", right?\n";
             std::cout << "dim is " << dim;
             std::cout << "... technically we're beyond dim!\n";
             if (dim == 0) {     // workaround
