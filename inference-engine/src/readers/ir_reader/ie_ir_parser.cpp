@@ -211,48 +211,14 @@ V10Parser::GenericLayerParams V10Parser::parseGenericParams(const pugi::xml_node
             size_t dim = 0;
             const pugi::char_t* dimVal = node.child_value();
             #ifdef PUGIXML_WCHAR_MODE
-            std::wstring str(dimVal);
-            std::wcout << "Or direct convert (wstring)?: " << str << std::endl;
+            size_t TEMPdim = wcstol(dimVal, nullptr, 10);
+            std::cout << "Or direct convert (wide)?: " << TEMPdim << std::endl;
             #else
-            std::string str(dimVal);
-            std::cout << "Or direct convert (string)?: " << str << std::endl;
+            size_t TEMPdim = strtol(dimVal, nullptr, 10);
+            std::cout << "Or direct convert (not wide)?: " << TEMPdim << std::endl;
             #endif
-            // auto dimTEMP = stoi(str);
-            // std::cout << "Now converted dim is " << dimTEMP << "!" << std::endl;
-            std::stringstream ss(str);
-            std::cout << "INITIALLY, ss is: ";
-            if (ss.bad()) {
-                std::cout << "Bad; ";
-            } else {
-                std::cout << "Not bad; ";
-            }
-            if (ss.fail()) {
-                std::cout << "Failed\n";
-            } else {
-                std::cout << "Not failed\n";
-            }
-            std::cout << "Back to string from ss gives: " << ss.str() << std::endl;
-            bool doWorkaround = true;
-            if (doWorkaround) {
-                ss >> dim;
-            }
-            std::cout << "Can I add to dim?\n";
-            dim++;
-            std::cout << "Apparently yes...\n";
-            dim--;
-            std::cout << "and subtract!\n";
-            size_t test_const = 47;
-            std::cout << "I can cout a normal size_t like " << test_const << ", right?\n";
-            std::cout << "dim is " << dim;
-            std::cout << "... technically we're beyond dim!\n";
             if (dim == 0) {     // workaround
             // if (!(ss >> dim) || dim == 0) {
-                if (ss.bad()) {
-                    std::cout << "Bad stringstream\n";
-                }
-                if (ss.fail()) {
-                    std::cout << "Failed stringstream\n";
-                }
                 std::cout << "ABOUT TO THROW\n";
                 std::cout << "Error will be: " << "dimension (" << std::flush
                         << dimVal << ") in node " << std::flush
