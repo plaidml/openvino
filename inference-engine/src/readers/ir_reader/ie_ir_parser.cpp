@@ -211,6 +211,7 @@ V10Parser::GenericLayerParams V10Parser::parseGenericParams(const pugi::xml_node
             size_t dim = 0;
             // const pugi::char_t* dimVal = node.child_value();
             dim = reinterpret_cast<std::uintptr_t>(node.child_value());
+            printf("%uj is the dim as reported by printf\n", dim);
             std::cout << "dim is " << dim << std::endl;
             // std::cout << "The dimVal pointer is " << dimVal << std::endl;
             // #ifdef PUGIXML_WCHAR_MODE
