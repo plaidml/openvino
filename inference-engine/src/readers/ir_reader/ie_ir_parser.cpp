@@ -235,6 +235,11 @@ V10Parser::GenericLayerParams V10Parser::parseGenericParams(const pugi::xml_node
             if (doWorkaround) {
                 ss >> dim;
             }
+            std::cout << "Can I add to dim?\n";
+            dim++;
+            std::cout << "Apparently yes...\n";
+            dim--;
+            std::cout << "and subtract!\n";
             std::cout << "dim is " << dim;
             std::cout << "... technically we're beyond dim!\n";
             if (dim == 0) {     // workaround
