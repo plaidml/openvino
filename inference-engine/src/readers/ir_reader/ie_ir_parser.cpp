@@ -236,6 +236,7 @@ V10Parser::GenericLayerParams V10Parser::parseGenericParams(const pugi::xml_node
                 ss >> dim;
             }
             std::cout << "dim is " << dim;
+            std::cout << "... technically we're beyond dim!\n";
             if (dim == 0) {     // workaround
             // if (!(ss >> dim) || dim == 0) {
                 if (ss.bad()) {
