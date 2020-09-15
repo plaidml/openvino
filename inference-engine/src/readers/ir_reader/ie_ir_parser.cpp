@@ -210,17 +210,19 @@ V10Parser::GenericLayerParams V10Parser::parseGenericParams(const pugi::xml_node
         for (auto node = parentNode.child("dim"); !node.empty(); node = node.next_sibling("dim")) {
             size_t dim = 0;
             const pugi::char_t* dimVal = node.child_value();
-            dim = static_cast<size_t>(*node.child_value());
-            printf("%x is the dim as reported by printf\n", dim);
-            std::cout << "dim is " << dim << std::endl;
+            // dim = static_cast<size_t>(*node.child_value());
+            // printf("%x is the dim as reported by printf\n", dim);
+            // std::cout << "dim is " << dim << std::endl;
             // std::cout << "The dimVal pointer is " << dimVal << std::endl;
-            // #ifdef PUGIXML_WCHAR_MODE
-            // size_t TEMPdim = wcstol(dimVal, nullptr, 10);
+            #ifdef PUGIXML_WCHAR_MODE
+            dim = wcstol(dimVal, nullptr, 10);
+            printf("0x%x is the dim as reported by printf\n", dim);
             // std::cout << "Or direct convert (wide)?: " << TEMPdim << std::endl;
-            // #else
-            // size_t TEMPdim = strtol(dimVal, nullptr, 10);
+            #else
+            dim = strtol(dimVal, nullptr, 10);
+            printf("0x%x is the dim as reported by printf\n", dim);
             // std::cout << "Or direct convert (not wide)?: " << TEMPdim << std::endl;
-            // #endif
+            #endif
             if (dim == 0) {     // workaround
             // if (!(ss >> dim) || dim == 0) {
                 std::cout << "ABOUT TO THROW\n";
