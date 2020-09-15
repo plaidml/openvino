@@ -231,6 +231,7 @@ V10Parser::GenericLayerParams V10Parser::parseGenericParams(const pugi::xml_node
             } else {
                 std::cout << "Not failed\n";
             }
+            std::cout << "Back to string from ss gives: " << ss.str() << std::endl;
             bool doWorkaround = true;
             if (doWorkaround) {
                 ss >> dim;
