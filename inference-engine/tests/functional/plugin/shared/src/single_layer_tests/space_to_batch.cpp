@@ -32,7 +32,13 @@ std::string SpaceToBatchLayerTest::getTestCaseName(const testing::TestParamInfo<
     result << "PB=" << CommonTestUtils::vec2str(padsBegin) << "_";
     result << "PE=" << CommonTestUtils::vec2str(padsEnd) << "_";
     result << "targetDevice=" << targetName << "_";
-    return result.str();
+    auto string = result.str();
+    std::replace(string.begin(), string.end(), '-', '_');
+    std::replace(string.begin(), string.end(), '.', '_');
+    std::replace(string.begin(), string.end(), '(', '_');
+    std::replace(string.begin(), string.end(), ')', '_');
+    std::replace(string.begin(), string.end(), '=', '_');
+    return string;
 }
 
 void SpaceToBatchLayerTest::SetUp() {

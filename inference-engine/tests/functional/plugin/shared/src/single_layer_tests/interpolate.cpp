@@ -44,7 +44,13 @@ std::string InterpolateLayerTest::getTestCaseName(testing::TestParamInfo<Interpo
     result << "PE=" << CommonTestUtils::vec2str(padEnd) << "_";
     result << "netPRC=" << netPrecision.name() << "_";
     result << "targetDevice=" << targetDevice;
-    return result.str();
+    auto string = result.str();
+    std::replace(string.begin(), string.end(), '-', '_');
+    std::replace(string.begin(), string.end(), '.', '_');
+    std::replace(string.begin(), string.end(), '(', '_');
+    std::replace(string.begin(), string.end(), ')', '_');
+    std::replace(string.begin(), string.end(), '=', '_');
+    return string;
 }
 
 void InterpolateLayerTest::SetUp() {

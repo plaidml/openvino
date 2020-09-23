@@ -30,8 +30,13 @@ std::string EqualLayerTest::getTestCaseName(const testing::TestParamInfo<EqualTe
     result << "inPrc=" << inPrecision.name() << "_";
     result << "outPrc=" << outPrecision.name() << "_";
     result << "targetDevice=" << targetDevice;
-
-    return result.str();
+    auto string = result.str();
+    std::replace(string.begin(), string.end(), '-', '_');
+    std::replace(string.begin(), string.end(), '.', '_');
+    std::replace(string.begin(), string.end(), '(', '_');
+    std::replace(string.begin(), string.end(), ')', '_');
+    std::replace(string.begin(), string.end(), '=', '_');
+    return string;
 }
 
 void EqualLayerTest::SetUp() {

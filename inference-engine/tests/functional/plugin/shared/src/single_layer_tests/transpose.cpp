@@ -29,7 +29,13 @@ std::string TransposeLayerTest::getTestCaseName(testing::TestParamInfo<transpose
     result << "inputOrder=" << CommonTestUtils::vec2str(inputOrder) << "_";
     result << "netPRC=" << netPrecision.name() << "_";
     result << "targetDevice=" << targetDevice;
-    return result.str();
+    auto string = result.str();
+    std::replace(string.begin(), string.end(), '-', '_');
+    std::replace(string.begin(), string.end(), '.', '_');
+    std::replace(string.begin(), string.end(), '(', '_');
+    std::replace(string.begin(), string.end(), ')', '_');
+    std::replace(string.begin(), string.end(), '=', '_');
+    return string;
 }
 
 void TransposeLayerTest::SetUp() {

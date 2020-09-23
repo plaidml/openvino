@@ -57,7 +57,13 @@ std::string PoolingLayerTest::getTestCaseName(testing::TestParamInfo<poolLayerTe
     result << "AutoPad=" << padType << "_";
     result << "netPRC=" << netPrecision.name() << "_";
     result << "targetDevice=" << targetDevice;
-    return result.str();
+    auto string = result.str();
+    std::replace(string.begin(), string.end(), '-', '_');
+    std::replace(string.begin(), string.end(), '.', '_');
+    std::replace(string.begin(), string.end(), '(', '_');
+    std::replace(string.begin(), string.end(), ')', '_');
+    std::replace(string.begin(), string.end(), '=', '_');
+    return string;
 }
 
 std::string GlobalPoolingLayerTest::getTestCaseName(testing::TestParamInfo<globalPoolLayerTestParamsSet> obj) {
