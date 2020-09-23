@@ -34,7 +34,7 @@ std::string ComparisonLayerTest::getTestCaseName(testing::TestParamInfo<Comparis
     results << "secondInputType=" << secondInputType << "_";
     results << "netPRC=" << netPrecision.name() << "_";
     results << "targetDevice=" << targetName;
-    auto string = result.str();
+    auto string = results.str();
     std::replace(string.begin(), string.end(), '-', '_');
     std::replace(string.begin(), string.end(), '.', '_');
     std::replace(string.begin(), string.end(), '(', '_');
