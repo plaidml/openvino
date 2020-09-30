@@ -22,7 +22,7 @@ InferenceEngine::details::BlobStream::BlobBuffer::~BlobBuffer() {}
 
 std::streampos InferenceEngine::details::BlobStream::BlobBuffer::seekpos(std::streampos sp, std::ios_base::openmode which) {
     if (!(which & ios_base::in))
-        return std::treampos(-1);
+        return std::streampos(-1);
     if (sp < 0 || sp > egptr() - eback())
         return std::streampos(-1);
     setg(eback(), eback() + sp, egptr());
