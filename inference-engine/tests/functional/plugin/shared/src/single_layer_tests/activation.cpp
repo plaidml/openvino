@@ -32,7 +32,13 @@ std::string ActivationLayerTest::getTestCaseName(const testing::TestParamInfo<ac
     result << "IS=" << CommonTestUtils::vec2str(inputShapes) << separator;
     result << "netPRC=" << netPrecision.name() << separator;
     result << "targetDevice=" << targetDevice;
-    return result.str();
+    auto string = result.str();
+    std::replace(string.begin(), string.end(), '-', '_');
+    std::replace(string.begin(), string.end(), '.', '_');
+    std::replace(string.begin(), string.end(), '(', '_');
+    std::replace(string.begin(), string.end(), ')', '_');
+    std::replace(string.begin(), string.end(), '=', '_');
+    return string;
 }
 
 void ActivationLayerTest::SetUp() {

@@ -40,7 +40,13 @@ std::string StridedSliceLayerTest::getTestCaseName(const testing::TestParamInfo<
     result << "shrink_m=" << (shrink_mask.empty() ? "def" : CommonTestUtils::vec2str(shrink_mask)) << "_";
     result << "ellipsis_m=" << (ellipsis_mask.empty() ? "def" : CommonTestUtils::vec2str(ellipsis_mask)) << "_";
     result << "targetDevice=" << targetName;
-    return result.str();
+    auto string = result.str();
+    std::replace(string.begin(), string.end(), '-', '_');
+    std::replace(string.begin(), string.end(), '.', '_');
+    std::replace(string.begin(), string.end(), '(', '_');
+    std::replace(string.begin(), string.end(), ')', '_');
+    std::replace(string.begin(), string.end(), '=', '_');
+    return string;
 }
 
 void StridedSliceLayerTest::SetUp() {

@@ -28,7 +28,13 @@ std::string NonZeroLayerTest::getTestCaseName(testing::TestParamInfo<NonZeroLaye
     result << "IS=" << CommonTestUtils::vec2str(inputShape) << "_";
     result << "inPRC=" << inputPrecision.name() << "_";
     result << "targetDevice=" << targetDevice;
-    return result.str();
+    auto string = result.str();
+    std::replace(string.begin(), string.end(), '-', '_');
+    std::replace(string.begin(), string.end(), '.', '_');
+    std::replace(string.begin(), string.end(), '(', '_');
+    std::replace(string.begin(), string.end(), ')', '_');
+    std::replace(string.begin(), string.end(), '=', '_');
+    return string;
 }
 
 void NonZeroLayerTest::SetUp() {
