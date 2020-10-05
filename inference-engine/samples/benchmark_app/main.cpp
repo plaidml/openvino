@@ -183,7 +183,7 @@ int main(int argc, char *argv[]) {
         }
 
 	if (FLAGS_d.find("PlaidML") != std::string::npos) {
-            ie.RegisterPlugin("PlaidML", "TestName");
+            ie.RegisterPlugin("PlaidML", "PlaidMLPlugin");
         }
 
         slog::info << "InferenceEngine: " << GetInferenceEngineVersion() << slog::endl;
