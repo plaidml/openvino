@@ -11,7 +11,7 @@ LayerTestsCommon::LayerTestsCommon() : threshold(1e-2f) {
 }
 
 void LayerTestsCommon::Run() {
-    SKIP_IF_CURRENT_TEST_IS_DISABLED()
+    //SKIP_IF_CURRENT_TEST_IS_DISABLED()
 
     ConfigurePlugin();
     LoadNetwork();
