@@ -155,6 +155,12 @@ bool op::v1::BinaryConvolution::visit_attributes(AttributeVisitor& visitor)
     return true;
 }
 
+void op::v1::BinaryConvolution::generate_adjoints(autodiff::Adjoints& adjoints,
+                                                  const OutputVector& deltas)
+{
+    throw ngraph_error("BinaryConvolution generate_adjoints not implemented");
+}
+
 namespace ngraph
 {
     template <>

@@ -9,11 +9,6 @@
 
 namespace ngraph {
 
-template <typename T>
-VariantImpl<T>::~VariantImpl() { }
-
-template class INFERENCE_ENGINE_API_CLASS(VariantImpl<InferenceEngine::Parameter>);
-
 template <>
 class INFERENCE_ENGINE_API_CLASS(VariantWrapper<InferenceEngine::Parameter>) : public VariantImpl<InferenceEngine::Parameter> {
 public:

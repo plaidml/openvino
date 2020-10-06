@@ -10,7 +10,7 @@
 #include <ngraph/opsets/opset1.hpp>
 #include <ngraph/rt_info.hpp>
 
-ngraph::pass::BatchNormDecomposition::BatchNormDecomposition() {
+void ngraph::pass::BatchNormDecomposition::batch_norm_decomposition() {
     Shape shape{2, 2, 1, 1};
     auto input = make_shared<pattern::op::Label>(element::f32, shape);
     auto mean_shape = Shape{2};
@@ -85,5 +85,5 @@ ngraph::pass::BatchNormDecomposition::BatchNormDecomposition() {
     };
 
     auto m = std::make_shared<ngraph::pattern::Matcher>(bn, "BatchNormDecomposition");
-    this->register_matcher(m, callback);
+    this->add_matcher(m, callback, PassProperty::CHANGE_DYNAMIC_STATE);
 }

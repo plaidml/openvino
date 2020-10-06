@@ -6,7 +6,6 @@
 #include <functional_test_utils/behavior_test_utils.hpp>
 #include "behavior/set_preprocess.hpp"
 
-using namespace BehaviorTestsDefinitions;
 namespace {
     using PreprocessBehTest = BehaviorTestsUtils::BehaviorTestsBasic;
     const std::vector<InferenceEngine::Precision> netPrecisions = {

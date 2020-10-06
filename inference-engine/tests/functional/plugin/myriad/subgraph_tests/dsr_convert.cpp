@@ -2,42 +2,38 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-#include "dsr_tests_common.hpp"
-
 #include <functional_test_utils/layer_test_utils.hpp>
 #include <ngraph_functions/builders.hpp>
 #include <vpu/ngraph/operations/dynamic_shape_resolver.hpp>
 
 namespace {
 
-using namespace LayerTestsUtils::vpu;
-
-struct DataTypeConversionPair {
-    DataType srcType;
-    DataType dstType;
-};
+using DataType = ngraph::element::Type_t;
+using DataDims = ngraph::Shape;
 
 using Parameters = std::tuple<
-    DataTypeConversionPair,
-    DataShapeWithUpperBound,
+    DataType,
+    DataDims,
     LayerTestsUtils::TargetDevice
 >;
 
-class DSR_Convert : public testing::WithParamInterface<Parameters>, public DSR_TestsCommon {
+class DSR_Convert : public testing::WithParamInterface<Parameters>,
+        public LayerTestsUtils::LayerTestsCommon {
 protected:
-    std::shared_ptr<ngraph::Node> createTestedOp() override {
+    void SetUp() override {
         const auto& parameters = GetParam();
-        const auto& inDataTypes = std::get<0>(parameters);
-        const auto& inDataShapes = std::get<1>(parameters);
+        const auto& dataType = std::get<0>(parameters);
+        const auto& dataDims = std::get<1>(parameters);
         targetDevice = std::get<2>(parameters);
 
-        const auto inputSubgraph = createInputSubgraphWithDSR(
-                inDataTypes.srcType, inDataShapes);
+        const auto data = std::make_shared<ngraph::opset3::Parameter>(dataType, dataDims);
+        const auto dims = std::make_shared<ngraph::opset3::Parameter>(ngraph::element::i64, ngraph::Shape{dataDims.size()});
+        const auto dsr  = std::make_shared<ngraph::vpu::op::DynamicShapeResolver>(data, dims);
 
-        const auto convert = std::make_shared<ngraph::opset3::Convert>(
-                inputSubgraph, inDataTypes.dstType);
+        const auto node = std::make_shared<ngraph::opset3::Convert>(dsr, dataType);
 
-        return convert;
+        const auto result = std::make_shared<ngraph::opset3::Result>(node);
+        function = std::make_shared<ngraph::Function>(ngraph::ResultVector{result}, ngraph::ParameterVector{data, dims}, "DSR-Convert");
     }
 };
 
@@ -45,15 +41,10 @@ TEST_P(DSR_Convert, CompareWithReference) {
     Run();
 }
 
-std::vector<DataTypeConversionPair> dataTypeConversionPairVector {
-    {ngraph::element::f16, ngraph::element::i32},
-};
-
-INSTANTIATE_TEST_CASE_P(DynamicConvert, DSR_Convert,
+INSTANTIATE_TEST_CASE_P(DISABLED_DynamicConvert, DSR_Convert,
     ::testing::Combine(
-        ::testing::ValuesIn(dataTypeConversionPairVector),
-        ::testing::Values(DataShapeWithUpperBound{ngraph::Shape{1, 800}, ngraph::Shape{2, 1000}},
-                          DataShapeWithUpperBound{ngraph::Shape{80, 80}, ngraph::Shape{100, 100}}),
+        ::testing::Values(ngraph::element::f16, ngraph::element::f32, ngraph::element::i32),
+        ::testing::Values(ngraph::Shape{1, 800}),
         ::testing::Values(CommonTestUtils::DEVICE_MYRIAD)));
 
 }  // namespace

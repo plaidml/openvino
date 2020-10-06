@@ -9,6 +9,7 @@
 #include "tests_common.hpp"
 #include <ie_core.hpp>
 
+
 using namespace ::testing;
 using namespace std;
 using namespace mkldnn;
@@ -291,7 +292,7 @@ private:
     InferenceEngine::CNNLayer * cnnLayer;
 };
 
-class FakeFabric : public InferenceEngine::Extensions::Cpu::MKLDNNExtensions {
+class FakeFabric : public InferenceEngine::IExtension {
 public:
     FakeFabric() {
         factories["ReLU"] = [](const InferenceEngine::CNNLayer * cnnLayer) -> InferenceEngine::ILayerImplFactory* { return new FakeReLUFactory(cnnLayer); };
@@ -326,6 +327,11 @@ public:
         }
         factory = factories[cnnLayer->type](cnnLayer);
         return InferenceEngine::OK;
+    }
+
+    InferenceEngine::StatusCode getShapeInferImpl(InferenceEngine::IShapeInferImpl::Ptr& impl, const char* type,
+                                                  InferenceEngine::ResponseDesc* resp) noexcept override {
+        return InferenceEngine::NOT_IMPLEMENTED;
     }
 
 private:

@@ -20,25 +20,14 @@ ie_add_plugin(NAME ${TARGET_NAME}
               VERSION_DEFINES_FOR template_plugin.cpp)
 
 target_include_directories(${TARGET_NAME} PRIVATE
-    "${CMAKE_CURRENT_SOURCE_DIR}")
-
-target_include_directories(${TARGET_NAME} PRIVATE
+    "${CMAKE_CURRENT_SOURCE_DIR}"
     "${IE_MAIN_TEMPLATE_PLUGIN_SOURCE_DIR}/include")
 
-target_link_libraries(${TARGET_NAME} PRIVATE
-    IE::inference_engine
-    IE::inference_engine_transformations
-    ${INTEL_ITT_LIBS}
-    ${NGRAPH_LIBRARIES})
-
-# Link inference backend library to plugin. Here we use ngraph interpreter_backend as example
-target_link_libraries(${TARGET_NAME} PRIVATE
-    ngraph_backend
-    interpreter_backend)
+target_link_libraries(${TARGET_NAME} PRIVATE IE::inference_engine IE::inference_engine_transformations ${NGRAPH_LIBRARIES} ${INTEL_ITT_LIBS})
 
 # ATTENTION: uncomment to register a plugin in the plugins.xml file
 # ie_register_plugins(MAIN_TARGET ${TARGET_NAME}
-#                     POSSIBLE_PLUGINS ${TARGET_NAME})
+                    # POSSIBLE_PLUGINS ${TARGET_NAME})
 # [cmake:plugin]
 
 # ATTENTION: uncomment to install component

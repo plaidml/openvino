@@ -1,4 +1,4 @@
-# Overview of Inference Engine C* API {#openvino_inference_engine_ie_bridges_c_docs_api_overview}
+# Overview of Inference Engine C* API
 
 > **NOTE**: It is a preview version of the Inference Engine C* API for evaluation purpose only.
 > Module structure and API itself may be changed in future releases.
@@ -135,8 +135,6 @@ enum precision_e{
 ​    I64 = 72,   /**< 64bit signed integer value */
 
 ​    U64 = 73,   /**< 64bit unsigned integer value */
-
-​    U32 = 74,   /**< 32bit unsigned integer value */
 
 ​    BIN = 71,   /**< 1bit integer value */
 

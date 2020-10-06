@@ -39,13 +39,7 @@ std::string GrnLayerTest::getTestCaseName(const testing::TestParamInfo<grnParams
     result << "netPRC=" << netPrecision.name() << separator;
     result << "bias="   << bias << separator;
     result << "targetDevice=" << targetDevice;
-    auto string = result.str();
-    std::replace(string.begin(), string.end(), '-', '_');
-    std::replace(string.begin(), string.end(), '.', '_');
-    std::replace(string.begin(), string.end(), '(', '_');
-    std::replace(string.begin(), string.end(), ')', '_');
-    std::replace(string.begin(), string.end(), '=', '_');
-    return string;
+    return result.str();
 }
 
 void GrnLayerTest::SetUp() {

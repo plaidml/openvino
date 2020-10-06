@@ -17,6 +17,9 @@
 import logging as log
 
 from extensions.front.PowerToEltwises import PowerToEltwises
+from extensions.front.div import Div
+from extensions.front.squared_difference import SquaredDifference
+from extensions.front.sub import Sub
 from extensions.ops.mvn import MVN
 from mo.front.common.replacement import FrontReplacementSubgraph
 from mo.graph.graph import Node, Graph
@@ -24,6 +27,9 @@ from mo.graph.graph import Node, Graph
 
 class MVNUnrolled(FrontReplacementSubgraph):
     enabled = True
+
+    def run_before(self):
+        return [SquaredDifference, Div, Sub]
 
     def run_after(self):
         return [PowerToEltwises]

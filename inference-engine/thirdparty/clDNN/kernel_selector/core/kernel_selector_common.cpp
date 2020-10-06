@@ -54,6 +54,8 @@ std::string toString(ActivationFunction activation) {
         case ActivationFunction::SQRT:                     method = "SQRT"; break;
         case ActivationFunction::LINEAR:                   method = "LINEAR"; break;
         case ActivationFunction::ELU:                      method = "ELU"; break;
+        case ActivationFunction::RELU_GRAD:                method = "RELU_GRAD"; break;
+        case ActivationFunction::RELU_NEGATIVE_SLOPE_GRAD: method = "RELU_NEGATIVE_SLOPE_GRAD"; break;
         case ActivationFunction::SIN:                      method = "SIN"; break;
         case ActivationFunction::ASIN:                     method = "ASIN"; break;
         case ActivationFunction::SINH:                     method = "SINH"; break;
@@ -68,6 +70,7 @@ std::string toString(ActivationFunction activation) {
         case ActivationFunction::NOT:                      method = "NOT"; break;
         case ActivationFunction::POW:                      method = "POW"; break;
         case ActivationFunction::NONE:                     method = "NONE"; break;
+        case ActivationFunction::NONE_GRAD:                method = "NONE_GRAD"; break;
         case ActivationFunction::TAN:                      method = "TAN"; break;
         case ActivationFunction::ATAN:                     method = "ATAN"; break;
         case ActivationFunction::ATANH:                    method = "ATANH"; break;
@@ -82,7 +85,6 @@ std::string toString(ActivationFunction activation) {
         case ActivationFunction::SOFTPLUS:                 method = "SOFTPLUS"; break;
         case ActivationFunction::SOFTSIGN:                 method = "SOFTSIGN"; break;
         case ActivationFunction::SWISH:                    method = "SWISH"; break;
-        case ActivationFunction::MISH:                     method = "MISH"; break;
         case ActivationFunction::GELU:                     method = "GELU"; break;
         default: break;
     }

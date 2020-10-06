@@ -6,14 +6,17 @@
 #include "vpu/vpu_plugin_config.hpp"
 #include "behavior/config.hpp"
 
-using namespace BehaviorTestsDefinitions;
 namespace {
+
     const std::vector<InferenceEngine::Precision> netPrecisions = {
             InferenceEngine::Precision::FP32,
             InferenceEngine::Precision::FP16
     };
 
     const std::vector<std::map<std::string, std::string>> Configs = {
+            {{VPU_CONFIG_KEY(IGNORE_IR_STATISTIC), CONFIG_VALUE(YES)}},
+            {{VPU_CONFIG_KEY(IGNORE_IR_STATISTIC), CONFIG_VALUE(NO)}},
+
             {{VPU_MYRIAD_CONFIG_KEY(FORCE_RESET), CONFIG_VALUE(YES)}},
             {{VPU_MYRIAD_CONFIG_KEY(FORCE_RESET), CONFIG_VALUE(NO)}},
 
@@ -26,10 +29,6 @@ namespace {
 
             {{VPU_CONFIG_KEY(HW_STAGES_OPTIMIZATION), CONFIG_VALUE(YES)}},
             {{VPU_CONFIG_KEY(HW_STAGES_OPTIMIZATION), CONFIG_VALUE(NO)}},
-
-            {{VPU_CONFIG_KEY(TILING_CMX_LIMIT_KB), "-1"}},
-            {{VPU_CONFIG_KEY(TILING_CMX_LIMIT_KB), "0"}},
-            {{VPU_CONFIG_KEY(TILING_CMX_LIMIT_KB), "10"}},
 
             {{VPU_CONFIG_KEY(PRINT_RECEIVE_TENSOR_TIME), CONFIG_VALUE(YES)}},
             {{VPU_CONFIG_KEY(PRINT_RECEIVE_TENSOR_TIME), CONFIG_VALUE(NO)}},
@@ -65,6 +64,9 @@ namespace {
             {{VPU_MYRIAD_CONFIG_KEY(PROTOCOL), "BLUETOOTH"}},
             {{VPU_MYRIAD_CONFIG_KEY(PROTOCOL), "LAN"}},
 
+            {{VPU_CONFIG_KEY(IGNORE_IR_STATISTIC), "ON"}},
+            {{VPU_CONFIG_KEY(IGNORE_IR_STATISTIC), "OFF"}},
+
             {{VPU_CONFIG_KEY(HW_STAGES_OPTIMIZATION), "ON"}},
             {{VPU_CONFIG_KEY(HW_STAGES_OPTIMIZATION), "OFF"}},
 
@@ -77,8 +79,6 @@ namespace {
             {{VPU_MYRIAD_CONFIG_KEY(PLATFORM), "0"}},
             {{VPU_MYRIAD_CONFIG_KEY(PLATFORM), "1"}},
 
-            {{VPU_CONFIG_KEY(TILING_CMX_LIMIT_KB), "-10"}},
-
             {{VPU_CONFIG_KEY(PRINT_RECEIVE_TENSOR_TIME), "ON"}},
             {{VPU_CONFIG_KEY(PRINT_RECEIVE_TENSOR_TIME), "OFF"}}
     };
@@ -88,6 +88,8 @@ namespace {
              {VPU_CONFIG_KEY(HW_STAGES_OPTIMIZATION), "ON"}},
             {{InferenceEngine::MultiDeviceConfigParams::KEY_MULTI_DEVICE_PRIORITIES, CommonTestUtils::DEVICE_MYRIAD},
              {CONFIG_KEY(LOG_LEVEL), "VERBOSE"}},
+            {{InferenceEngine::MultiDeviceConfigParams::KEY_MULTI_DEVICE_PRIORITIES, CommonTestUtils::DEVICE_MYRIAD},
+             {VPU_CONFIG_KEY(IGNORE_IR_STATISTIC), "ON"}},
             {{InferenceEngine::MultiDeviceConfigParams::KEY_MULTI_DEVICE_PRIORITIES, CommonTestUtils::DEVICE_MYRIAD},
              {VPU_MYRIAD_CONFIG_KEY(PLATFORM), "-1"}},
             {{InferenceEngine::MultiDeviceConfigParams::KEY_MULTI_DEVICE_PRIORITIES, CommonTestUtils::DEVICE_MYRIAD},

@@ -11,8 +11,6 @@
 
 #include <ie_parameter.hpp>
 
-#include <threading/ie_istreams_executor.hpp>
-
 namespace TemplatePlugin {
 
 template<typename T>
@@ -36,7 +34,6 @@ struct Configuration {
 
     int deviceId                = 0;
     bool perfCount              = true;
-    InferenceEngine::IStreamsExecutor::Config _streamsExecutorConfig;
 };
 // ! [configuration:header]
 

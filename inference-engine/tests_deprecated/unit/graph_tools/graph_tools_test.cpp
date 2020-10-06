@@ -12,8 +12,7 @@
 #include <gmock/gmock-more-actions.h>
 #include "ie_common.h"
 #include <memory>
-#include "details/ie_cnn_network_iterator.hpp"
-#include <common_test_utils/common_utils.hpp>
+#include "details/ie_cnn_network_tools.h"
 
 using namespace testing;
 using namespace InferenceEngine;
@@ -79,18 +78,6 @@ TEST_F(GraphToolsTest, canRunBFS) {
     });
 }
 
-/**
- * Generic BFS algorithm traverser - with limiting depth
- * @param layer - starting layer
- * @param visit - callback to be called upon visiting
- */
-template <class T>
-inline void CNNNetNBFS(const InferenceEngine::CNNLayerPtr& layer, int maxDept, const T& visit) {
-    if (!layer) {
-        return;
-    }
-    details::BFS(layer, visit, maxDept + 1);
-}
 
 TEST_F(GraphToolsTest, canRunNBFS) {
 
@@ -255,13 +242,12 @@ TEST_F(GraphToolsTest, canIterateOverCNNNetwork) {
         prepareInputs(maps);
     })));
 
-    std::vector<CNNLayerPtr> resultedOrder;
-    details::CNNNetworkIterator l(wrap), end;
-    for ( ; l != end; ++l) {
-        resultedOrder.push_back(*l);
+    std::vector<CNNLayerPtr>resultedOrder;
+    for (auto l : wrap) {
+        resultedOrder.push_back(l);
     }
 
-    ASSERT_EQ(resultedOrder.size(), 8);
+    ASSERT_EQ(wrap.size(), 8);
     ASSERT_STREQ(resultedOrder[0]->name.c_str(), "2");
     ASSERT_STREQ(resultedOrder[1]->name.c_str(), "6");
     ASSERT_STREQ(resultedOrder[2]->name.c_str(), "1");
@@ -282,13 +268,12 @@ TEST_F(GraphToolsTest, canIterateOverCNNNetworkWithCycle) {
         prepareInputs(maps);
     })));
 
-    std::vector<CNNLayerPtr> resultedOrder;
-    details::CNNNetworkIterator l(wrap), end;
-    for (; l != end; ++l) {
-        resultedOrder.push_back(*l);
+    std::vector<CNNLayerPtr>resultedOrder;
+    for (auto l : wrap) {
+        resultedOrder.push_back(l);
     }
 
-    ASSERT_EQ(resultedOrder.size(), 4);
+    ASSERT_EQ(wrap.size(), 4);
     ASSERT_STREQ(resultedOrder[0]->name.c_str(), "2");
     ASSERT_STREQ(resultedOrder[1]->name.c_str(), "3");
     ASSERT_STREQ(resultedOrder[2]->name.c_str(), "1");
@@ -303,7 +288,7 @@ TEST_F(GraphToolsTest, canCompareCNNNetworkIterators) {
         prepareInputs(maps);
     })));
 
-    details::CNNNetworkIterator i(wrap);
+    auto i = std::begin(wrap);
     auto i2 = i;
     i2++;
 
@@ -320,8 +305,7 @@ TEST_F(GraphToolsTest, canIterateOverEmptyNetwork) {
         prepareInputs(maps);
     })));
 
-    details::CNNNetworkIterator beg(wrap), end;
-    ASSERT_EQ(beg, end);
+    ASSERT_EQ(std::begin(wrap), std::end(wrap));
 }
 
 TEST_F(GraphToolsTest, CNNNetSwapLayersThrowsForNullPointers) {
@@ -342,7 +326,7 @@ TEST_F(GraphToolsTest, CNNNetSwapLayersSwapWithItself) {
         return l== nullptr ? GENERAL_ERROR : OK;
     })));
 
-    auto l = CommonTestUtils::getLayerByName(wrap, "2");
+    auto l = wrap.getLayerByName("2");
 
     ASSERT_NO_THROW(CNNNetSwapLayers(l, l));
 
@@ -362,8 +346,8 @@ TEST_F(GraphToolsTest, CNNNetSwapLayersSimpleCase_1) {
         return l== nullptr ? GENERAL_ERROR : OK;
     })));
 
-    auto l = CommonTestUtils::getLayerByName(wrap, "1");
-    auto r = CommonTestUtils::getLayerByName(wrap, "2");
+    auto l = wrap.getLayerByName("1");
+    auto r = wrap.getLayerByName("2");
 
     ASSERT_NO_THROW(CNNNetSwapLayers(l, r));
 
@@ -383,8 +367,8 @@ TEST_F(GraphToolsTest, CNNNetSwapLayersSimpleCase_2) {
         return l== nullptr ? GENERAL_ERROR : OK;
     })));
 
-    auto l = CommonTestUtils::getLayerByName(wrap, "2");
-    auto r = CommonTestUtils::getLayerByName(wrap, "3");
+    auto l = wrap.getLayerByName("2");
+    auto r = wrap.getLayerByName("3");
 
     ASSERT_NO_THROW(CNNNetSwapLayers(l, r));
 
@@ -405,8 +389,8 @@ TEST_F(GraphToolsTest, CNNNetSwapLayersSimpleCase_3) {
         return l== nullptr ? GENERAL_ERROR : OK;
     })));
 
-    auto l = CommonTestUtils::getLayerByName(wrap, "1");
-    auto r = CommonTestUtils::getLayerByName(wrap, "2");
+    auto l = wrap.getLayerByName("1");
+    auto r = wrap.getLayerByName("2");
 
     ASSERT_NO_THROW(CNNNetSwapLayers(l, r));
 
@@ -431,8 +415,8 @@ TEST_F(GraphToolsTest, CNNNetSwapLayersDoesSwapDims) {
         return l== nullptr ? GENERAL_ERROR : OK;
     })));
 
-    auto l = CommonTestUtils::getLayerByName(wrap, "1");
-    auto r = CommonTestUtils::getLayerByName(wrap, "2");
+    auto l = wrap.getLayerByName("1");
+    auto r = wrap.getLayerByName("2");
 
     ASSERT_NO_THROW(CNNNetSwapLayers(l, r));
 
@@ -458,8 +442,8 @@ TEST_F(GraphToolsTest, CNNNetSwapLayersSimpleCase_4) {
         return l== nullptr ? GENERAL_ERROR : OK;
     })));
 
-    auto l = CommonTestUtils::getLayerByName(wrap, "2");
-    auto r = CommonTestUtils::getLayerByName(wrap, "4");
+    auto l = wrap.getLayerByName("2");
+    auto r = wrap.getLayerByName("4");
 
     ASSERT_NO_THROW(CNNNetSwapLayers(l, r));
 
@@ -482,8 +466,8 @@ TEST_F(GraphToolsTest, CNNNetSwapLayersSplit) {
         return l== nullptr ? GENERAL_ERROR : OK;
     })));
 
-    auto l = CommonTestUtils::getLayerByName(wrap, "2");
-    auto r = CommonTestUtils::getLayerByName(wrap, "3");
+    auto l = wrap.getLayerByName("2");
+    auto r = wrap.getLayerByName("3");
 
     ASSERT_NO_THROW(CNNNetSwapLayers(l, r));
 
@@ -503,8 +487,8 @@ TEST_F(GraphToolsTest, CNNNetSwapLayersSplit_2) {
         return l== nullptr ? GENERAL_ERROR : OK;
     })));
 
-    auto l = CommonTestUtils::getLayerByName(wrap, "1");
-    auto r = CommonTestUtils::getLayerByName(wrap, "2");
+    auto l = wrap.getLayerByName("1");
+    auto r = wrap.getLayerByName("2");
 
     ASSERT_NO_THROW(CNNNetSwapLayers(l, r));
 
@@ -528,8 +512,8 @@ TEST_F(GraphToolsTest, CNNNetSwapLayersSplit_3) {
         return l== nullptr ? GENERAL_ERROR : OK;
     })));
 
-    auto l = CommonTestUtils::getLayerByName(wrap, "1");
-    auto r = CommonTestUtils::getLayerByName(wrap, "2");
+    auto l = wrap.getLayerByName("1");
+    auto r = wrap.getLayerByName("2");
 
     ASSERT_NO_THROW(CNNNetSwapLayers(l, r));
 
@@ -556,8 +540,8 @@ TEST_F(GraphToolsTest, CNNNetSwapLayersSplit_4) {
         return l== nullptr ? GENERAL_ERROR : OK;
     })));
 
-    auto l = CommonTestUtils::getLayerByName(wrap, "1");
-    auto r = CommonTestUtils::getLayerByName(wrap, "2");
+    auto l = wrap.getLayerByName("1");
+    auto r = wrap.getLayerByName("2");
 
     ASSERT_NO_THROW(CNNNetSwapLayers(l, r));
 
@@ -586,8 +570,8 @@ TEST_F(GraphToolsTest, CanNotInsertLayerIntoNonAdjiacendLayers) {
         return l== nullptr ? GENERAL_ERROR : OK;
     })));
 
-    auto l = CommonTestUtils::getLayerByName(wrap, "1");
-    auto r = CommonTestUtils::getLayerByName(wrap, "3");
+    auto l = wrap.getLayerByName("1");
+    auto r = wrap.getLayerByName("3");
 
     ASSERT_ANY_THROW(CNNNetworkInsertLayer(l, r, createGenericLayer("3")));
 }
@@ -604,8 +588,8 @@ TEST_F(GraphToolsTest, CNNNetworkInsertLayerSimpleCase) {
         return l== nullptr ? GENERAL_ERROR : OK;
     })));
 
-    auto l = CommonTestUtils::getLayerByName(wrap, "1");
-    auto r = CommonTestUtils::getLayerByName(wrap, "2");
+    auto l = wrap.getLayerByName("1");
+    auto r = wrap.getLayerByName("2");
 
     CNNNetworkInsertLayer(l, r, createGenericLayer("3"));
 
@@ -626,8 +610,8 @@ TEST_F(GraphToolsTest, CNNNetworkInsertLayerSimpleCaseWithMultipleOutputs) {
         return l== nullptr ? GENERAL_ERROR : OK;
     })));
 
-    auto l = CommonTestUtils::getLayerByName(wrap, "1");
-    auto r = CommonTestUtils::getLayerByName(wrap, "3");
+    auto l = wrap.getLayerByName("1");
+    auto r = wrap.getLayerByName("3");
 
     CNNNetworkInsertLayer(l, r, createGenericLayer("4"));
 
@@ -650,8 +634,8 @@ TEST_F(GraphToolsTest, CNNNetworkInsertLayerSimpleCaseWithMultipleInputs) {
         return l== nullptr ? GENERAL_ERROR : OK;
     })));
 
-    auto l = CommonTestUtils::getLayerByName(wrap, "3");
-    auto r = CommonTestUtils::getLayerByName(wrap, "2");
+    auto l = wrap.getLayerByName("3");
+    auto r = wrap.getLayerByName("2");
 
     CNNNetworkInsertLayer(l, r, createGenericLayer("4"));
 
@@ -674,9 +658,9 @@ TEST_F(GraphToolsTest, CNNNetworkInsertLayerSplitAndConcat) {
         return l== nullptr ? GENERAL_ERROR : OK;
     })));
 
-    auto l = CommonTestUtils::getLayerByName(wrap, "1");
-    auto r = CommonTestUtils::getLayerByName(wrap, "2");
-    auto r2 = CommonTestUtils::getLayerByName(wrap, "3");
+    auto l = wrap.getLayerByName("1");
+    auto r = wrap.getLayerByName("2");
+    auto r2 = wrap.getLayerByName("3");
 
     CNNNetworkInsertLayer(l, r, createGenericLayer("4"), 1);
     CNNNetworkInsertLayer(l, r2, createGenericLayer("5"), 2);
@@ -701,7 +685,7 @@ TEST_F(GraphToolsTest, CNNNetworkInsertAfterLastLayer) {
         return l== nullptr ? GENERAL_ERROR : OK;
     })));
 
-    auto l = CommonTestUtils::getLayerByName(wrap, "2");
+    auto l = wrap.getLayerByName("2");
 
     CNNNetworkInsertLayer(l, nullptr, createGenericLayer("3"));
 
@@ -722,7 +706,7 @@ TEST_F(GraphToolsTest, CNNNetworkInsertAfterAll) {
         return l== nullptr ? GENERAL_ERROR : OK;
     })));
 
-    CNNNetworkInsertLayer(CommonTestUtils::getLayerByName(wrap, "1"), nullptr, createGenericLayer("5"));
+    CNNNetworkInsertLayer(wrap.getLayerByName("1"), nullptr, createGenericLayer("5"));
 
     ASSERT_CONNECTION(1, 5);
     ASSERT_CONNECTION(5, 2);
@@ -743,7 +727,7 @@ TEST_F(GraphToolsTest, CNNNetworkInsertAllAfterSplit) {
         return l== nullptr ? GENERAL_ERROR : OK;
     })));
 
-    CNNNetworkInsertLayer(CommonTestUtils::getLayerByName(wrap, "1"), nullptr, createGenericLayer("5"));
+    CNNNetworkInsertLayer(wrap.getLayerByName("1"), nullptr, createGenericLayer("5"));
 
     ASSERT_CONNECTION(1, 5);
     ASSERT_CONNECTION(5, 2);
@@ -765,7 +749,7 @@ TEST_F(GraphToolsTest, CNNNetworkInsert1AfterSplitBeforeEltwise) {
         return l== nullptr ? GENERAL_ERROR : OK;
     })));
 
-    CNNNetworkInsertLayer(CommonTestUtils::getLayerByName(wrap, "1"), CommonTestUtils::getLayerByName(wrap, "4"), createGenericLayer("5"));
+    CNNNetworkInsertLayer(wrap.getLayerByName("1"), wrap.getLayerByName("4"), createGenericLayer("5"));
 
     ASSERT_CONNECTION(1, 3);
     ASSERT_CONNECTION(1, 5);
@@ -788,7 +772,7 @@ TEST_F(GraphToolsTest, CNNNetworkInsert1AfterSplit) {
         return l== nullptr ? GENERAL_ERROR : OK;
     })));
 
-    CNNNetworkInsertLayer(CommonTestUtils::getLayerByName(wrap, "1"), CommonTestUtils::getLayerByName(wrap, "4"), createGenericLayer("5"));
+    CNNNetworkInsertLayer(wrap.getLayerByName("1"), wrap.getLayerByName("4"), createGenericLayer("5"));
 
     ASSERT_CONNECTION(1, 2);
     ASSERT_CONNECTION(1, 3);
@@ -811,7 +795,7 @@ TEST_F(GraphToolsTest, CNNNetworkInsertAfter2ConnectionsToEltwise) {
         return l== nullptr ? GENERAL_ERROR : OK;
     })));
 
-    CNNNetworkInsertLayer(CommonTestUtils::getLayerByName(wrap, "1"), CommonTestUtils::getLayerByName(wrap, "2"), createGenericLayer("5"));
+    CNNNetworkInsertLayer(wrap.getLayerByName("1"), wrap.getLayerByName("2"), createGenericLayer("5"));
 
     ASSERT_CONNECTION(1, 5);
     ASSERT_MN_CONNECTIONS(5, 2, 1, 2);
@@ -851,8 +835,8 @@ TEST_F(GraphToolsTest, CNNNetworkRemoveInputOrOutputLayer) {
         return l== nullptr ? GENERAL_ERROR : OK;
     })));
 
-    ASSERT_ANY_THROW(CNNNetworkRemoveLayer(CommonTestUtils::getLayerByName(wrap, "1")));
-    ASSERT_ANY_THROW(CNNNetworkRemoveLayer(CommonTestUtils::getLayerByName(wrap, "3")));
+    ASSERT_ANY_THROW(CNNNetworkRemoveLayer(wrap.getLayerByName("1")));
+    ASSERT_ANY_THROW(CNNNetworkRemoveLayer(wrap.getLayerByName("3")));
 }
 
 TEST_F(GraphToolsTest, CNNNetworkRemoveLayerThaHas2Outputs) {
@@ -872,7 +856,7 @@ TEST_F(GraphToolsTest, CNNNetworkRemoveLayerThaHas2Outputs) {
         return l== nullptr ? GENERAL_ERROR : OK;
     })));
 
-    CNNNetworkRemoveLayer(CommonTestUtils::getLayerByName(wrap, "2"));
+    CNNNetworkRemoveLayer(wrap.getLayerByName("2"));
 
     ASSERT_2_CONNECTIONS(1, 3);
     ASSERT_CONNECTION(1, 4);
@@ -900,7 +884,7 @@ TEST_F(GraphToolsTest, CNNNetworkRemoveLayerSplit) {
         return l== nullptr ? GENERAL_ERROR : OK;
     })));
 
-    CNNNetworkRemoveLayer(CommonTestUtils::getLayerByName(wrap, "2"));
+    CNNNetworkRemoveLayer(wrap.getLayerByName("2"));
 
     ASSERT_2_CONNECTIONS(1, 3);
     // means all remained references removed
@@ -930,7 +914,7 @@ TEST_F(GraphToolsTest, CNNNetworkRemoveLayerSplit2) {
         return l== nullptr ? GENERAL_ERROR : OK;
     })));
 
-    CNNNetworkRemoveLayer(CommonTestUtils::getLayerByName(wrap, "2"));
+    CNNNetworkRemoveLayer(wrap.getLayerByName("2"));
 
     ASSERT_2_CONNECTIONS(1, 3);
     ASSERT_3_CONNECTIONS(1, 4);
@@ -958,7 +942,7 @@ TEST_F(GraphToolsTest, CNNNetworkRemoveSimpleLayer) {
         return l== nullptr ? GENERAL_ERROR : OK;
     })));
 
-    CNNNetworkRemoveLayer(CommonTestUtils::getLayerByName(wrap, "2"));
+    CNNNetworkRemoveLayer(wrap.getLayerByName("2"));
 
     ASSERT_CONNECTION(1, 3);
 

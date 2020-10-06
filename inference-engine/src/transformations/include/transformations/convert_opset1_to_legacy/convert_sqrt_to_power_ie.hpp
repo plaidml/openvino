@@ -15,13 +15,18 @@
 namespace ngraph {
 namespace pass {
 
-class TRANSFORMATIONS_API ConvertSqrtToPowerIEMatcher;
+class TRANSFORMATIONS_API ConvertSqrtToPowerIE;
 
 }  // namespace pass
 }  // namespace ngraph
 
-class ngraph::pass::ConvertSqrtToPowerIEMatcher: public ngraph::pass::MatcherPass {
+class ngraph::pass::ConvertSqrtToPowerIE: public ngraph::pass::GraphRewrite {
 public:
-    ConvertSqrtToPowerIEMatcher();
+    ConvertSqrtToPowerIE() : GraphRewrite() {
+        convert_sqrt();
+    }
+
+private:
+    void convert_sqrt();
 };
 

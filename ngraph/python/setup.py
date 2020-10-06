@@ -23,10 +23,11 @@ import setuptools
 from setuptools import Extension, setup
 from setuptools.command.build_ext import build_ext
 
-__version__ = os.environ.get("NGRAPH_VERSION", "0.0.0.dev0")
+__version__ = os.environ.get("NGRAPH_VERSION", "0.0.0-dev")
 PYNGRAPH_ROOT_DIR = os.path.abspath(os.path.dirname(__file__))
 PYNGRAPH_SRC_DIR = os.path.join(PYNGRAPH_ROOT_DIR, "src")
 NGRAPH_DEFAULT_INSTALL_DIR = os.environ.get("HOME")
+NGRAPH_ONNX_IMPORT_ENABLE = os.environ.get("NGRAPH_ONNX_IMPORT_ENABLE")
 NGRAPH_PYTHON_DEBUG = os.environ.get("NGRAPH_PYTHON_DEBUG")
 
 
@@ -181,12 +182,9 @@ sources = [
     "pyngraph/axis_vector.cpp",
     "pyngraph/coordinate.cpp",
     "pyngraph/coordinate_diff.cpp",
-    "pyngraph/dict_attribute_visitor.cpp",
     "pyngraph/dimension.cpp",
     "pyngraph/function.cpp",
     "pyngraph/node.cpp",
-    "pyngraph/node_input.cpp",
-    "pyngraph/node_output.cpp",
     "pyngraph/node_factory.cpp",
     "pyngraph/ops/constant.cpp",
     "pyngraph/ops/get_output_element.cpp",
@@ -206,10 +204,13 @@ sources = [
     "pyngraph/passes/regmodule_pyngraph_passes.cpp",
     "pyngraph/partial_shape.cpp",
     "pyngraph/pyngraph.cpp",
+    "pyngraph/runtime/backend.cpp",
+    "pyngraph/runtime/executable.cpp",
+    "pyngraph/runtime/regmodule_pyngraph_runtime.cpp",
+    "pyngraph/runtime/tensor.cpp",
     "pyngraph/serializer.cpp",
     "pyngraph/shape.cpp",
     "pyngraph/strides.cpp",
-    "pyngraph/tensor_iterator_builder.cpp",
     "pyngraph/types/element_type.cpp",
     "pyngraph/types/regmodule_pyngraph_types.cpp",
     "pyngraph/util.cpp",
@@ -217,15 +218,12 @@ sources = [
 
 packages = [
     "ngraph",
-    "ngraph.opset1",
-    "ngraph.opset2",
-    "ngraph.opset3",
-    "ngraph.opset4",
     "ngraph.utils",
     "ngraph.impl",
     "ngraph.impl.op",
     "ngraph.impl.op.util",
     "ngraph.impl.passes",
+    "ngraph.impl.runtime",
 ]
 
 sources = [PYNGRAPH_SRC_DIR + "/" + source for source in sources]
@@ -237,6 +235,9 @@ library_dirs = [NGRAPH_CPP_LIBRARY_DIR]
 libraries = [NGRAPH_CPP_LIBRARY_NAME, ONNX_IMPORTER_CPP_LIBRARY_NAME]
 
 extra_compile_args = []
+if NGRAPH_ONNX_IMPORT_ENABLE in ["TRUE", "ON", True]:
+    extra_compile_args.append("-DNGRAPH_ONNX_IMPORT_ENABLE")
+
 extra_link_args = []
 
 data_files = [
@@ -245,7 +246,6 @@ data_files = [
         [
             os.path.join(NGRAPH_CPP_LIBRARY_DIR, library)
             for library in os.listdir(NGRAPH_CPP_LIBRARY_DIR)
-            if os.path.isfile(os.path.join(NGRAPH_CPP_LIBRARY_DIR, library))
         ],
     ),
     (
@@ -257,6 +257,15 @@ data_files = [
     ),
     ("", [os.path.join(NGRAPH_CPP_DIST_DIR, "LICENSE")],),
 ]
+
+if NGRAPH_ONNX_IMPORT_ENABLE in ["TRUE", "ON", True]:
+    onnx_sources = [
+        "pyngraph/onnx_import/onnx_import.cpp",
+    ]
+    onnx_sources = [PYNGRAPH_SRC_DIR + "/" + source for source in onnx_sources]
+    sources = sources + onnx_sources
+
+    packages.append("ngraph.impl.onnx_import")
 
 ext_modules = [
     Extension(
@@ -359,19 +368,24 @@ class BuildExt(build_ext):
 
 with open(os.path.join(PYNGRAPH_ROOT_DIR, "requirements.txt")) as req:
     requirements = req.read().splitlines()
+    setup_requires = [item for item in requirements if item.strip().startswith("numpy")]
 
 setup(
     name="ngraph-core",
     description="nGraph - Intel's graph compiler and runtime for Neural Networks",
     version=__version__,
     author="Intel Corporation",
-    url="https://github.com/openvinotoolkit/openvino",
+    author_email="intelnervana@intel.com",
+    url="https://github.com/NervanaSystems/ngraph/",
     license="License :: OSI Approved :: Apache Software License",
+    long_description=open(os.path.join(PYNGRAPH_ROOT_DIR, "README.md")).read(),
+    long_description_content_type="text/markdown",
     ext_modules=ext_modules,
-    package_dir={"": "src"},
+    package_dir={'': PYNGRAPH_SRC_DIR},
     packages=packages,
     cmdclass={"build_ext": BuildExt},
     data_files=data_files,
+    setup_requires=setup_requires,
     install_requires=requirements,
     zip_safe=False,
     extras_require={},

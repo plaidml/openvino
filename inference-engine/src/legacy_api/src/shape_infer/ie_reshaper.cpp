@@ -19,6 +19,7 @@
 
 #include "details/caseless.hpp"
 #include "details/ie_cnn_network_tools.h"
+#include "ie_cnn_layer_builder.h"
 #include "ie_reshaper.hpp"
 #include "shape_infer/built-in/ie_built_in_holder.hpp"
 
@@ -45,7 +46,7 @@ Reshaper::Reshaper(std::vector<DataPtr> insDatas, const LauncherCreator::Ptr& la
 
     _allSortedLayers = SortTopologicallyStartsFrom(insDatas);
     for (auto& in_data : insDatas) {
-        for (auto layer : getInputTo(in_data)) {
+        for (auto layer : in_data->getInputTo()) {
             _inputLayers.insert(layer.second);
         }
     }
@@ -225,7 +226,7 @@ StatusCode Reshaper::apply(ResponseDesc* resp) {
 }
 
 SizeVector Reshaper::getResultShapeFor(DataPtr& data, ResponseDesc* resp) {
-    auto creator_layer = getCreatorLayer(data).lock();
+    auto creator_layer = data->getCreatorLayer().lock();
     std::string creator_layer_name;
     if (creator_layer) {
         creator_layer_name = creator_layer->name;

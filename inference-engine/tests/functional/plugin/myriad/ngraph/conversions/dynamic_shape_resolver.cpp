@@ -8,12 +8,9 @@
 #include "ngraph/function.hpp"
 
 #include "cpp/ie_cnn_network.h"
-#include "cnn_network_impl.hpp"
 #include "ie_common.h"
 
 #include "common_test_utils/test_common.hpp"
-#include "common_test_utils/common_utils.hpp"
-#include "details/ie_cnn_network_iterator.hpp"
 
 #include <gtest/gtest.h>
 
@@ -38,14 +35,13 @@ public:
 
 protected:
     InferenceEngine::CNNLayerPtr getDynamicShapeResolverLayer() const {
-        return CommonTestUtils::getLayerByName(cnnNetwork, s_FriendlyName);
+        return cnnNetwork.getLayerByName(s_FriendlyName);
     }
     InferenceEngine::CNNNetwork cnnNetwork;
 
 private:
     void triggerConversionToCNNNetwork() {
-        cnnNetwork = InferenceEngine::CNNNetwork(
-            std::make_shared<InferenceEngine::details::CNNNetworkImpl>(cnnNetwork));
+        cnnNetwork.begin();
     }
 
     static const char s_FriendlyName[];

@@ -64,13 +64,9 @@ namespace ngraph
 
                 auto reduction_axes = detail::get_reduction_axes(node);
 
-                CHECK_VALID_NODE(node,
-                                 reduction_axes.size() <= data_shape.size(),
-                                 "provided reduction axes count (",
-                                 reduction_axes.size(),
-                                 ") is larger than input tensor rank (",
-                                 data_shape.size(),
-                                 ")");
+                ASSERT_VALID_ARGUMENT(node, reduction_axes.size() <= data_shape.size())
+                    << "provided reduction axes count (" << reduction_axes.size()
+                    << ") is larger than input tensor rank (" << data_shape.size() << ")";
 
                 std::shared_ptr<ngraph::Node> op_node =
                     reduction_function(ng_input, reduction_axes);
@@ -103,13 +99,9 @@ namespace ngraph
 
                 const auto reduction_axes = detail::get_reduction_axes(node);
 
-                CHECK_VALID_NODE(node,
-                                 reduction_axes.size() <= data_rank,
-                                 "provided reduction axes count (",
-                                 reduction_axes.size(),
-                                 ") is larger than input tensor rank (",
-                                 data_rank,
-                                 ")");
+                ASSERT_VALID_ARGUMENT(node, reduction_axes.size() <= data_rank)
+                    << "provided reduction axes count (" << reduction_axes.size()
+                    << ") is larger than input tensor rank (" << data_rank << ")";
 
                 std::int64_t keepdims = node.get_attribute_value<std::int64_t>("keepdims", 1);
 

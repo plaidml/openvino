@@ -5,6 +5,7 @@
 #include "low_precision_transformations/layer_transformation.hpp"
 #include "low_precision_transformations/network_helper.hpp"
 
+#include <details/ie_cnn_network_tools.h>
 #include <ie_common.h>
 
 #include <algorithm>
@@ -323,7 +324,7 @@ Precision LayerTransformation::getPrecisionParent(const CNNLayer& layer) {
     }
 
     for (const DataPtr outData : parent->outData) {
-        const auto inputTo = getInputTo(outData);
+        const auto inputTo = outData->getInputTo();
         for (auto it = inputTo.begin(); it != inputTo.end(); ++it) {
             if (it->second->name == layer.name) {
                 return outData->getPrecision();

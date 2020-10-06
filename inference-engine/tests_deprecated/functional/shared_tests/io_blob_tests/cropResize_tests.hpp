@@ -131,6 +131,9 @@ protected:
     }
 
     void TearDown() override {
+        if (_device.find(CommonTestUtils::DEVICE_GPU) != std::string::npos) {
+            PluginCache::get().reset();
+        }
     }
 
 public:
@@ -398,27 +401,15 @@ TEST_P(RandomROITest, PreprocRandomROITest)
 
         if (_colorFormat == NV12)
         {
-            if (i % 2)
-            {
-                // New way to create NV12 ROI
+            roi.sizeX += roi.sizeX % 2;
+            roi.sizeY += roi.sizeY % 2;
 
-                auto nv12Blob = make_shared_blob<NV12Blob>(yBlob, uvBlob);
-                cropBlob = nv12Blob->createROI(roi);
-            }
-            else
-            {
-                // Old way to create NV12 ROI
+            auto roiUV = roi/2;
 
-                roi.sizeX += roi.sizeX % 2;
-                roi.sizeY += roi.sizeY % 2;
+            auto cropYBlob = make_shared_blob(yBlob, roi);
+            auto cropUvBlob = make_shared_blob(uvBlob, roiUV);
 
-                auto roiUV = roi/2;
-
-                auto cropYBlob = make_shared_blob(yBlob, roi);
-                auto cropUvBlob = make_shared_blob(uvBlob, roiUV);
-
-                cropBlob = make_shared_blob<NV12Blob>(cropYBlob, cropUvBlob);
-            }
+            cropBlob = make_shared_blob<NV12Blob>(cropYBlob, cropUvBlob);
         }
         else
         {
@@ -1122,27 +1113,13 @@ TEST_P(NV12ColorConvertTest, NV12Test) {
     cv::resize(refImg, refImg, cv::Size(_netDims[3], _netDims[2]), 0, 0, cv_interpolation);
     auto refBlob = img2Blob<Precision::FP32>(refImg, Layout::NCHW);
 
+    // Note: Y and UV blobs for original data must always be "alive" until the end of the execution:
+    //       ROI blobs do not own the data
     auto yBlob = img2Blob<Precision::U8>(yPlane, NHWC);
     auto uvBlob = img2Blob<Precision::U8>(uvPlane, NHWC);
-    Blob::Ptr inputBlob;
-
-    if (i % 2)
-    {
-        // New way to create NV12 ROI
-
-        auto nv12Blob = make_shared_blob<NV12Blob>(yBlob, uvBlob);
-        inputBlob = nv12Blob->createROI(yRoi);
-    }
-    else
-    {
-        // Old way to create NV12 ROI
-
-        // Note: Y and UV blobs for original data must always be "alive" until the end of the execution:
-        //       ROI blobs do not own the data
-        auto croppedYBlob = make_shared_blob(yBlob, yRoi);
-        auto croppedUvBlob = make_shared_blob(uvBlob, uvRoi);
-        inputBlob = make_shared_blob<NV12Blob>(croppedYBlob, croppedUvBlob);
-    }
+    auto croppedYBlob = make_shared_blob(yBlob, yRoi);
+    auto croppedUvBlob = make_shared_blob(uvBlob, uvRoi);
+    auto inputBlob = make_shared_blob<NV12Blob>(croppedYBlob, croppedUvBlob);
 
     req.SetBlob(net.getInputsInfo().begin()->first, inputBlob);
 

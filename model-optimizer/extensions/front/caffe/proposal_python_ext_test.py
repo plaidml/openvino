@@ -42,6 +42,7 @@ class TestProposalPythonExt(unittest.TestCase):
         }
         fake_pl = FakeProposalPythonProtoLayer(FakeMultiParam(params))
         fake_node = FakeNode(fake_pl, None)
+        fake_node.graph.graph['cmd_params'] = FakeAttr(generate_experimental_IR_V10=False)
 
         ProposalPythonFrontExtractor.extract(fake_node)
 
@@ -67,6 +68,7 @@ class TestProposalPythonExt(unittest.TestCase):
         }
         fake_pl = FakeProposalPythonProtoLayer(FakeMultiParam(params))
         fake_node = FakeNode(fake_pl, None)
+        fake_node.graph.graph['cmd_params'] = FakeAttr(generate_experimental_IR_V10=False)
 
         ProposalPythonFrontExtractor.extract(fake_node)
 
@@ -92,6 +94,7 @@ class TestProposalPythonExt(unittest.TestCase):
         }
         fake_pl = FakeProposalPythonProtoLayer(FakeMultiParam(params))
         fake_node = FakeNode(fake_pl, None)
+        fake_node.graph.graph['cmd_params'] = FakeAttr(generate_experimental_IR_V10=False)
 
         ProposalPythonFrontExtractor.extract(fake_node)
 

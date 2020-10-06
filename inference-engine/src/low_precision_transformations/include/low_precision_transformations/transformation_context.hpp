@@ -11,6 +11,7 @@
 
 #include <ie_icnn_network.hpp>
 #include <cpp/ie_cnn_network.h>
+#include <details/ie_cnn_network_tools.h>
 #include "low_precision_transformations/quantization_details.hpp"
 
 namespace InferenceEngine {

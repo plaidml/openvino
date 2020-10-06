@@ -23,7 +23,12 @@ class TRANSFORMATIONS_API ConvertMatMulToFCorGemm;
 }  // namespace pass
 }  // namespace ngraph
 
-class ngraph::pass::ConvertMatMulToFCorGemm: public ngraph::pass::MatcherPass {
+class ngraph::pass::ConvertMatMulToFCorGemm: public ngraph::pass::GraphRewrite {
 public:
-    ConvertMatMulToFCorGemm();
+    ConvertMatMulToFCorGemm(): GraphRewrite() {
+        convert_matmul();
+    }
+
+private:
+    void convert_matmul();
 };

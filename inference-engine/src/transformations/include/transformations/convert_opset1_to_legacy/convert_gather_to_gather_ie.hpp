@@ -22,7 +22,7 @@
 namespace ngraph {
 namespace pass {
 
-class TRANSFORMATIONS_API ConvertGatherToGatherIEMatcher;
+class TRANSFORMATIONS_API ConvertGatherToGatherIE;
 
 }  // namespace pass
 }  // namespace ngraph
@@ -34,7 +34,12 @@ class TRANSFORMATIONS_API ConvertGatherToGatherIEMatcher;
  *     we unsqueeze indices input and squeeze GatherIE output.
  */
 
-class ngraph::pass::ConvertGatherToGatherIEMatcher : public ngraph::pass::MatcherPass {
+class ngraph::pass::ConvertGatherToGatherIE : public ngraph::pass::GraphRewrite {
 public:
-    ConvertGatherToGatherIEMatcher();
+    ConvertGatherToGatherIE() : GraphRewrite() {
+        convert_gather_to_gather_ie();
+    }
+
+private:
+    void convert_gather_to_gather_ie();
 };

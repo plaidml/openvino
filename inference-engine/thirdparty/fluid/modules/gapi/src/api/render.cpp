@@ -2,6 +2,7 @@
 
 #include <stdexcept>
 
+#include <opencv2/imgproc.hpp>
 #include <opencv2/gapi/render/render.hpp>
 #include <opencv2/gapi/own/assert.hpp>
 

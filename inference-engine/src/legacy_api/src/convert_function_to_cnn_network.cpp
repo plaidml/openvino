@@ -35,13 +35,13 @@
 #include "ngraph_ops/rnn_cell_ie.hpp"
 #include "ngraph_ops/topk_ie.hpp"
 #include "generic_ie.hpp"
-#include "exec_graph_info.hpp"
 
 #include "ie_profiling.hpp"
 #include "ie_cnn_layer_builder_ngraph.h"
 
 #include <debug.h>
 #include <ngraph/opsets/opset1.hpp>
+#include "transformations/convert_opset1_to_legacy/convert_opset1_to_legacy.hpp"
 #include "transformations/utils/utils.hpp"
 #include "transformations/rt_info/fused_names_attribute.hpp"
 #include "transformations/rt_info/primitives_priority_attribute.hpp"
@@ -91,24 +91,6 @@ public:
         params[name] = std::to_string(adapter.get());
     }
 
-    void on_adapter(const std::string& name, ngraph::ValueAccessor<std::vector<std::string>>& adapter) override {
-        std::vector<std::string> data = adapter.get();
-        for (auto& str : data) {
-            std::transform(str.begin(), str.end(), str.begin(), [](unsigned char c) {
-                return std::tolower(c);
-            });
-        }
-
-        std::stringstream ss;
-        std::copy(data.begin(), data.end(), std::ostream_iterator<std::string>(ss, ","));
-        params[name] = ss.str();
-    }
-
-    void on_adapter(const std::string& name, ngraph::ValueAccessor<std::vector<float>>& adapter) override {
-        auto data = adapter.get();
-        params[name] = joinVec(data);
-    }
-
     void on_adapter(const std::string& name, ::ngraph::ValueAccessor<void>& adapter) override;
 
 private:
@@ -136,9 +118,6 @@ void InferenceEngine::details::CNNLayerCreator::on_adapter(const std::string& na
     } else if (auto a = ::ngraph::as_type<::ngraph::AttributeAdapter<::ngraph::Strides>>(&adapter)) {
         auto shape = static_cast<::ngraph::Strides&>(*a);
         params[name] = joinVec(shape);
-    } else {
-        THROW_IE_EXCEPTION << "Error converting ngraph to CNN network. "
-                              "Attribute adapter can not be found for " << name << " parameter";
     }
 }
 
@@ -325,7 +304,7 @@ InferenceEngine::details::CNNLayerCreator::CNNLayerCreator(const std::shared_ptr
 
         Builder::NodeConverter<::ngraph::op::Constant> converter;
 
-        const auto weightsNode = castedLayer->input(1).get_source_output().get_node_shared_ptr();
+        const auto weightsNode = castedLayer->get_inputs()[1].get_output().get_node();
         if (converter.canCreate(weightsNode)) {
             const auto& weights = converter.createLayer(weightsNode);
             res->blobs["weights"] = weights->blobs["custom"];
@@ -351,7 +330,7 @@ InferenceEngine::details::CNNLayerCreator::CNNLayerCreator(const std::shared_ptr
         res->params = params;
         return res;
     });
-
+    
     addSpecificCreator({"Assign"}, [](const std::shared_ptr<::ngraph::Node>& node,
                                             const std::map<std::string, std::string> params) -> CNNLayerPtr {
         LayerParams attrs = {node->get_friendly_name(), "Memory",
@@ -507,14 +486,6 @@ InferenceEngine::details::CNNLayerCreator::CNNLayerCreator(const std::shared_ptr
                            << " should be replaced by constant during constant folding.";
         return nullptr;
     });
-
-    addSpecificCreator({"NonMaxSuppressionIE"}, [](const std::shared_ptr<::ngraph::Node>& node,
-                                                 const std::map<std::string, std::string> params) -> CNNLayerPtr {
-        LayerParams attrs = {node->get_friendly_name(), "NonMaxSuppression", details::convertPrecision(node->get_output_element_type(0))};
-        auto res = std::make_shared<InferenceEngine::NonMaxSuppressionLayer>(attrs);
-        res->params = params;
-        return res;
-    });
 }
 
 CNNLayerPtr InferenceEngine::details::CNNLayerCreator::create() {
@@ -528,10 +499,7 @@ CNNLayerPtr InferenceEngine::details::CNNLayerCreator::create() {
     return res;
 }
 
-void convertFunctionToICNNNetwork(const std::shared_ptr<const ::ngraph::Function> &graph,
-                                 const ICNNNetwork &network,
-                                 CNNNetworkImpl* cnnNetworkImpl,
-                                 bool keep_constant_inputs) {
+std::shared_ptr<CNNNetworkImpl> convertFunctionToICNNNetwork(const std::shared_ptr<const ::ngraph::Function>& graph, const ICNNNetwork &network) {
     IE_PROFILING_AUTO_SCOPE(convertFunctionToICNNNetwork)
     const auto createCNNLayer = [](const std::shared_ptr<::ngraph::Node> &node) -> CNNLayerPtr {
         class NGraphCNNLayer: public CNNLayer {
@@ -540,7 +508,7 @@ void convertFunctionToICNNNetwork(const std::shared_ptr<const ::ngraph::Function
                 this->node = node;
             }
         };
-        const static std::vector<std::shared_ptr<Builder::INodeConverter>> convertors = {
+        static std::vector<std::shared_ptr<Builder::INodeConverter>> convertors = {
                 std::make_shared<Builder::NodeConverter<::ngraph::op::Abs>>(),
                 std::make_shared<Builder::NodeConverter<::ngraph::op::Acos>>(),
                 std::make_shared<Builder::NodeConverter<::ngraph::op::v1::Add>>(),
@@ -589,6 +557,7 @@ void convertFunctionToICNNNetwork(const std::shared_ptr<const ::ngraph::Function
                 std::make_shared<Builder::NodeConverter<::ngraph::op::v1::Minimum>>(),
                 std::make_shared<Builder::NodeConverter<::ngraph::op::v1::Multiply>>(),
                 std::make_shared<Builder::NodeConverter<::ngraph::op::v1::NonMaxSuppression>>(),
+                std::make_shared<Builder::NodeConverter<::ngraph::op::NonMaxSuppressionIE>>(),
                 std::make_shared<Builder::NodeConverter<::ngraph::op::NormalizeL2>>(),
                 std::make_shared<Builder::NodeConverter<::ngraph::op::NormalizeIE>>(),
                 std::make_shared<Builder::NodeConverter<::ngraph::op::OneHotIE>>(),
@@ -706,8 +675,8 @@ void convertFunctionToICNNNetwork(const std::shared_ptr<const ::ngraph::Function
                                      const std::unordered_set<std::string> &names,
                                      bool keep_constant) -> bool {
         if (auto constantNode = ::ngraph::as_type_ptr<::ngraph::op::Constant>(node)) {
-            for (const auto &consumerInputPort : constantNode->output(0).get_target_inputs()) {
-                const auto &consumerLayer = consumerInputPort.get_node()->shared_from_this();
+            for (const auto &consumerInputPort : constantNode->get_outputs()[0].get_inputs()) {
+                const auto &consumerLayer = consumerInputPort->get_node();
                 if (names.find(consumerLayer->get_name()) == names.end())
                     continue;
                 if (!isInternalConstLayer(constantNode, consumerLayer, keep_constant))
@@ -719,7 +688,7 @@ void convertFunctionToICNNNetwork(const std::shared_ptr<const ::ngraph::Function
         return ::ngraph::as_type_ptr<::ngraph::op::Result>(node) != nullptr;
     };
 
-    const auto keep_input_info = [](CNNNetworkImpl *network, const DataPtr &inData) {
+    const auto keep_input_info = [](std::shared_ptr<details::CNNNetworkImpl> &network, const DataPtr &inData) {
         InputInfo::Ptr info(new InputInfo());
         info->setInputData(inData);
         network->setInputInfo(info);
@@ -730,8 +699,12 @@ void convertFunctionToICNNNetwork(const std::shared_ptr<const ::ngraph::Function
     InputsDataMap thisInputDataMap;
     network.getInputsInfo(thisInputDataMap);
 
-    // Construct network
+    // Create network
+    auto cnnNetworkImpl = std::make_shared<details::CNNNetworkImpl>();
     cnnNetworkImpl->setName(graph->get_friendly_name());
+    // In generic case all nGraph functions have MIXED precision
+    // Network precision should be deprecated
+    cnnNetworkImpl->setPrecision(Precision::MIXED);
 
     // Collect all names from current graph
     // It is necessary in order to differentiate outputs from constant layers when we share constants
@@ -742,7 +715,7 @@ void convertFunctionToICNNNetwork(const std::shared_ptr<const ::ngraph::Function
     for (const auto &layer : nodes)
         op_names.insert(layer->get_name());
 
-    bool keep_constants = keep_constant_inputs || ::ngraph::op::util::has_op_with_type<::ngraph::op::FakeQuantize>(graph);
+    bool keep_constants = ::ngraph::op::util::has_op_with_type<::ngraph::op::FakeQuantize>(graph);
 
     // Create layers and output data
     for (const auto &layer : nodes) {
@@ -757,7 +730,7 @@ void convertFunctionToICNNNetwork(const std::shared_ptr<const ::ngraph::Function
         // Set originalLayersNames from FusedNames
         std::string originalNames = ::ngraph::getFusedNames(layer);
         if (!originalNames.empty()) {
-            cnnLayer->params[ExecGraphInfoSerialization::ORIGINAL_NAMES] = originalNames;
+            cnnLayer->params["originalLayersNames"] = originalNames;
         }
 
         std::string primitivesPriority = ::ngraph::getPrimitivesPriority(layer);
@@ -779,7 +752,7 @@ void convertFunctionToICNNNetwork(const std::shared_ptr<const ::ngraph::Function
 
         size_t inputCount(0);
         for (size_t i = 0; i < layer->get_input_size(); i++) {
-            const auto &constant = ngraph::as_type_ptr<ngraph::op::Constant>(layer->input(i).get_source_output().get_node_shared_ptr());
+            const auto &constant = ngraph::as_type_ptr<ngraph::op::Constant>(layer->get_inputs()[i].get_output().get_node());
             if (constant && isInternalConstLayer(constant, layer, keep_constants)) {
                 continue;
             }
@@ -793,20 +766,6 @@ void convertFunctionToICNNNetwork(const std::shared_ptr<const ::ngraph::Function
         cnnLayer->insData.resize(inputCount);
 
         for (size_t i = 0; i < layer->get_output_size(); i++) {
-            // Memory node with index = 1 has no inputs according to the specification.
-            // For proper conversion, we must cut off all the layers and data nodes above ReadValue,
-            // if they are connected only with this layer.
-            // Now MO generates only constants or constant sub-graphs as input to ReadValue op.
-            if (std::dynamic_pointer_cast<::ngraph::op::Constant>(layer)) {
-                bool all_to_read_value = !layer->output(i).get_target_inputs().empty();
-                for (const auto &output_input : layer->output(i).get_target_inputs()) {
-                    all_to_read_value
-                            &= dynamic_cast<ngraph::op::ReadValue *>(output_input.get_node()) != nullptr;
-                }
-                if (all_to_read_value)
-                    continue;
-            }
-
             if (cnnLayer->type == "Memory" && cnnLayer->params["index"] == "0") {
                 cnnLayer->outData.clear();
                 continue;
@@ -814,7 +773,9 @@ void convertFunctionToICNNNetwork(const std::shared_ptr<const ::ngraph::Function
             std::string outName = layer->get_friendly_name();
             if (layer->get_output_size() != 1) outName += "." + std::to_string(i);
             DataPtr &ptr = cnnNetworkImpl->getData(outName.c_str());
-            SizeVector dims = layer->get_output_shape(i);
+
+            SizeVector dims;
+            dims = layer->get_output_shape(i);
             for (const auto &dim : dims) {
                 if (!dim)
                     THROW_IE_EXCEPTION << cnnLayer->type << " layer " << cnnLayer->name
@@ -822,13 +783,14 @@ void convertFunctionToICNNNetwork(const std::shared_ptr<const ::ngraph::Function
             }
             if (!ptr && nGraphImpl && nGraphImpl->_data.find(outName) != nGraphImpl->_data.end()) {
                 ptr = nGraphImpl->_data.at(outName);
-                {
+                if (auto nData = std::dynamic_pointer_cast<InferenceEngine::details::NGraphData>(ptr)) {
                     const auto layout =
-                        dims.size() == ptr->getTensorDesc().getDims().size() ?
-                        ptr->getTensorDesc().getLayout() :
+                        dims.size() == nData->getTensorDesc().getDims().size() ?
+                        nData->getTensorDesc().getLayout() :
                         TensorDesc::getLayoutByDims(dims);
 
-                    ptr->reshape(dims, layout);
+                    nData->reset();
+                    nData->reshape(dims, layout);
                 }
                 cnnNetworkImpl->addData(outName.c_str(), ptr);
             }
@@ -839,7 +801,7 @@ void convertFunctionToICNNNetwork(const std::shared_ptr<const ::ngraph::Function
                                     TensorDesc::getLayoutByDims(dims)}));
             }
 
-            getCreatorLayer(ptr) = cnnLayer;
+            ptr->getCreatorLayer() = cnnLayer;
             cnnLayer->outData.push_back(ptr);
             if (std::dynamic_pointer_cast<::ngraph::op::Parameter>(layer)) {
                 keep_input_info(cnnNetworkImpl, ptr);
@@ -853,7 +815,7 @@ void convertFunctionToICNNNetwork(const std::shared_ptr<const ::ngraph::Function
         if (std::dynamic_pointer_cast<::ngraph::op::ReadValue>(layer))
             continue;
         if (std::dynamic_pointer_cast<::ngraph::op::Result>(layer)) {
-            IE_ASSERT(layer->inputs().size() == 1);
+            IE_ASSERT(layer->get_inputs().size() == 1);
             const auto &input = layer->input_value(0);
             std::string outName = input.get_node_shared_ptr()->get_friendly_name();
             if (input.get_node_shared_ptr()->get_output_size() != 1)
@@ -893,7 +855,7 @@ void convertFunctionToICNNNetwork(const std::shared_ptr<const ::ngraph::Function
                                    << " (max " << prevCnnLayer->outData.size() << ") of " << prevCnnLayer->type
                                    << " layer " << prevCnnLayer->name;
             cnnLayer->insData[inIndex - count_of_skipped] = prevCnnLayer->outData[output_port.get_index()];
-            getInputTo(prevCnnLayer->outData[output_port.get_index()])[cnnLayer->name] = cnnLayer;
+            prevCnnLayer->outData[output_port.get_index()]->getInputTo()[cnnLayer->name] = cnnLayer;
         }
     }
 
@@ -908,11 +870,7 @@ void convertFunctionToICNNNetwork(const std::shared_ptr<const ::ngraph::Function
                                    << " is not connected to any data";
             }
         }
-
-        // execution ngraph is fake graph and should not be validated
-        if (layer->params.count(ExecGraphInfoSerialization::PERF_COUNTER) == 0) {
-            layer->parseParams();
-        }
+        layer->validateLayer();
     }
 
     if (!cnnNetworkImpl) THROW_IE_EXCEPTION << "Cannot convert nGraph function to CNNNetworkImpl!";
@@ -931,15 +889,7 @@ void convertFunctionToICNNNetwork(const std::shared_ptr<const ::ngraph::Function
     for (const auto &ext : ::ngraph::op::GenericIE::getExtensions(graph)) {
         cnnNetworkImpl->AddExtension(ext, nullptr);
     }
-}
-
-std::shared_ptr<CNNNetworkImpl> convertFunctionToICNNNetwork(const std::shared_ptr<const ::ngraph::Function> &graph,
-                                                             const ICNNNetwork &network,
-                                                             bool keep_constant_inputs) {
-    auto cnnNetworkImpl = std::make_shared<details::CNNNetworkImpl>();
-    convertFunctionToICNNNetwork(graph, network, cnnNetworkImpl.get(), keep_constant_inputs);
     return cnnNetworkImpl;
 }
-
 }  // namespace details
 }  // namespace InferenceEngine

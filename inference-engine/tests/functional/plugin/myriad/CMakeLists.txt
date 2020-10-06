@@ -10,8 +10,6 @@ disable_deprecated_warnings()
 addIeTargetTest(
         NAME ${TARGET_NAME}
         ROOT ${CMAKE_CURRENT_SOURCE_DIR}
-        INCLUDES
-            ${CMAKE_CURRENT_SOURCE_DIR}
         DEPENDENCIES
             myriadPlugin
         LINK_LIBRARIES

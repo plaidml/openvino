@@ -20,7 +20,6 @@
 #include "ngraph/op/constant.hpp"
 #include "ngraph/op/fused/unsqueeze.hpp"
 #include "ngraph/op/reshape.hpp"
-#include "ngraph/op/util/op_types.hpp"
 #include "ngraph/runtime/reference/copy.hpp"
 #include "ngraph/validation_util.hpp"
 
@@ -43,7 +42,7 @@ void op::Unsqueeze::pre_validate_and_infer_types()
 
     const auto axes_node = input_value(1).get_node_shared_ptr();
 
-    if (data_rank.is_dynamic() || !op::is_constant(axes_node))
+    if (data_rank.is_dynamic() || !axes_node->is_constant())
     {
         set_output_type(0, get_input_element_type(0), PartialShape::dynamic());
         return;
@@ -146,17 +145,29 @@ namespace
         bool rc = true;
         switch (element_type)
         {
+            TYPE_CASE(i8)(arg0, out);
+            break;
+            TYPE_CASE(i16)(arg0, out);
+            break;
             TYPE_CASE(i32)(arg0, out);
             break;
             TYPE_CASE(i64)(arg0, out);
+            break;
+            TYPE_CASE(u8)(arg0, out);
+            break;
+            TYPE_CASE(u16)(arg0, out);
             break;
             TYPE_CASE(u32)(arg0, out);
             break;
             TYPE_CASE(u64)(arg0, out);
             break;
+            TYPE_CASE(bf16)(arg0, out);
+            break;
             TYPE_CASE(f16)(arg0, out);
             break;
             TYPE_CASE(f32)(arg0, out);
+            break;
+            TYPE_CASE(f64)(arg0, out);
             break;
         default: rc = false; break;
         }

@@ -15,6 +15,7 @@
 #include <utility>
 #include <vector>
 
+#include <details/ie_cnn_network_tools.h>
 #include <ie_common.h>
 #include "cnn_network_impl.hpp"
 #include "ie_util_internal.hpp"
@@ -131,9 +132,4 @@ void GemmTransformation::transform(TransformationContext& context, CNNLayer& gem
     }
 
     addDequantizationLayer(context, gemm, dequantizationScales, dequantizationShifts);
-}
-
-bool GemmTransformation::isQuantized(const CNNLayer& layer) const noexcept {
-    // weightable layer version overriding
-    return true;
 }

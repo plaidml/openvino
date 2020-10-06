@@ -17,15 +17,10 @@ namespace ngraph {
 namespace builder {
 
 ngraph::ParameterVector makeParams(const element::Type &type, const std::vector<std::vector<size_t>> &shapes);
-
-ngraph::ParameterVector
-makeParams(const element::Type &type, const std::vector<std::pair<std::string, std::vector<size_t>>> &inputs);
+ngraph::ParameterVector makeParams(const element::Type &type, const std::vector<std::pair<std::string, std::vector<size_t>>> &inputs);
 
 std::shared_ptr<ngraph::Node> makeConstant(const element::Type &type, const std::vector<size_t> &shape,
                                            const std::vector<float> &data, bool random = false);
-
-std::shared_ptr<ngraph::Node> makeInputLayer(const element::Type& type, ngraph::helpers::InputLayerType inputType,
-                                             const std::vector<size_t>& shape);
 
 std::shared_ptr<ngraph::Node> makeConvolution(const ngraph::Output<Node> &in,
                                               const element::Type &type,
@@ -52,17 +47,6 @@ std::shared_ptr<ngraph::Node> makeGroupConvolution(const ngraph::Output<Node> &i
                                                    size_t numGroups,
                                                    bool addBiases = false,
                                                    const std::vector<float> &filterWeights = {},
-                                                   const std::vector<float> &biasesWeights = {});
-
-std::shared_ptr<ngraph::Node> makeGroupConvolution(const ngraph::Output<Node> &in,
-                                                   const ngraph::Output<Node> &weights,
-                                                   const element::Type &type,
-                                                   const std::vector<size_t> &strides,
-                                                   const std::vector<ptrdiff_t> &padsBegin,
-                                                   const std::vector<ptrdiff_t> &padsEnd,
-                                                   const std::vector<size_t> &dilations,
-                                                   const op::PadType &autoPad,
-                                                   bool addBiases = false,
                                                    const std::vector<float> &biasesWeights = {});
 
 std::shared_ptr<ngraph::Node> makeConvolutionBackpropData(const ngraph::Output<Node> &in,
@@ -132,11 +116,6 @@ std::shared_ptr<ngraph::Node> makeSplit(const ngraph::Output<Node> &in,
 
 std::shared_ptr<ngraph::Node> makeActivation(const ngraph::Output<Node> &in,
                                              const element::Type &type,
-                                             ngraph::helpers::ActivationTypes activationType,
-                                             std::vector<size_t> inShape = {});
-
-std::shared_ptr<ngraph::Node> makeActivation(const ngraph::ParameterVector &parameters,
-                                             const element::Type &type,
                                              ngraph::helpers::ActivationTypes activationType);
 
 std::shared_ptr<ngraph::Node> makeEltwise(const ngraph::Output<Node> &in0,
@@ -171,14 +150,13 @@ std::shared_ptr<ngraph::Node> makeMVN(const ngraph::Output<Node> &in,
                                       bool normalizeVariance,
                                       double eps);
 
-std::shared_ptr<ngraph::Node> makeSqueezeUnsqueeze(const ngraph::Output<Node> &in,
-                                                   const element::Type &type,
-                                                   const std::vector<int> &squeeze_indices,
-                                                   ngraph::helpers::SqueezeOpType opType);
+std::shared_ptr<ngraph::Node> makeSqueeze(const ngraph::Output<Node> &in,
+                                          const element::Type &type,
+                                          const std::vector<size_t> &squeeze_indices);
 
-std::shared_ptr<ngraph::Node> makeMinMax(const ngraph::Output<Node> &in1,
-                                         const ngraph::Output<Node> &in2,
-                                         ngraph::helpers::MinMaxOpType opType);
+std::shared_ptr<ngraph::Node> makeUnsqueeze(const ngraph::Output<Node> &in,
+                                            const element::Type &type,
+                                            const std::vector<size_t> &squeeze_indices);
 
 std::shared_ptr<ngraph::Node> makeProposal(const ngraph::Output<Node> &class_probs,
                                            const ngraph::Output<Node> &class_logits,
@@ -200,7 +178,7 @@ std::shared_ptr<ngraph::Node> makeProposal(const ngraph::Output<Node> &class_pro
                                            std::string framework);
 
 std::shared_ptr<ngraph::Node> makeSelect(std::vector<ngraph::Output<Node>> &in,
-                                         const ngraph::op::AutoBroadcastSpec &auto_broadcast);
+                                         const ngraph::op::AutoBroadcastSpec& auto_broadcast);
 
 std::shared_ptr<Node> makeFakeQuantize(const ngraph::Output<Node> &in,
                                        const element::Type &type,
@@ -222,32 +200,32 @@ std::shared_ptr<ngraph::Node> makeCumSum(const ngraph::Output<Node> &in,
                                          bool reverse);
 
 std::shared_ptr<ngraph::Node> makeEmbeddingBagOffsetsSum(
-        const element::Type &dataType,
-        const element::Type &indicesType,
-        const ngraph::Output<Node> &emb_table_node,
-        const std::vector<size_t> &indices,
-        const std::vector<size_t> &offsets,
-        size_t default_index,
-        bool with_weights,
-        bool with_default_index);
+                                      const element::Type& dataType,
+                                      const element::Type& indicesType,
+                                      const ngraph::Output<Node>& emb_table_node,
+                                      const std::vector<size_t>& indices,
+                                      const std::vector<size_t>& offsets,
+                                      size_t default_index,
+                                      bool with_weights,
+                                      bool with_default_index);
 
 std::shared_ptr<ngraph::Node> makeEmbeddingBagPackedSum(
-        const element::Type &dataType,
-        const element::Type &indicesType,
-        const ngraph::Output<Node> &emb_table_node,
-        const std::vector<std::vector<size_t>> &indices,
-        bool with_weights);
+                                      const element::Type& dataType,
+                                      const element::Type& indicesType,
+                                      const ngraph::Output<Node>& emb_table_node,
+                                      const std::vector<std::vector<size_t>>& indices,
+                                      bool with_weights);
 
 std::shared_ptr<ngraph::Node> makeEmbeddingSegmentsSum(
-        const element::Type &dataType,
-        const element::Type &indicesType,
-        const ngraph::Output<Node> &emb_table_node,
-        const std::vector<size_t> &indices,
-        const std::vector<size_t> &segment_ids,
-        size_t num_segments,
-        size_t default_index,
-        bool with_weights,
-        bool with_default_index);
+                                      const element::Type& dataType,
+                                      const element::Type& indicesType,
+                                      const ngraph::Output<Node>& emb_table_node,
+                                      const std::vector<size_t>& indices,
+                                      const std::vector<size_t>& segment_ids,
+                                      size_t num_segments,
+                                      size_t default_index,
+                                      bool with_weights,
+                                      bool with_default_index);
 
 std::shared_ptr<ngraph::Node> makeDepthToSpace(const ngraph::Output<Node> &in,
                                                ngraph::opset3::DepthToSpace::DepthToSpaceMode mode,
@@ -261,53 +239,8 @@ std::shared_ptr<Node> makeShuffleChannels(const ngraph::Output<Node> &in,
                                           int axis,
                                           int group);
 
-std::shared_ptr<Node> makeMatMul(const Output<Node> &A,
-                                 const Output<Node> &B,
-                                 bool transpose_a = false,
-                                 bool transpose_b = false);
-
-std::shared_ptr<ngraph::Node> makeReduce(std::vector<ngraph::Output<Node>> &in,
-                                         const std::vector<int> &reductionAxes,
-                                         bool keepDims,
-                                         ngraph::helpers::ReductionType reductionType);
-
-std::shared_ptr<Node> makePooling(const ngraph::Output<Node> &in,
-                                  const std::vector<size_t> &strides,
-                                  const std::vector<size_t> &padsBegin,
-                                  const std::vector<size_t> &padsEnd,
-                                  const std::vector<size_t> &kernel,
-                                  const op::RoundingType &roundingType,
-                                  const op::PadType &padType,
-                                  bool excludePad,
-                                  const ngraph::helpers::PoolingTypes &poolType);
-
-std::shared_ptr<ngraph::Node> makeScatterUpdate(const ngraph::Output<Node> &in,
-                                                const element::Type& indicesType,
-                                                const std::vector<size_t>& indicesShape,
-                                                const std::vector<size_t>& indices,
-                                                const ngraph::Output<Node> &update,
-                                                std::size_t axis);
-
-std::shared_ptr<ngraph::Node> makeScatterElementsUpdate(const ngraph::Output<Node> &in,
-                                                        const element::Type& indicesType,
-                                                        const std::vector<size_t>& indicesShape,
-                                                        const std::vector<size_t>& indices,
-                                                        const ngraph::Output<Node> &update,
-                                                        int axis);
-
-std::shared_ptr<ngraph::Node> makeScatterNDUpdate(const ngraph::Output<Node> &in,
-                                                  const element::Type& indicesType,
-                                                  const std::vector<size_t>& indicesShape,
-                                                  const std::vector<size_t>& indices,
-                                                  const ngraph::Output<Node> &update);
-
-std::shared_ptr<ngraph::Node> makeComparison(const ngraph::Output<Node> &in0,
-                                             const ngraph::Output<Node> &in1,
-                                             ngraph::helpers::ComparisonTypes comparisonType);
-
-std::shared_ptr<ngraph::Node> makeLogical(const ngraph::Output<Node> &in0,
-                                          const ngraph::Output<Node> &in1,
-                                          ngraph::helpers::LogicalTypes logicalType);
+std::shared_ptr<Node> makeMatMul(const Output<Node>& A,
+                                 const Output<Node>& B);
 
 }  // namespace builder
 }  // namespace ngraph

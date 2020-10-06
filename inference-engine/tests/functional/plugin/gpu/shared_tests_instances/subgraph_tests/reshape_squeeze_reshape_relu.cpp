@@ -7,7 +7,7 @@
 using namespace LayerTestsDefinitions;
 
 namespace {
-    std::vector<ShapeAxesTuple> inputs_squeeze {
+    std::vector<std::vector<std::vector<size_t>>> inputs_squeeze {
             {{1, 1, 3}, {0, 1}},
             {{1, 1, 3}, {1}},
             {{1, 3, 1}, {0, 2}},
@@ -18,7 +18,7 @@ namespace {
             {{1}, {0}},
     };
 
-    std::vector<ShapeAxesTuple> inputs_unsqueeze{
+    std::vector<std::vector<std::vector<size_t>>> inputs_unsqueeze{
             {{1}, {0}},
             {{1}, {0, 1}},
             {{1}, {0, 1, 2}},
@@ -31,17 +31,19 @@ namespace {
                                                              InferenceEngine::Precision::FP16,
     };
 
-
-    const std::vector<ngraph::helpers::SqueezeOpType> opTypes = {
-            ngraph::helpers::SqueezeOpType::SQUEEZE,
-            ngraph::helpers::SqueezeOpType::UNSQUEEZE
-    };
-
     INSTANTIATE_TEST_CASE_P(reshape_squeeze_reshape_relu, ReshapeSqueezeReshapeRelu,
                             ::testing::Combine(
                                     ::testing::ValuesIn(inputs_squeeze),
                                     ::testing::ValuesIn(netPrecisions),
                                     ::testing::Values(CommonTestUtils::DEVICE_GPU),
-                                    ::testing::ValuesIn(opTypes)),
+                                    ::testing::Values(true)),
+                            ReshapeSqueezeReshapeRelu::getTestCaseName);
+
+    INSTANTIATE_TEST_CASE_P(reshape_unsqueeze_reshape_relu, ReshapeSqueezeReshapeRelu,
+                            ::testing::Combine(
+                                    ::testing::ValuesIn(inputs_unsqueeze),
+                                    ::testing::ValuesIn(netPrecisions),
+                                    ::testing::Values(CommonTestUtils::DEVICE_GPU),
+                                    ::testing::Values(false)),
                             ReshapeSqueezeReshapeRelu::getTestCaseName);
 }  // namespace

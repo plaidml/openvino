@@ -19,7 +19,12 @@ class TRANSFORMATIONS_API ConvertBroadcastToTiles;
 }  // namespace pass
 }  // namespace ngraph
 
-class ngraph::pass::ConvertBroadcastToTiles: public ngraph::pass::MatcherPass {
+class ngraph::pass::ConvertBroadcastToTiles: public ngraph::pass::GraphRewrite {
 public:
-    ConvertBroadcastToTiles();
+    ConvertBroadcastToTiles() : GraphRewrite() {
+        convert_broadcast_to_tiles();
+    }
+
+private:
+    void convert_broadcast_to_tiles();
 };

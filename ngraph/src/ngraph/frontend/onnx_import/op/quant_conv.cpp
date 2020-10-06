@@ -80,6 +80,8 @@ namespace ngraph
                         {
                             // Split one convolution op to N ops where N is the number of groups
                             // and concat results after computation.
+                            // reference:
+                            // https://github.com/NervanaSystems/ngraph-mxnet/blob/fdd692/src/ngraph/ngraph_emitter.cc#L822-L856
                             std::size_t n_data_channels{data->get_shape().at(1)};
                             std::size_t n_filters_channels{filters->get_shape().at(0)};
 
@@ -109,7 +111,7 @@ namespace ngraph
 
                                 if (bias)
                                 {
-                                    throw ngraph_error(
+                                    throw error::NotSupported(
                                         "Groups != 1 not supported for Quantized Convolution with "
                                         "bias.");
                                 }
@@ -198,26 +200,22 @@ namespace ngraph
                     auto output_scale = inputs.at(6);
                     auto output_zero_point = inputs.at(7);
 
-                    CHECK_VALID_NODE(node,
-                                     ((groups >= 0) &&
-                                      (groups <= static_cast<int64_t>(data->get_shape().at(1))) &&
-                                      (groups <= static_cast<int64_t>(filters->get_shape().at(0)))),
-                                     "incorrect value of 'group' attribute: ",
-                                     groups);
+                    ASSERT_VALID_ARGUMENT(
+                        node,
+                        ((groups >= 0) &&
+                         (groups <= static_cast<int64_t>(data->get_shape().at(1))) &&
+                         (groups <= static_cast<int64_t>(filters->get_shape().at(0)))))
+                        << "incorrect value of 'group' attribute: " << groups;
 
                     std::size_t n_data_channels{data->get_shape().at(1)};
                     std::size_t n_filters_channels{filters->get_shape().at(0)};
 
-                    CHECK_VALID_NODE(
-                        node,
-                        n_data_channels % groups == 0,
-                        "provided group attribute value must be a multiple of data channels "
-                        "count.");
-                    CHECK_VALID_NODE(
-                        node,
-                        n_filters_channels % groups == 0,
-                        "provided group attribute value must be a multiple of filter channels "
-                        "count.");
+                    ASSERT_VALID_ARGUMENT(node, n_data_channels % groups == 0)
+                        << "provided group attribute value must be a multiple of data channels "
+                           "count.";
+                    ASSERT_VALID_ARGUMENT(node, n_filters_channels % groups == 0)
+                        << "provided group attribute value must be a multiple of filter channels "
+                           "count.";
 
                     Strides strides = convpool::get_strides(node);
                     Strides filter_dilations = convpool::get_dilations(node);

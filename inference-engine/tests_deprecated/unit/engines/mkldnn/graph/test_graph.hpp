@@ -18,7 +18,6 @@
 #endif
 
 #include <gtest/gtest.h>
-#include <cnn_network_impl.hpp>
 #include <nodes/list.hpp>
 #include <mkldnn_graph.h>
 #include <mkldnn_memory.h>
@@ -213,24 +212,12 @@ public:
 
     void CreateGraph(InferenceEngine::ICNNNetwork &network, const MKLDNNPlugin::MKLDNNExtensionManager::Ptr& extMgr,
             MKLDNNPlugin::MKLDNNWeightsSharing::Ptr cache = {}) {
-        if (network.getFunction()) {
-            auto convertedNetwork = std::make_shared<InferenceEngine::details::CNNNetworkImpl>(network);
-            MKLDNNGraph::CreateGraph(static_cast<InferenceEngine::ICNNNetwork&>(*convertedNetwork),
-                extMgr, cache);            
-        } else {
-            MKLDNNGraph::CreateGraph(network, extMgr, cache);
-        }
+        MKLDNNGraph::CreateGraph(network, extMgr, cache);
     }
 
     void CreateGraph(InferenceEngine::ICNNNetwork &network) {
         MKLDNNPlugin::MKLDNNWeightsSharing::Ptr cache;
-        if (network.getFunction()) {
-            auto convertedNetwork = std::make_shared<InferenceEngine::details::CNNNetworkImpl>(network);
-            MKLDNNGraph::CreateGraph(static_cast<InferenceEngine::ICNNNetwork&>(*convertedNetwork),
-                extensionManager, cache);            
-        } else {
-            MKLDNNGraph::CreateGraph(network, extensionManager, cache);
-        }
+        MKLDNNGraph::CreateGraph(network, extensionManager, cache);
     }
 
     void checkDynBatch(InferenceEngine::BlobMap& srcs, InferenceEngine::BlobMap& outputBlobs, int batch, size_t MB,

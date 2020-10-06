@@ -38,6 +38,7 @@ ParamsKey ActivationKernelRef::GetSupportedKey() const {
     k.EnableTensorOffset();
     k.EnableTensorPitches();
     k.EnableBatching();
+    k.EnableGradient();
     return k;
 }
 

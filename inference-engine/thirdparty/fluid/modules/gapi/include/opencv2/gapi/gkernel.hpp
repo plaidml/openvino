@@ -74,10 +74,6 @@ namespace detail
         {
             static inline cv::GArray<U> yield(cv::GCall &call, int i) { return call.yieldArray<U>(i); }
         };
-        template<typename U> struct Yield<cv::GOpaque<U> >
-        {
-            static inline cv::GOpaque<U> yield(cv::GCall &call, int i) { return call.yieldOpaque<U>(i); }
-        };
     } // anonymous namespace
 
     ////////////////////////////////////////////////////////////////////////////
@@ -91,8 +87,7 @@ namespace detail
     template<> struct MetaType<cv::GMat>    { using type = GMatDesc; };
     template<> struct MetaType<cv::GMatP>   { using type = GMatDesc; };
     template<> struct MetaType<cv::GScalar> { using type = GScalarDesc; };
-    template<typename U> struct MetaType<cv::GArray<U> >  { using type = GArrayDesc; };
-    template<typename U> struct MetaType<cv::GOpaque<U> > { using type = GOpaqueDesc; };
+    template<typename U> struct MetaType<cv::GArray<U> > { using type = GArrayDesc; };
     template<typename T> struct MetaType    { using type = T; }; // opaque args passed as-is
 
     // 2. Hacky test based on MetaType to check if we operate on G-* type or not
@@ -228,20 +223,6 @@ public:
     }
 };
 
-namespace detail {
-// This tiny class eliminates the semantic difference between
-// GKernelType and GKernelTypeM.
-template<typename, typename> class KernelTypeMedium;
-
-template<typename K, typename... R, typename... Args>
-class KernelTypeMedium<K, std::function<std::tuple<R...>(Args...)>> :
-    public cv::GKernelTypeM<K, std::function<std::tuple<R...>(Args...)>> {};
-
-template<typename K, typename R, typename... Args>
-class KernelTypeMedium<K, std::function<R(Args...)>> :
-    public cv::GKernelType<K, std::function<R(Args...)>> {};
-} // namespace detail
-
 } // namespace cv
 
 
@@ -270,12 +251,12 @@ class KernelTypeMedium<K, std::function<R(Args...)>> :
  *
  * @param Class type name for this operation.
  * @param API an `std::function<>`-like signature for the operation;
- *        return type is a single value or a tuple of multiple values.
+ *    return type is a single value.
  * @param Id string identifier for the operation. Must be unique.
  */
-#define G_TYPED_KERNEL_HELPER(Class, API, Id)                                               \
-    G_ID_HELPER_BODY(Class, Id)                                                             \
-    struct Class final: public cv::detail::KernelTypeMedium<Class, std::function API >,     \
+#define G_TYPED_KERNEL_HELPER(Class, API, Id)                               \
+    G_ID_HELPER_BODY(Class, Id)                                             \
+    struct Class final: public cv::GKernelType<Class, std::function API >,  \
                         public G_ID_HELPER_CLASS(Class)
 // {body} is to be defined by user
 
@@ -325,17 +306,68 @@ G_TYPED_KERNEL_HELPER(Class, COMBINE_SIGNATURE(_1, _2, _3, _4, _5, _6, _7, _8, _
                                                  G_TYPED_KERNEL_HELPER)(Class, __VA_ARGS__)) \
 
 /**
- * Declares a new G-API Operation. See [Kernel API](@ref gapi_kernel_api) for more details.
+ * Helper for G_TYPED_KERNEL_M declares a new G-API Operation. See [Kernel API](@ref gapi_kernel_api)
+ * for more details.
  *
- * @deprecated This macro is deprecated in favor of `G_TYPED_KERNEL` that is used for declaring any
- * G-API Operation.
+ * @param Class type name for this operation.
+ * @param API an `std::function<>`-like signature for the operation;
+ *    return type is a tuple of multiple values.
+ * @param Id string identifier for the operation. Must be unique.
+ */
+#define G_TYPED_KERNEL_M_HELPER(Class, API, Id) \
+    G_ID_HELPER_BODY(Class, Id)                                             \
+    struct Class final: public cv::GKernelTypeM<Class, std::function API >, \
+                        public G_ID_HELPER_CLASS(Class)
+// {body} is to be defined by user
+
+#define G_TYPED_KERNEL_M_HELPER_2(Class, _1, _2, Id) \
+    G_TYPED_KERNEL_M_HELPER(Class, COMBINE_SIGNATURE(_1, _2), Id)
+
+#define G_TYPED_KERNEL_M_HELPER_3(Class, _1, _2, _3, Id) \
+    G_TYPED_KERNEL_M_HELPER(Class, COMBINE_SIGNATURE(_1, _2, _3), Id)
+
+#define G_TYPED_KERNEL_M_HELPER_4(Class, _1, _2, _3, _4, Id) \
+    G_TYPED_KERNEL_M_HELPER(Class, COMBINE_SIGNATURE(_1, _2, _3, _4), Id)
+
+#define G_TYPED_KERNEL_M_HELPER_5(Class, _1, _2, _3, _4, _5, Id) \
+    G_TYPED_KERNEL_M_HELPER(Class, COMBINE_SIGNATURE(_1, _2, _3, _4, _5), Id)
+
+#define G_TYPED_KERNEL_M_HELPER_6(Class, _1, _2, _3, _4, _5, _6, Id) \
+    G_TYPED_KERNEL_M_HELPER(Class, COMBINE_SIGNATURE(_1, _2, _3, _4, _5, _6), Id)
+
+#define G_TYPED_KERNEL_M_HELPER_7(Class, _1, _2, _3, _4, _5, _6, _7, Id) \
+    G_TYPED_KERNEL_M_HELPER(Class, COMBINE_SIGNATURE(_1, _2, _3, _4, _5, _6, _7), Id)
+
+#define G_TYPED_KERNEL_M_HELPER_8(Class, _1, _2, _3, _4, _5, _6, _7, _8, Id) \
+    G_TYPED_KERNEL_M_HELPER(Class, COMBINE_SIGNATURE(_1, _2, _3, _4, _5, _6, _7, _8), Id)
+
+#define G_TYPED_KERNEL_M_HELPER_9(Class, _1, _2, _3, _4, _5, _6, _7, _8, _9, Id) \
+    G_TYPED_KERNEL_M_HELPER(Class, COMBINE_SIGNATURE(_1, _2, _3, _4, _5, _6, _7, _8, _9), Id)
+
+#define G_TYPED_KERNEL_M_HELPER_10(Class, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, Id) \
+    G_TYPED_KERNEL_M_HELPER(Class, COMBINE_SIGNATURE(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10), Id)
+
+/**
+ * Declares a new G-API Operation. See [Kernel API](@ref gapi_kernel_api)
+ * for more details.
  *
  * @param Class type name for this operation.
  */
-#define G_TYPED_KERNEL_M G_TYPED_KERNEL
+#define G_TYPED_KERNEL_M(Class, ...) __WRAP_VAARGS(GET_G_TYPED_KERNEL(__VA_ARGS__, \
+                                                   G_TYPED_KERNEL_M_HELPER_10, \
+                                                   G_TYPED_KERNEL_M_HELPER_9, \
+                                                   G_TYPED_KERNEL_M_HELPER_8, \
+                                                   G_TYPED_KERNEL_M_HELPER_7, \
+                                                   G_TYPED_KERNEL_M_HELPER_6, \
+                                                   G_TYPED_KERNEL_M_HELPER_5, \
+                                                   G_TYPED_KERNEL_M_HELPER_4, \
+                                                   G_TYPED_KERNEL_M_HELPER_3, \
+                                                   G_TYPED_KERNEL_M_HELPER_2, \
+                                                   G_TYPED_KERNEL_M_HELPER)(Class, __VA_ARGS__)) \
+// {body} is to be defined by user
 
 #define G_API_OP   G_TYPED_KERNEL
-#define G_API_OP_M G_API_OP
+#define G_API_OP_M G_TYPED_KERNEL_M
 
 namespace cv
 {
@@ -383,20 +415,6 @@ namespace std
 
 namespace cv {
 namespace gapi {
-    class GFunctor
-    {
-    public:
-        virtual cv::GKernelImpl impl()       const = 0;
-        virtual cv::gapi::GBackend backend() const = 0;
-        const char* id()                     const { return m_id; }
-
-        virtual ~GFunctor() = default;
-    protected:
-        GFunctor(const char* id) : m_id(id) { };
-    private:
-        const char* m_id;
-    };
-
     /** \addtogroup gapi_compile_args
      * @{
      */
@@ -474,10 +492,6 @@ namespace gapi {
         }
 
     public:
-        void include(const GFunctor& functor)
-        {
-            m_id_kernels[functor.id()] = std::make_pair(functor.backend(), functor.impl());
-        }
         /**
          * @brief Returns total number of kernels
          * in the package (across all backends included)
@@ -632,15 +646,6 @@ namespace gapi {
         // and parentheses are used to hide function call in the expanded sequence.
         // Leading 0 helps to handle case when KK is an empty list (kernels<>()).
         int unused[] = { 0, (pkg.include<KK>(), 0)... };
-        cv::util::suppress_unused_warning(unused);
-        return pkg;
-    };
-
-    template<typename... FF>
-    GKernelPackage kernels(FF&... functors)
-    {
-        GKernelPackage pkg;
-        int unused[] = { 0, (pkg.include(functors), 0)... };
         cv::util::suppress_unused_warning(unused);
         return pkg;
     };

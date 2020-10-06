@@ -32,13 +32,7 @@ std::string BatchToSpaceLayerTest::getTestCaseName(const testing::TestParamInfo<
     result << "CB=" << CommonTestUtils::vec2str(cropsBegin) << "_";
     result << "CE=" << CommonTestUtils::vec2str(cropsEnd) << "_";
     result << "targetDevice=" << targetName << "_";
-    auto string = result.str();
-    std::replace(string.begin(), string.end(), '-', '_');
-    std::replace(string.begin(), string.end(), '.', '_');
-    std::replace(string.begin(), string.end(), '(', '_');
-    std::replace(string.begin(), string.end(), ')', '_');
-    std::replace(string.begin(), string.end(), '=', '_');
-    return string;
+    return result.str();
 }
 
 void BatchToSpaceLayerTest::SetUp() {

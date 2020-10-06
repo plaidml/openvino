@@ -458,7 +458,7 @@ void PassImpl::packDataInCmx(const Model& model) {
             return DataLoopStatus::NextChild;
         });
 
-        auto allocRes = runAllocator(model, EnableShapeAllocation::NO, CheckOnlyCMX::YES);
+        auto allocRes = runAllocator(model, true);
         env.log->trace("Allocation result : %v", allocRes.status);
 
         if (allocRes.status != AllocationStatus::OK) {

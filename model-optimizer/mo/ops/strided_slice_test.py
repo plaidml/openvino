@@ -38,7 +38,6 @@ nodes_attributes = {
     'begin': {
         'kind': 'op',
         'op': 'Const',
-        'type': 'Const',
         'value': None,
         'shape': None
     },
@@ -50,7 +49,6 @@ nodes_attributes = {
     'end': {
         'kind': 'op',
         'op': 'Const',
-        'type': 'Const',
         'value': None,
         'shape': None
     },
@@ -62,7 +60,6 @@ nodes_attributes = {
     'stride': {
         'kind': 'op',
         'op': 'Const',
-        'type': 'Const',
         'value': None,
         'shape': None
     },

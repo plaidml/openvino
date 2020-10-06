@@ -153,6 +153,8 @@ protected:
     std::vector<LayerConfig> confs;
 };
 
+IE_SUPPRESS_DEPRECATED_START
+
 template <class IMPL>
 class ImplFactory : public ILayerImplFactory {
 public:
@@ -172,12 +174,16 @@ protected:
     InferenceEngine::CNNLayerPtr cnnLayer;
 };
 
+IE_SUPPRESS_DEPRECATED_END
+
 template <typename __prim>
 inline void extRegister(MKLDNNExtensions * extInstance, const char * __type) {
+    IE_SUPPRESS_DEPRECATED_START
     extInstance->AddExt(__type,
                 [](const CNNLayer* layer) -> InferenceEngine::ILayerImplFactory* {
                     return new __prim(layer);
                 });
+    IE_SUPPRESS_DEPRECATED_END
 }
 
 #define REG_FACTORY_FOR(__prim, __type) \

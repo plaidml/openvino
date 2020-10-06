@@ -54,5 +54,10 @@ namespace ngraph
                 AutoBroadcastSpec m_auto_broadcast;
             };
         }
+
+        namespace v0
+        {
+            using v1::Mod;
+        }
     }
 }

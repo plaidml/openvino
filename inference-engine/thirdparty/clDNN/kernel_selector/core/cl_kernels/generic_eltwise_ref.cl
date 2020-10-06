@@ -26,7 +26,11 @@
 
 KERNEL(eltwise)(
     INPUTS_DECLS
-    __global OUTPUT_TYPE* output)
+    __global OUTPUT_TYPE* output
+#if CALIBRATION_TERM
+    , const __global float* calibrations
+#endif
+    )
 {
 
 #if OUTPUT_DIMS == 6 // 4D spatial

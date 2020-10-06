@@ -1,9 +1,9 @@
-#include "ngraph/opsets/opset4.hpp"
+#include "ngraph/opsets/opset3.hpp"
 
 namespace ngraph
 {
     namespace onnx_import
     {
-        namespace default_opset = ngraph::opset4;
+        namespace default_opset = ngraph::opset3;
     }
 }

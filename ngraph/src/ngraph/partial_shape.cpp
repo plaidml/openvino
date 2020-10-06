@@ -23,15 +23,6 @@
 
 using namespace ngraph;
 
-PartialShape::PartialShape(const std::vector<Dimension::value_type>& dimensions)
-    : m_rank_is_static(true)
-{
-    std::transform(dimensions.cbegin(),
-                   dimensions.cend(),
-                   std::back_inserter(m_dimensions),
-                   [](const Dimension::value_type& dimension) { return dimension; });
-}
-
 PartialShape::PartialShape(const Shape& shape)
     : PartialShape(true, {})
 {

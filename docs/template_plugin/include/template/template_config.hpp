@@ -45,11 +45,14 @@ namespace TemplateConfigParams {
 #define DECLARE_TEMPLATE_CONFIG_KEY(name) DECLARE_CONFIG_KEY(TEMPLATE_##name)
 #define DECLARE_TEMPLATE_CONFIG_VALUE(name) DECLARE_CONFIG_VALUE(TEMPLATE_##name)
 
-
 /**
- * @brief Defines the number of throutput streams used by TEMPLATE plugin.
+ * @brief The key to define the type of transformations for TEMPLATE inputs and outputs.
+ * TEMPLATE use custom data layout for input and output blobs. IE TEMPLATE Plugin provides custom
+ * optimized version of transformation functions that do not use OpenMP and much more faster
+ * than native TEMPLATE functions. Values: "NO" - optimized plugin transformations
+ * are used, "YES" - native TEMPLATE transformations are used.
  */
-DECLARE_TEMPLATE_CONFIG_KEY(THROUGHPUT_STREAMS);
+DECLARE_TEMPLATE_CONFIG_KEY(ANY_CONFIG_KEY);
 
 
 }  // namespace TemplateConfigParams

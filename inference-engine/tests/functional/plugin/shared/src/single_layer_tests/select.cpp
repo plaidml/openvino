@@ -33,13 +33,7 @@ namespace LayerTestsDefinitions {
         result << "_ELSE=" << dataType.name() << "_" << CommonTestUtils::vec2str(dataShapes[ELSE]);
         result << "_" << broadcast.m_type;
         result << "_targetDevice=" << targetDevice;
-        auto string = result.str();
-        std::replace(string.begin(), string.end(), '-', '_');
-        std::replace(string.begin(), string.end(), '.', '_');
-        std::replace(string.begin(), string.end(), '(', '_');
-        std::replace(string.begin(), string.end(), ')', '_');
-        std::replace(string.begin(), string.end(), '=', '_');
-        return string;
+        return result.str();
     }
 
     void SelectLayerTest::SetUp() {
@@ -67,6 +61,10 @@ namespace LayerTestsDefinitions {
 
     TEST_P(SelectLayerTest, CompareWithRefImpl) {
         Run();
+
+        if (targetDevice == std::string{CommonTestUtils::DEVICE_GPU}) {
+            PluginCache::get().reset();
+        }
     }
 
 }  // namespace LayerTestsDefinitions

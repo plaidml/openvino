@@ -177,7 +177,7 @@ namespace ngraph
                            const Shape& out_shape,
                            const AxisSet& broadcast_axes)
             {
-                if (is_scalar(in_shape))
+                if (in_shape.size() == 0)
                 {
                     for (size_t i = 0; i < shape_size(out_shape); ++i)
                     {

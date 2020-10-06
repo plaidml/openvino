@@ -10,6 +10,7 @@
 #include <transformations_visibility.hpp>
 
 #include <ngraph/pass/graph_rewrite.hpp>
+#include "transformations/utils/pass_param.hpp"
 
 namespace ngraph {
 namespace pass {
@@ -19,7 +20,7 @@ class TRANSFORMATIONS_API ConvertBroadcast3;
 }  // namespace pass
 }  // namespace ngraph
 
-class ngraph::pass::ConvertBroadcast3: public ngraph::pass::GraphRewrite {
+class ngraph::pass::ConvertBroadcast3: public ngraph::pass::GraphRewrite, public ngraph::pass::PassParam {
 public:
     ConvertBroadcast3() : GraphRewrite() {
         convert_broadcast3();

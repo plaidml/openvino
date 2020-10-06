@@ -16,6 +16,7 @@
 
 import logging as log
 
+from extensions.front.squared_difference import SquaredDifference
 from extensions.ops.elementwise import Mul, Add
 from extensions.ops.mvn import MVN
 from mo.front.common.replacement import FrontReplacementSubgraph
@@ -24,6 +25,9 @@ from mo.graph.graph import Node, Graph
 
 class MVNReplacer(FrontReplacementSubgraph):
     enabled = True
+
+    def run_before(self):
+        return [SquaredDifference]
 
     def pattern(self):
         log.debug('Enabled MVN replacement')

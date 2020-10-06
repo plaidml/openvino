@@ -53,9 +53,9 @@ namespace ngraph
                     const auto beta = node.get_attribute_value<float>("beta", 1);
 
                     const auto alpha_node = default_opset::Constant::create(
-                        input_b->get_element_type(), Shape{}, {alpha});
+                        element::Type_t::f32, Shape{}, std::vector<float>{alpha});
                     const auto beta_node = default_opset::Constant::create(
-                        input_c->get_element_type(), Shape{}, {beta});
+                        element::Type_t::f32, Shape{}, std::vector<float>{beta});
 
                     const bool trans_a = node.get_attribute_value<int64_t>("transA", 0);
                     const bool trans_b = node.get_attribute_value<int64_t>("transB", 0);
@@ -114,9 +114,9 @@ namespace ngraph
                     const auto beta = node.get_attribute_value<float>("beta", 1);
 
                     const auto alpha_node = default_opset::Constant::create(
-                        input_b->get_element_type(), Shape{}, {alpha});
+                        element::Type_t::f32, Shape{}, std::vector<float>{alpha});
                     const auto beta_node = default_opset::Constant::create(
-                        input_c->get_element_type(), Shape{}, {beta});
+                        element::Type_t::f32, Shape{}, std::vector<float>{beta});
 
                     const bool trans_a = node.get_attribute_value<int64_t>("transA", 0);
                     const bool trans_b = node.get_attribute_value<int64_t>("transB", 0);

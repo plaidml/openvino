@@ -19,7 +19,6 @@
 #include "ngraph/op/assign.hpp"
 #include "ngraph/op/constant.hpp"
 #include "ngraph/op/tensor_iterator.hpp"
-#include "ngraph/op/util/op_types.hpp"
 
 using namespace ngraph;
 
@@ -68,7 +67,7 @@ std::shared_ptr<Function>
 
     for (auto old_node : f->get_ordered_ops())
     {
-        if (op::is_parameter(old_node))
+        if (old_node->is_parameter())
         {
             continue;
         }

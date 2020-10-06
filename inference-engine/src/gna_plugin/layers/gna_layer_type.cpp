@@ -22,11 +22,19 @@ bool GNAPluginNS::AreLayersSupported(InferenceEngine::ICNNNetwork& network, std:
     InferenceEngine::CNNLayerSet inputLayers;
     InferenceEngine::InputsDataMap inputs;
     std::unordered_set<InferenceEngine::CNNLayer *> allLayers;
+    auto network_precision = network.getPrecision();
     network.getInputsInfo(inputs);
     IE_ASSERT(!inputs.empty());
     auto network_input_precision = inputs.begin()->second->getPrecision();
     auto batch_size = network.getBatchSize();
 
+    if (network_precision != InferenceEngine::Precision::FP32 &&
+        network_precision != InferenceEngine::Precision::FP16 &&
+        network_precision != InferenceEngine::Precision::MIXED) {
+        errMessage = "The plugin does not support networks with " +
+                     std::string(network_precision.name()) + " format. Supported network precisions are FP32, FP16, MIXED\n";
+        return false;
+    }
     if (network_input_precision != InferenceEngine::Precision::FP32 &&
         network_input_precision != InferenceEngine::Precision::I16 &&
         network_input_precision != InferenceEngine::Precision::U8) {
@@ -40,7 +48,7 @@ bool GNAPluginNS::AreLayersSupported(InferenceEngine::ICNNNetwork& network, std:
         return false;
     }
 
-    auto & secondLayers = getInputTo(inputs.begin()->second->getInputData());
+    auto & secondLayers = inputs.begin()->second->getInputData()->getInputTo();
     if (secondLayers.empty()) {
         errMessage = "Network consists of input layer only (GNA)\n";
         return false;

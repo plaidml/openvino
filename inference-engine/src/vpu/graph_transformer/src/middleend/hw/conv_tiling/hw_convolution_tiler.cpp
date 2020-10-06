@@ -640,7 +640,8 @@ std::vector<TilingOption> HWConvolutionTilingSearcher::selectBetterTiling() cons
 
     const auto& splitOver = dirTiling.splitOverTensorDims();
     const auto direction = dirTiling.getDirection();
-    const auto cmxLimit = env.resources.tilingCMXLimit;
+
+    const auto cmxLimit = tilingCMXLimit(env.resources.numCMXSlices);
 
     // split over Input tensor for the Channel dimension always
     for (int numChannelTiles = 1; numChannelTiles <= maxNumChannelTiles; numChannelTiles++) {

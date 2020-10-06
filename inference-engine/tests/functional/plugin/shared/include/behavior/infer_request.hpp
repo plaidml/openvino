@@ -24,7 +24,6 @@
 #include "functional_test_utils/blob_utils.hpp"
 #include "ngraph_functions/subgraph_builders.hpp"
 
-namespace BehaviorTestsDefinitions {
 using InferRequestTests = BehaviorTestsUtils::BehaviorTestsBasic;
 
 // Setting empty config to LoadNetwork doesn't throw
@@ -36,12 +35,13 @@ TEST_P(InferRequestTests, SetEmptyConfig) {
     // Load CNNNetwork to target plugins
     InferenceEngine::IExecutableNetwork::Ptr execNet;
     std::map<std::string, std::string> config {};
-    if (targetDevice.find(CommonTestUtils::DEVICE_MULTI) == std::string::npos &&
-        targetDevice.find(CommonTestUtils::DEVICE_HETERO) == std::string::npos) {
+    if (targetDevice.find(CommonTestUtils::DEVICE_MULTI) == std::string::npos ||
+    targetDevice.find(CommonTestUtils::DEVICE_HETERO) == std::string::npos) {
         ASSERT_NO_THROW(ie->SetConfig(configuration, targetDevice));
         ASSERT_NO_THROW(execNet = ie->LoadNetwork(cnnNet, targetDevice, config));
     } else {
-        ASSERT_NO_THROW(ie->SetConfig(configuration, targetDevice));
+        ASSERT_THROW(ie->SetConfig(configuration, targetDevice),
+                InferenceEngine::details::InferenceEngineException);
         ASSERT_NO_THROW(execNet = ie->LoadNetwork(cnnNet, targetDevice, configuration));
     }
 }
@@ -64,7 +64,6 @@ TEST_P(InferRequestTests,  CanCreateTwoExeNetworks) {
     InferenceEngine::IExecutableNetwork::Ptr execNet;
     for (auto i = 0; i < 2; i++) {
         ASSERT_NO_THROW(execNet = ie->LoadNetwork(cnnNet, targetDevice, configuration));
-        ASSERT_NE(nullptr, cnnNet.getFunction());
     }
 }
 
@@ -623,4 +622,3 @@ TEST_P(InferRequestTests, returnDeviceBusyOnGetPerformanceCountAfterAsyncInfer) 
         std::cout << "Exception" << e.what() << std::endl;
     }
 }
-}  // namespace BehaviorTestsDefinitions

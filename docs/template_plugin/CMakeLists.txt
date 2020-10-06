@@ -23,9 +23,13 @@ if(ENABLE_TESTS)
 	enable_testing()
 
 	if(ENABLE_FUNCTIONAL_TESTS)
+	    add_subdirectory(tests_deprecated/functional)
 	    add_subdirectory(tests/functional)
 	endif()
 
+	if(ENABLE_BEH_TESTS)
+	    add_subdirectory(tests_deprecated/behavior)
+	endif()
 endif()
 # [cmake:main]
 

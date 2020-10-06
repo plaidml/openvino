@@ -23,7 +23,6 @@
 #include <ngraph/opsets/opset2.hpp>
 #include <ngraph/opsets/opset3.hpp>
 #include <ngraph/op/fused/gelu.hpp>
-#include <ngraph/pass/manager.hpp>
 #include "ngraph_functions/pass/convert_prc.hpp"
 
 #include "common_test_utils/common_utils.hpp"
@@ -53,8 +52,8 @@ InferenceEngine::details::LowPrecisionTransformations LayerTransformation::getLo
 }
 
 InferenceEngine::CNNNetwork LayerTransformation::transform(InferenceEngine::details::LayerTransformation::Params& params) {
-    auto ngraphNetwork = InferenceEngine::CNNNetwork(function);
-    std::shared_ptr<InferenceEngine::ICNNNetwork> clonedNetwork = InferenceEngine::cloneNetwork(ngraphNetwork);
+    auto net1 = InferenceEngine::CNNNetwork(function);
+    std::shared_ptr<InferenceEngine::ICNNNetwork> clonedNetwork = InferenceEngine::cloneNetwork(net1);
 
     if (clonedNetwork->getFunction()) {
         const auto transformations_callback = [](const std::shared_ptr<const ::ngraph::Node> &node) -> bool {
@@ -78,14 +77,10 @@ InferenceEngine::CNNNetwork LayerTransformation::transform(InferenceEngine::deta
         ::ngraph::op::GenericIE::DisableReshape noReshape(nGraphFunc);
 
         // Note: instead of running all Conversion Transformations you can make up your own transformation pipeline
-        ngraph::pass::Manager manager;
-        manager.register_pass<ngraph::pass::CommonOptimizations>();
-        manager.register_pass<ngraph::pass::ConvertOpSet3ToOpSet2>();
-        manager.register_pass<ngraph::pass::ConvertOpSet2ToOpSet1>();
-        manager.register_pass<ngraph::pass::ConvertOpSet1ToLegacy>();
-
-        manager.set_callback(transformations_callback);
-        manager.run_passes(nGraphFunc);
+        ngraph::pass::CommonOptimizations(transformations_callback).run_on_function(nGraphFunc);
+        ngraph::pass::ConvertOpSet3ToOpSet2(transformations_callback).run_on_function(nGraphFunc);
+        ngraph::pass::ConvertOpSet2ToOpSet1(transformations_callback).run_on_function(nGraphFunc);
+        ngraph::pass::ConvertOpSet1ToLegacy(transformations_callback).run_on_function(nGraphFunc);
         clonedNetwork = InferenceEngine::details::convertFunctionToICNNNetwork(nGraphFunc, *clonedNetwork);
     }
 
@@ -98,7 +93,6 @@ InferenceEngine::CNNNetwork LayerTransformation::transform(InferenceEngine::deta
 
     InferenceEngine::NetPass::ConvertPrecision(*implNetwork, InferenceEngine::Precision::I64, InferenceEngine::Precision::I32);
     InferenceEngine::NetPass::ConvertPrecision(*implNetwork, InferenceEngine::Precision::U64, InferenceEngine::Precision::I32);
-    InferenceEngine::NetPass::ConvertPrecision(*implNetwork, InferenceEngine::Precision::U32, InferenceEngine::Precision::I32);
     InferenceEngine::NetPass::ConvertPrecision(*implNetwork, InferenceEngine::Precision::FP16, InferenceEngine::Precision::FP32);
     InferenceEngine::NetPass::ConvertPrecision(*implNetwork, InferenceEngine::Precision::BOOL, InferenceEngine::Precision::U8);
 
@@ -117,13 +111,10 @@ InferenceEngine::Precision LayerTransformation::getDeviceInternalPrecision(const
 }
 
 InferenceEngine::CNNNetwork LayerTransformation::transform(const InferenceEngine::details::LowPrecisionTransformations& transformations) {
-    // convert to old representation
-    InferenceEngine::CNNNetwork ngraphNetwork(function);
-    auto cnnNetworkImp = std::make_shared<InferenceEngine::details::CNNNetworkImpl>(ngraphNetwork);
+    InferenceEngine::details::CNNNetworkImplPtr cnnNetworkImp = cloneNet(InferenceEngine::CNNNetwork(function));
 
     InferenceEngine::NetPass::ConvertPrecision(*cnnNetworkImp, InferenceEngine::Precision::I64, InferenceEngine::Precision::I32);
     InferenceEngine::NetPass::ConvertPrecision(*cnnNetworkImp, InferenceEngine::Precision::U64, InferenceEngine::Precision::I32);
-    InferenceEngine::NetPass::ConvertPrecision(*cnnNetworkImp, InferenceEngine::Precision::U32, InferenceEngine::Precision::I32);
     InferenceEngine::NetPass::ConvertPrecision(*cnnNetworkImp, InferenceEngine::Precision::FP16, InferenceEngine::Precision::FP32);
     InferenceEngine::NetPass::ConvertPrecision(*cnnNetworkImp, InferenceEngine::Precision::BOOL, InferenceEngine::Precision::U8);
 

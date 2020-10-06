@@ -14,13 +14,8 @@
 // limitations under the License.
 //*****************************************************************************
 
-#ifdef _WIN32
-#else
-#include <cxxabi.h>
-#endif
-
-#include "ngraph/pass/manager.hpp"
 #include "ngraph/pass/pass.hpp"
+#include "ngraph/pass/manager.hpp"
 
 using namespace std;
 using namespace ngraph;
@@ -55,30 +50,6 @@ void pass::PassBase::set_property(const PassPropertyMask& prop, bool value)
     {
         m_property.clear(prop);
     }
-}
-
-std::string pass::PassBase::get_name() const
-{
-    if (m_name.empty())
-    {
-        const PassBase* p = this;
-        std::string pass_name = typeid(*p).name();
-#ifndef _WIN32
-        int status;
-        pass_name = abi::__cxa_demangle(pass_name.c_str(), nullptr, nullptr, &status);
-#endif
-        return pass_name;
-    }
-    else
-    {
-        return m_name;
-    }
-}
-
-void pass::PassBase::set_callback(const param_callback& callback)
-{
-    m_transformation_callback = callback;
-    m_has_default_callback = false;
 }
 
 // The symbols are requiered to be in cpp file to workaround RTTI issue on Android LLVM

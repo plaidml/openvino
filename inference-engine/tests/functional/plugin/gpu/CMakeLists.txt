@@ -10,9 +10,6 @@ addIeTargetTest(
             ${TARGET_NAME}
         ROOT
             ${CMAKE_CURRENT_SOURCE_DIR}
-        INCLUDES
-            ${CLDNN__IOCL_ICD_INCDIRS}
-            ${CMAKE_CURRENT_SOURCE_DIR}
         DEPENDENCIES
             clDNNPlugin
         LINK_LIBRARIES
@@ -22,3 +19,4 @@ addIeTargetTest(
         LABELS
             GPU
 )
+target_include_directories(${TARGET_NAME} PRIVATE ${CLDNN__IOCL_ICD_INCDIRS} ${CMAKE_CURRENT_SOURCE_DIR})

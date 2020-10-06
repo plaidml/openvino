@@ -15,17 +15,20 @@
 namespace ngraph {
 namespace pass {
 
-class TRANSFORMATIONS_API ConvertOneHotToOneHotIEMatcher;
+class TRANSFORMATIONS_API ConvertOneHotToOneHotIE;
 
 }  // namespace pass
 }  // namespace ngraph
 
-class ngraph::pass::ConvertOneHotToOneHotIEMatcher: public ngraph::pass::MatcherPass {
+class ngraph::pass::ConvertOneHotToOneHotIE: public ngraph::pass::GraphRewrite {
 public:
-    ConvertOneHotToOneHotIEMatcher();
+    ConvertOneHotToOneHotIE() : GraphRewrite(), is_f16(false) {
+        convert_one_hot();
+    }
 
-    void detect_output_type(const std::shared_ptr<Function> & f);
+    bool run_on_function(std::shared_ptr<ngraph::Function> f) final;
 
 private:
-    element::Type m_output_type = element::Type_t::f32;
+    void convert_one_hot();
+    bool is_f16;
 };

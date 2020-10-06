@@ -19,7 +19,7 @@
 #include <cnn_network_impl.hpp>
 #include <threading/ie_itask_executor.hpp>
 
-#include <ngraph/ngraph.hpp>
+#include <ngraph/function.hpp>
 
 #include "template_config.hpp"
 #include "template_infer_request.hpp"
@@ -27,7 +27,7 @@
 
 namespace TemplatePlugin {
 
-class Plugin;
+class Engine;
 
 /**
  * @class ExecutableNetwork
@@ -36,13 +36,11 @@ class Plugin;
 // ! [executable_network:header]
 class ExecutableNetwork : public InferenceEngine::ExecutableNetworkThreadSafeDefault {
 public:
-    ExecutableNetwork(const std::shared_ptr<ngraph::Function>&  function,
-                      const Configuration&                      cfg,
-                      const std::shared_ptr<Plugin>&            plugin);
+    ExecutableNetwork(InferenceEngine::ICNNNetwork&  network,
+                      const Configuration&           cfg);
 
-    ExecutableNetwork(std::istream&                  model,
-                      const Configuration&           cfg,
-                      const std::shared_ptr<Plugin>& plugin);
+    ExecutableNetwork(std::istream &                 model,
+                      const Configuration&           cfg);
 
     ~ExecutableNetwork() override = default;
 
@@ -55,18 +53,15 @@ public:
     void GetMetric(const std::string &name, InferenceEngine::Parameter &result, InferenceEngine::ResponseDesc *resp) const override;
     void GetConfig(const std::string &name, InferenceEngine::Parameter &result, InferenceEngine::ResponseDesc *resp) const override;
 
-private:
-    friend class TemplateInferRequest;
-
-    void CompileGraph();
-    void InitExecutor();
-
     std::atomic<std::size_t>                    _requestId = {0};
+    std::string                                 _name;
     Configuration                               _cfg;
-    std::shared_ptr<Plugin>                     _plugin;
-    std::shared_ptr<ngraph::Function>           _function;
-    std::map<std::string, std::size_t>          _inputIndex;
-    std::map<std::string, std::size_t>          _outputIndex;
+
+private:
+    void CompileGraph(const std::shared_ptr<const ngraph::Function> & ngraphFunction);
+
+    std::shared_ptr<Engine>                     _plugin;
+    InferenceEngine::ITaskExecutor::Ptr         _waitExecutor;
 };
 // ! [executable_network:header]
 

@@ -14,6 +14,10 @@
 #include <unordered_set>
 #include <stack>
 
+#if defined(__GNUC__) && (__GNUC__ <= 5)
+#include <cmath>
+#endif
+
 #include <ade/util/algorithm.hpp>
 #include <ade/util/chain_range.hpp>
 #include <ade/util/iota_range.hpp>
@@ -554,8 +558,8 @@ void cv::gimpl::FluidAgent::debug(std::ostream &os)
 // GCPUExcecutable implementation //////////////////////////////////////////////
 
 void cv::gimpl::GFluidExecutable::initBufferRois(std::vector<int>& readStarts,
-                                                 std::vector<cv::Rect>& rois,
-                                                 const std::vector<cv::Rect>& out_rois)
+                                                 std::vector<cv::gapi::own::Rect>& rois,
+                                                 const std::vector<cv::gapi::own::Rect>& out_rois)
 {
     GConstFluidModel fg(m_g);
     auto proto = m_gm.metadata().get<Protocol>();
@@ -592,9 +596,9 @@ void cv::gimpl::GFluidExecutable::initBufferRois(std::vector<int>& readStarts,
             readStarts[id] = 0;
 
             const auto& out_roi = out_rois[idx];
-            if (out_roi == cv::Rect{})
+            if (out_roi == gapi::own::Rect{})
             {
-                rois[id] = cv::Rect{ 0, 0, desc.size.width, desc.size.height };
+                rois[id] = gapi::own::Rect{ 0, 0, desc.size.width, desc.size.height };
             }
             else
             {
@@ -639,14 +643,14 @@ void cv::gimpl::GFluidExecutable::initBufferRois(std::vector<int>& readStarts,
                     const auto& in_meta = util::get<GMatDesc>(in_data.meta);
                     const auto& fd = fg.metadata(in_node).get<FluidData>();
 
-                    auto adjFilterRoi = [](cv::Rect produced, int b, int max_height) {
+                    auto adjFilterRoi = [](cv::gapi::own::Rect produced, int b, int max_height) {
                         // Extend with border roi which should be produced, crop to logical image size
-                        cv::Rect roi = {produced.x, produced.y - b, produced.width, produced.height + 2*b};
-                        cv::Rect fullImg{ 0, 0, produced.width, max_height };
+                        cv::gapi::own::Rect roi = {produced.x, produced.y - b, produced.width, produced.height + 2*b};
+                        cv::gapi::own::Rect fullImg{ 0, 0, produced.width, max_height };
                         return roi & fullImg;
                     };
 
-                    auto adjResizeRoi = [](cv::Rect produced, cv::Size inSz, cv::Size outSz) {
+                    auto adjResizeRoi = [](cv::gapi::own::Rect produced, cv::gapi::own::Size inSz, cv::gapi::own::Size outSz) {
                         auto map = [](int outCoord, int producedSz, int inSize, int outSize) {
                             double ratio = (double)inSize / outSize;
                             int w0 = 0, w1 = 0;
@@ -671,30 +675,30 @@ void cv::gimpl::GFluidExecutable::initBufferRois(std::vector<int>& readStarts,
                         auto x0 = mapX.first;
                         auto x1 = mapX.second;
 
-                        cv::Rect roi = {x0, y0, x1 - x0, y1 - y0};
+                        cv::gapi::own::Rect roi = {x0, y0, x1 - x0, y1 - y0};
                         return roi;
                     };
 
-                    auto adj420Roi = [&](cv::Rect produced, std::size_t port) {
+                    auto adj420Roi = [&](cv::gapi::own::Rect produced, std::size_t port) {
                         GAPI_Assert(produced.x % 2 == 0);
                         GAPI_Assert(produced.y % 2 == 0);
                         GAPI_Assert(produced.width % 2 == 0);
                         GAPI_Assert(produced.height % 2 == 0);
 
-                        cv::Rect roi;
+                        cv::gapi::own::Rect roi;
                         switch (port) {
                         case 0: roi = produced; break;
                         case 1:
-                        case 2: roi = cv::Rect{ produced.x/2, produced.y/2, produced.width/2, produced.height/2 }; break;
+                        case 2: roi = cv::gapi::own::Rect{ produced.x/2, produced.y/2, produced.width/2, produced.height/2 }; break;
                         default: GAPI_Assert(false);
                         }
                         return roi;
                     };
 
-                    cv::Rect produced = rois[m_id_map.at(data.rc)];
+                    cv::gapi::own::Rect produced = rois[m_id_map.at(data.rc)];
 
                     // Apply resize-specific roi transformations
-                    cv::Rect resized;
+                    cv::gapi::own::Rect resized;
                     switch (fg.metadata(oh).get<FluidUnit>().k.m_kind)
                     {
                     case GFluidKernel::Kind::Filter:      resized = produced; break;
@@ -727,7 +731,7 @@ void cv::gimpl::GFluidExecutable::initBufferRois(std::vector<int>& readStarts,
                     auto roi = adjFilterRoi(resized, fd.border_size, in_meta.size.height);
 
                     auto in_id = m_id_map.at(in_data.rc);
-                    if (rois[in_id] == cv::Rect{})
+                    if (rois[in_id] == cv::gapi::own::Rect{})
                     {
                         readStarts[in_id] = readStart;
                         rois[in_id] = roi;
@@ -828,7 +832,7 @@ cv::gimpl::FluidGraphInputData cv::gimpl::fluidExtractInputDataFromGraph(const a
 
 cv::gimpl::GFluidExecutable::GFluidExecutable(const ade::Graph                       &g,
                                               const cv::gimpl::FluidGraphInputData   &traverse_res,
-                                              const std::vector<cv::Rect> &outputRois)
+                                              const std::vector<cv::gapi::own::Rect> &outputRois)
     : m_g(g), m_gm(m_g),
       m_num_int_buffers (traverse_res.m_mat_count),
       m_scratch_users   (traverse_res.m_scratch_users),
@@ -1146,13 +1150,13 @@ namespace
     }
 }
 
-void cv::gimpl::GFluidExecutable::makeReshape(const std::vector<cv::Rect> &out_rois)
+void cv::gimpl::GFluidExecutable::makeReshape(const std::vector<gapi::own::Rect> &out_rois)
 {
     GConstFluidModel fg(m_g);
 
     // Calculate rois for each fluid buffer
     std::vector<int> readStarts(m_num_int_buffers);
-    std::vector<cv::Rect> rois(m_num_int_buffers);
+    std::vector<cv::gapi::own::Rect> rois(m_num_int_buffers);
     initBufferRois(readStarts, rois, out_rois);
 
     // NB: Allocate ALL buffer object at once, and avoid any further reallocations
@@ -1248,9 +1252,8 @@ void cv::gimpl::GFluidExecutable::bindInArg(const cv::gimpl::RcDesc &rc, const G
     switch (rc.shape)
     {
     case GShape::GMAT:    m_buffers[m_id_map.at(rc.id)].priv().bindTo(util::get<cv::gapi::own::Mat>(arg), true); break;
-    case GShape::GSCALAR: m_res.slot<cv::Scalar>()[rc.id] = util::get<cv::Scalar>(arg); break;
+    case GShape::GSCALAR: m_res.slot<cv::gapi::own::Scalar>()[rc.id] = util::get<cv::gapi::own::Scalar>(arg); break;
     case GShape::GARRAY:  m_res.slot<cv::detail::VectorRef>()[rc.id] = util::get<cv::detail::VectorRef>(arg); break;
-    case GShape::GOPAQUE: m_res.slot<cv::detail::OpaqueRef>()[rc.id] = util::get<cv::detail::OpaqueRef>(arg); break;
     }
 }
 
@@ -1293,23 +1296,18 @@ void cv::gimpl::GFluidExecutable::packArg(cv::GArg &in_arg, const cv::GArg &op_a
 {
     GAPI_Assert(op_arg.kind != cv::detail::ArgKind::GMAT
            && op_arg.kind != cv::detail::ArgKind::GSCALAR
-           && op_arg.kind != cv::detail::ArgKind::GARRAY
-           && op_arg.kind != cv::detail::ArgKind::GOPAQUE);
+           && op_arg.kind != cv::detail::ArgKind::GARRAY);
 
     if (op_arg.kind == cv::detail::ArgKind::GOBJREF)
     {
         const cv::gimpl::RcDesc &ref = op_arg.get<cv::gimpl::RcDesc>();
         if (ref.shape == GShape::GSCALAR)
         {
-            in_arg = GArg(m_res.slot<cv::Scalar>()[ref.id]);
+            in_arg = GArg(m_res.slot<cv::gapi::own::Scalar>()[ref.id]);
         }
         else if (ref.shape == GShape::GARRAY)
         {
             in_arg = GArg(m_res.slot<cv::detail::VectorRef>()[ref.id]);
-        }
-        else if (ref.shape == GShape::GOPAQUE)
-        {
-            in_arg = GArg(m_res.slot<cv::detail::OpaqueRef>()[ref.id]);
         }
     }
 }

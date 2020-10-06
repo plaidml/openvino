@@ -56,6 +56,7 @@ extern bool CheckMA2085();
 using Batch = int;
 using DoReshape = bool;
 using Resources = int;
+using IsIgnoreStatistic = bool;
 using PluginDevicePair = std::pair<std::string, std::string>;
 
 //------------------------------------------------------------------------------

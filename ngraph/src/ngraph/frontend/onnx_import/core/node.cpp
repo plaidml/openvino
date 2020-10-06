@@ -126,20 +126,6 @@ namespace ngraph
             return it->template get_value<T>();
         }
 
-        template <>
-        Subgraph Node::Impl::get_attribute_value(const std::string& name) const
-        {
-            auto it = std::find_if(
-                std::begin(m_attributes), std::end(m_attributes), [&](const Attribute& attribute) {
-                    return attribute.get_name() == name;
-                });
-            if (it == std::end(m_attributes))
-            {
-                throw error::node::UnknownAttribute{this->name(), name};
-            }
-            return it->get_subgraph(graph());
-        }
-
         NodeVector Node::Impl::get_ng_nodes(const Node& node) const
         {
             return m_graph->make_ng_nodes(node);
@@ -350,9 +336,9 @@ namespace ngraph
         }
 
         template <>
-        Subgraph Node::get_attribute_value(const std::string& name) const
+        Graph Node::get_attribute_value(const std::string& name) const
         {
-            return m_pimpl->template get_attribute_value<Subgraph>(name);
+            return m_pimpl->template get_attribute_value<Graph>(name);
         }
 
         template <>

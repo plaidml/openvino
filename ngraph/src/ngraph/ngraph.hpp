@@ -47,7 +47,7 @@ namespace ngraph
 }
 
 /// \namespace ngraph
-/// \brief The Intel nGraph C++ API.
+/// \brief The Intel Nervana Graph C++ API.
 
 /// \namespace ngraph::descriptor
 /// \brief Descriptors are compile-time representations of objects that will appear at run-time.
@@ -72,6 +72,7 @@ namespace ngraph
 #include "ngraph/builder/numpy_transpose.hpp"
 #include "ngraph/builder/quantize_builder.hpp"
 #include "ngraph/builder/quantized_concat_builder.hpp"
+#include "ngraph/builder/quantized_conv_builder.hpp"
 #include "ngraph/builder/quantized_dot_builder.hpp"
 #include "ngraph/builder/reduce_ops.hpp"
 #include "ngraph/builder/reshape.hpp"
@@ -83,7 +84,6 @@ namespace ngraph
 #include "ngraph/descriptor/output.hpp"
 #include "ngraph/descriptor/tensor.hpp"
 #include "ngraph/dimension.hpp"
-#include "ngraph/evaluator.hpp"
 #include "ngraph/except.hpp"
 #include "ngraph/factory.hpp"
 #include "ngraph/function.hpp"
@@ -91,20 +91,8 @@ namespace ngraph
 #include "ngraph/node.hpp"
 #include "ngraph/ops.hpp"
 #include "ngraph/partial_shape.hpp"
-#include "ngraph/rt_info.hpp"
 #include "ngraph/shape.hpp"
 #include "ngraph/shape_util.hpp"
 #include "ngraph/specialize_function.hpp"
 #include "ngraph/type.hpp"
 #include "ngraph/type/element_type.hpp"
-#include "ngraph/validation_util.hpp"
-#include "ngraph/variant.hpp"
-
-// nGraph opsets
-#include "ngraph/opsets/opset.hpp"
-
-// nGraph passes
-#include "ngraph/pass/get_output_element_elimination.hpp"
-#include "ngraph/pass/graph_rewrite.hpp"
-#include "ngraph/pass/manager.hpp"
-#include "ngraph/pass/visualize_tree.hpp"

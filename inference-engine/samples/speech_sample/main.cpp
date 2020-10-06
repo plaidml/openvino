@@ -603,13 +603,12 @@ int main(int argc, char *argv[]) {
 
         if (FLAGS_q.compare("user") == 0) {
             auto scaleFactorInput = ParseScaleFactors(FLAGS_sf);
-            if (numInputArkFiles != scaleFactorInput.size()) {
+            if (scaleFactorInput.size() != network.getInputsInfo().size()) {
                 std::string errMessage("Incorrect command line for multiple inputs: "
-                    + std::to_string(scaleFactorInput.size()) + " scale factors provided for "
-                    + std::to_string(numInputArkFiles) + " input files.");
+                    + std::to_string(scaleFactorInput.size()) +  " scale factors provided for "
+                    + std::to_string(network.getInputsInfo().size()) + " inputs.");
                 throw std::logic_error(errMessage);
             }
-
             for (size_t i = 0; i < scaleFactorInput.size(); ++i) {
                 slog::info << "For input " << i << " using scale factor of " << scaleFactorInput[i] << slog::endl;
                 std::string scaleFactorConfigKey = GNA_CONFIG_KEY(SCALE_FACTOR) + std::string("_") + std::to_string(i);

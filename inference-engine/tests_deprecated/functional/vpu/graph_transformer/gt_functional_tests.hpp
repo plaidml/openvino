@@ -8,6 +8,7 @@
 
 #include <vpu/middleend/pass_manager.hpp>
 #include <vpu/frontend/frontend.hpp>
+#include <cpp_interfaces/base/ie_inference_plugin_api.hpp>
 
 class graphTransformerFunctionalTests : public vpuLayersTests {
 protected:

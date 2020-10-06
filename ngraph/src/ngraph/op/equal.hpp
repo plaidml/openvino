@@ -47,10 +47,7 @@ namespace ngraph
                 static constexpr NodeTypeInfo type_info{"Equal", 0};
                 const NodeTypeInfo& get_type_info() const override { return type_info; }
                 /// \brief Constructs an equal operation.
-                Equal()
-                    : util::BinaryElementwiseComparison(AutoBroadcastSpec::NONE)
-                {
-                }
+                Equal() = default;
                 /// \brief Constructs an equal operation.
                 ///
                 /// \param arg0 Node that produces the first input tensor.
@@ -63,6 +60,7 @@ namespace ngraph
                 virtual std::shared_ptr<Node>
                     clone_with_new_inputs(const OutputVector& new_args) const override;
 
+                virtual bool is_commutative() const override { return true; }
                 bool evaluate(const HostTensorVector& outputs,
                               const HostTensorVector& inputs) override;
             };
@@ -93,10 +91,7 @@ namespace ngraph
                 static constexpr NodeTypeInfo type_info{"Equal", 1};
                 const NodeTypeInfo& get_type_info() const override { return type_info; }
                 /// \brief Constructs an equal operation.
-                Equal()
-                    : util::BinaryElementwiseComparison(AutoBroadcastSpec::NUMPY)
-                {
-                }
+                Equal() = default;
                 /// \brief Constructs an equal operation.
                 ///
                 /// \param arg0 Node that produces the first input tensor.
@@ -110,6 +105,7 @@ namespace ngraph
                 virtual std::shared_ptr<Node>
                     clone_with_new_inputs(const OutputVector& new_args) const override;
 
+                virtual bool is_commutative() const override { return true; }
                 bool evaluate(const HostTensorVector& outputs,
                               const HostTensorVector& inputs) override;
             };

@@ -5,6 +5,7 @@
 #include "low_precision_transformations/const.hpp"
 #include "low_precision_transformations/network_helper.hpp"
 
+#include <details/ie_cnn_network_tools.h>
 #include <ie_common.h>
 
 #include <algorithm>

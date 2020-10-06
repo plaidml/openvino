@@ -5,16 +5,10 @@
 #pragma once
 
 #include "ngraph/op/op.hpp"
-#include "ngraph/runtime/host_tensor.hpp"
 
 #include <memory>
 
 namespace ngraph { namespace vpu { namespace op {
-
-enum class DynamicShapeResolverMode {
-    INFER_UPPER_BOUND_SHAPE,
-    INFER_DYNAMIC_SHAPE
-};
 
 class DynamicShapeResolver : public ngraph::op::Op {
 public:
@@ -22,23 +16,13 @@ public:
 
     const NodeTypeInfo& get_type_info() const override { return type_info; }
 
-    DynamicShapeResolver(const Output<Node>& tensorWithData,
-                         const Output<Node>& tensorWithDims,
-                         const DynamicShapeResolverMode& mode = DynamicShapeResolverMode::INFER_UPPER_BOUND_SHAPE);
+    DynamicShapeResolver(const Output<Node>& tensorWithData, const Output<Node>& tensorWithDims);
 
     void validate_and_infer_types() override;
 
-    std::shared_ptr<Node> clone_with_new_inputs(const OutputVector& new_args) const override;
+    std::shared_ptr<Node> copy_with_new_args(const NodeVector& new_args) const override;
 
     bool visit_attributes(ngraph::AttributeVisitor& visitor) override;
-
-    bool evaluate(const HostTensorVector& outputs, const HostTensorVector& inputs) override;
-
-    void setMode(DynamicShapeResolverMode mode) { m_mode = mode; }
-    DynamicShapeResolverMode getMode() { return m_mode; }
-
-private:
-    DynamicShapeResolverMode m_mode;
 };
 
 }  // namespace op

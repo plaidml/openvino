@@ -17,12 +17,7 @@
 #include <cpp_interfaces/impl/ie_executable_network_internal.hpp>
 #include <threading/ie_itask_executor.hpp>
 
-#include <ngraph/runtime/tensor.hpp>
-#include <ngraph/runtime/tensor.hpp>
-#include <executable.hpp>
-
 #include "template_config.hpp"
-
 
 namespace TemplatePlugin {
 
@@ -51,7 +46,8 @@ public:
 
 private:
     void allocateDeviceBuffers();
-    void allocateBlobs();
+    void allocateInputBlobs();
+    void allocateOutputBlobs();
 
     enum {
         Preprocess,
@@ -61,18 +57,17 @@ private:
         numOfStages
     };
 
-    std::array<InferenceEngine::ProfilingTask, numOfStages>             _profilingTask;
-    // for performance counters
-    std::array<std::chrono::duration<float, std::micro>, numOfStages>   _durations;
+    std::array<InferenceEngine::ProfilingTask, numOfStages> _profilingTask;
 
-    InferenceEngine::BlobMap                                _networkInputBlobs;
-    InferenceEngine::BlobMap                                _networkOutputBlobs;
-    ngraph::ParameterVector                                 _parameters;
-    ngraph::ResultVector                                    _results;
+    InferenceEngine::BlobMap                                _inputsNCHW;
+    InferenceEngine::BlobMap                                _outputsNCHW;
 
-    std::vector<std::shared_ptr<ngraph::runtime::Tensor>>   _inputTensors;
-    std::vector<std::shared_ptr<ngraph::runtime::Tensor>>   _outputTensors;
-    std::shared_ptr<ngraph::runtime::Executable>            _executable;
+    // for performance counts
+    double                                                  _inputPreprocessTime   = 0.0;
+    double                                                  _inputTransferTime     = 0.0;
+    double                                                  _executeTime           = 0.0;
+    double                                                  _outputTransferTime    = 0.0;
+    double                                                  _outputPostProcessTime = 0.0;
 };
 // ! [infer_request:header]
 

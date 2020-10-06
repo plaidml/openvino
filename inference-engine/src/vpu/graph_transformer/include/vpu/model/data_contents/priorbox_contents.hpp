@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include <ie_layers.h>
 #include <vpu/model/data_contents/calculated_data_content.hpp>
 
 namespace vpu {

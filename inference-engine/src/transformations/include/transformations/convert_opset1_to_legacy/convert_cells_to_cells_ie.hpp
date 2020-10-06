@@ -15,24 +15,21 @@
 namespace ngraph {
 namespace pass {
 
-class TRANSFORMATIONS_API ConvertLSTMCellMatcher;
-class TRANSFORMATIONS_API ConvertGRUCellMatcher;
-class TRANSFORMATIONS_API ConvertRNNCellMatcher;
+class TRANSFORMATIONS_API ConvertCellsToCellsIE;
 
 }  // namespace pass
 }  // namespace ngraph
 
-class ngraph::pass::ConvertLSTMCellMatcher : public ngraph::pass::MatcherPass {
+class ngraph::pass::ConvertCellsToCellsIE: public ngraph::pass::GraphRewrite {
 public:
-    ConvertLSTMCellMatcher();
-};
+    ConvertCellsToCellsIE() : GraphRewrite() {
+        convert_lstm_cell();
+        convert_gru_cell();
+        convert_rnn_cell();
+    }
 
-class ngraph::pass::ConvertGRUCellMatcher : public ngraph::pass::MatcherPass {
-public:
-    ConvertGRUCellMatcher();
-};
-
-class ngraph::pass::ConvertRNNCellMatcher : public ngraph::pass::MatcherPass {
-public:
-    ConvertRNNCellMatcher();
+private:
+    void convert_lstm_cell();
+    void convert_gru_cell();
+    void convert_rnn_cell();
 };

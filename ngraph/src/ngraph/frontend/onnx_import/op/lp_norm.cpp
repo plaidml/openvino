@@ -51,11 +51,9 @@ namespace ngraph
                     const size_t normalize_axis =
                         ngraph::normalize_axis(node.get_description(), axis, data_rank);
 
-                    CHECK_VALID_NODE(node,
-                                     p_norm == 1 || p_norm == 2,
-                                     "Invalid `p` attribute value: ",
-                                     p_norm,
-                                     "Only normalization of 1st or 2nd order is supported.");
+                    ASSERT_VALID_ARGUMENT(node, p_norm == 1 || p_norm == 2)
+                        << "Invalid `p` attribute value: " << p_norm
+                        << "Only normalization of 1st or 2nd order is supported.";
 
                     const auto normalize_axis_const =
                         default_opset::Constant::create(element::i64, {}, {normalize_axis});

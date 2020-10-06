@@ -51,7 +51,6 @@
 #include "ngraph/op/not.hpp"
 #include "ngraph/op/parameter.hpp"
 #include "ngraph/op/range.hpp"
-#include "ngraph/op/reduce_logical_and.hpp"
 #include "ngraph/op/relu.hpp"
 #include "ngraph/op/reshape.hpp"
 #include "ngraph/op/round.hpp"
@@ -1332,6 +1331,25 @@ TEST(eval, eval_transpose)
     }
 }
 
+TEST(eval, max_pool_v0_dynamic)
+{
+    Shape window_shape{3};
+    auto A = make_shared<op::Parameter>(element::f32, PartialShape::dynamic());
+    auto f =
+        make_shared<Function>(make_shared<op::v0::MaxPool>(A, window_shape), ParameterVector{A});
+    auto result_tensor = make_shared<HostTensor>();
+
+    ASSERT_TRUE(f->evaluate({result_tensor},
+                            {make_host_tensor<element::Type_t::f32>(
+                                {1, 1, 14}, {0, 1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 0})}));
+
+    EXPECT_EQ(result_tensor->get_element_type(), element::f32);
+    EXPECT_EQ(result_tensor->get_partial_shape(), (PartialShape{1, 1, 12}));
+    auto cval = read_vector<float>(result_tensor);
+    vector<float> out{1, 2, 2, 2, 3, 3, 3, 2, 2, 2, 2, 0};
+    ASSERT_EQ(cval, out);
+}
+
 TEST(eval, max_pool_v1_dynamic)
 {
     Shape window_shape{3};
@@ -1474,8 +1492,7 @@ TEST(eval, evaluate_dynamic_scatter_elements_update_1d_axis)
     ASSERT_EQ(cval, out);
 }
 
-// Disabled test for disabled reference implementation
-TEST(eval, DISABLED_evaluate_dynamic_scatter_elements_update_3d_i16)
+TEST(eval, evaluate_dynamic_scatter_elements_update_3d_i16)
 {
     const Shape data_shape{3, 3, 3};
     const Shape indices_shape{2, 2, 3};
@@ -1892,26 +1909,4 @@ TEST(eval, topk_v0_param_dyn_k0)
 
     vector<int32_t> expec0{0, 1, 1, 2, 2, 0, 2, 2, 0, 1, 1, 0};
     ASSERT_EQ(result0_val, expec0);
-}
-
-TEST(eval, reduce_logical_and__neg_axis)
-{
-    const auto data = make_shared<op::Parameter>(element::boolean, Shape{2, 2, 2});
-    const auto axes = make_shared<op::Parameter>(element::i64, Shape{});
-
-    const auto op = make_shared<op::v1::ReduceLogicalAnd>(data, axes);
-
-    auto fun = make_shared<Function>(op, ParameterVector{data, axes});
-
-    auto result = make_shared<HostTensor>();
-
-    // when ReduceLogicalAnd node evaluator returns false -> the Function object throws
-    EXPECT_THROW(
-        fun->evaluate({result},
-                      {
-                          make_host_tensor<element::Type_t::boolean>(
-                              Shape{2, 2, 2}, {true, false, true, false, true, false, true, false}),
-                          make_host_tensor<element::Type_t::i64>(Shape{}, {-1}),
-                      }),
-        ngraph::ngraph_error);
 }

@@ -4,9 +4,7 @@
 
 #pragma once
 
-#include <ngraph/opsets/opset.hpp>
 #include <ie_blob.h>
-#include <ie_icnn_network.hpp>
 #include <ie_iextension.h>
 #include <xml_parse_utils.h>
 
@@ -20,6 +18,7 @@
 #include <string>
 #include <vector>
 
+#include "cnn_network_impl.hpp"
 #include "ie_ngraph_utils.hpp"
 
 namespace InferenceEngine {
@@ -136,7 +135,7 @@ private:
         void checkParameters(const ngraph::OutputVector& inputs, const GenericLayerParams& params, int numInputs) {
             if (numInputs >= 0 && inputs.size() != numInputs) {
                 THROW_IE_EXCEPTION << params.type << " layer " << params.name << " with id: " << params.layerId
-                                   << " has incorrect number of inputs! Expected: " << numInputs << ", actual: " << inputs.size();
+                                   << " has incorrect number of inputs!";
             }
         }
 
@@ -218,9 +217,6 @@ private:
             } else if (auto a = ngraph::as_type<ngraph::AttributeAdapter<ngraph::op::TopKMode>>(&adapter)) {
                 if (!getStrAttribute(node.child("data"), name, val)) return;
                 static_cast<ngraph::op::TopKMode&>(*a) = ngraph::as_enum<ngraph::op::TopKMode>(val);
-            }  else {
-                THROW_IE_EXCEPTION << "Error IR reading. Attribute adapter can not be found for " << name
-                                   << " parameter";
             }
         }
         void on_adapter(const std::string& name, ngraph::ValueAccessor<double>& adapter) override {

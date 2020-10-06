@@ -3,10 +3,9 @@
 
 #include "ngraph/ngraph.hpp"
 #include "ngraph/op/util/attr_types.hpp"
-#include "ngraph/op/util/op_types.hpp"
 #include "ngraph/pass/manager.hpp"
-#include "opset0_downgrade.hpp"
-#include "opset1_upgrade.hpp"
+#include "ngraph/pass/opset0_downgrade.hpp"
+#include "ngraph/pass/opset1_upgrade.hpp"
 #include "util/type_prop.hpp"
 
 using namespace std;
@@ -29,8 +28,8 @@ TEST(opset_transform, opset1_broadcast_upgrade_pass)
     ASSERT_TRUE(bcast_v1);
     EXPECT_EQ(bcast_v1->get_broadcast_spec(), op::AutoBroadcastSpec());
     EXPECT_EQ(bcast_v1->get_broadcast_axes(), (std::make_pair<bool, AxisSet>(true, AxisSet{0, 2})));
-    ASSERT_TRUE(op::is_constant(bcast_v1->input_value(1).get_node()));
-    ASSERT_TRUE(op::is_constant(bcast_v1->input_value(2).get_node()));
+    ASSERT_TRUE(bcast_v1->input_value(1).get_node()->is_constant());
+    ASSERT_TRUE(bcast_v1->input_value(2).get_node()->is_constant());
     EXPECT_EQ(
         as_type_ptr<op::Constant>(bcast_v1->input_value(1).get_node_shared_ptr())->get_shape_val(),
         (Shape{3, 5, 4, 6}));

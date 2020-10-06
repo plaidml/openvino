@@ -21,9 +21,8 @@
 #include <transformations/convert_opset1_to_legacy/reshape_fully_connected.hpp>
 #include <transformations/init_node_info.hpp>
 #include <transformations/utils/utils.hpp>
-#include <ngraph/pass/manager.hpp>
 
-#include "common_test_utils/ngraph_test_utils.hpp"
+#include "ngraph_test_utils.hpp"
 
 using namespace testing;
 
@@ -36,10 +35,8 @@ TEST(TransformationTests, ConvertMatMulTest1) {
 
         f = std::make_shared<ngraph::Function>(ngraph::NodeVector{matmul}, ngraph::ParameterVector{input1, input2});
 
-        ngraph::pass::Manager m;
-        m.register_pass<ngraph::pass::InitNodeInfo>();
-        m.register_pass<ngraph::pass::ConvertMatMulToFCorGemm>();
-        m.run_passes(f);
+        ngraph::pass::InitNodeInfo().run_on_function(f);
+        ngraph::pass::ConvertMatMulToFCorGemm().run_on_function(f);
         ASSERT_NO_THROW(check_rt_info(f));
     }
 
@@ -67,10 +64,8 @@ TEST(TransformationTests, ConvertMatMulTest2) {
 
         f = std::make_shared<ngraph::Function>(ngraph::NodeVector{matmul}, ngraph::ParameterVector{input1, input2});
 
-        ngraph::pass::Manager m;
-        m.register_pass<ngraph::pass::InitNodeInfo>();
-        m.register_pass<ngraph::pass::ConvertMatMulToFCorGemm>();
-        m.run_passes(f);
+        ngraph::pass::InitNodeInfo().run_on_function(f);
+        ngraph::pass::ConvertMatMulToFCorGemm().run_on_function(f);
         ASSERT_NO_THROW(check_rt_info(f));
     }
 
@@ -97,10 +92,8 @@ TEST(TransformationTests, ConvertMatMulTest3) {
         auto matmul = std::make_shared<ngraph::opset1::MatMul>(input1, input2, false, false);
 
         f = std::make_shared<ngraph::Function>(ngraph::NodeVector{matmul}, ngraph::ParameterVector{input1, input2});
-        ngraph::pass::Manager m;
-        m.register_pass<ngraph::pass::InitNodeInfo>();
-        m.register_pass<ngraph::pass::ConvertMatMulToFCorGemm>();
-        m.run_passes(f);
+        ngraph::pass::InitNodeInfo().run_on_function(f);
+        ngraph::pass::ConvertMatMulToFCorGemm().run_on_function(f);
         ASSERT_NO_THROW(check_rt_info(f));
     }
 
@@ -127,10 +120,8 @@ TEST(TransformationTests, ConvertMatMulTest4) {
         auto matmul = std::make_shared<ngraph::opset1::MatMul>(input1, input2, false, false);
 
         f = std::make_shared<ngraph::Function>(ngraph::NodeVector{matmul}, ngraph::ParameterVector{input1, input2});
-        ngraph::pass::Manager m;
-        m.register_pass<ngraph::pass::InitNodeInfo>();
-        m.register_pass<ngraph::pass::ConvertMatMulToFCorGemm>();
-        m.run_passes(f);
+        ngraph::pass::InitNodeInfo().run_on_function(f);
+        ngraph::pass::ConvertMatMulToFCorGemm().run_on_function(f);
         ASSERT_NO_THROW(check_rt_info(f));
     }
 
@@ -154,10 +145,8 @@ TEST(TransformationTests, ConvertMatMulTest5) {
         auto matmul = std::make_shared<ngraph::opset1::MatMul>(input1, input2, false, true);
 
         f = std::make_shared<ngraph::Function>(ngraph::NodeVector{matmul}, ngraph::ParameterVector{input1});
-        ngraph::pass::Manager m;
-        m.register_pass<ngraph::pass::InitNodeInfo>();
-        m.register_pass<ngraph::pass::ConvertMatMulToFCorGemm>();
-        m.run_passes(f);
+        ngraph::pass::InitNodeInfo().run_on_function(f);
+        ngraph::pass::ConvertMatMulToFCorGemm().run_on_function(f);
         ASSERT_NO_THROW(check_rt_info(f));
     }
 
@@ -182,12 +171,8 @@ TEST(TransformationTests, ConvertMatMulTest6) {
         auto matmul = std::make_shared<ngraph::opset1::MatMul>(input1, input2, false, true);
 
         f = std::make_shared<ngraph::Function>(ngraph::NodeVector{matmul}, ngraph::ParameterVector{input1});
-        ngraph::pass::Manager m;
-        m.register_pass<ngraph::pass::InitNodeInfo>();
-        m.register_pass<ngraph::pass::ConvertMatMulToFCorGemm>();
-        m.register_pass<ngraph::pass::ReshapeFullyConnected>();
-        m.run_passes(f);
-        ASSERT_NO_THROW(check_rt_info(f));
+        ngraph::pass::ConvertMatMulToFCorGemm().run_on_function(f);
+        ngraph::pass::ReshapeFullyConnected().run_on_function(f);
     }
 
     {
@@ -214,10 +199,8 @@ TEST(TransformationTests, ConvertMatMulTest7) {
 
         f = std::make_shared<ngraph::Function>(ngraph::NodeVector{matmul}, ngraph::ParameterVector{input1});
 
-        ngraph::pass::Manager m;
-        m.register_pass<ngraph::pass::InitNodeInfo>();
-        m.register_pass<ngraph::pass::ConvertMatMulToFCorGemm>();
-        m.register_pass<ngraph::pass::ReshapeFullyConnected>();
+        ngraph::pass::InitNodeInfo().run_on_function(f);
+        ngraph::pass::ConvertMatMulToFCorGemm().run_on_function(f);
 
         auto callback = [](const std::shared_ptr<const ngraph::Node> & node) -> bool {
             if (auto fc_op = std::dynamic_pointer_cast<const ngraph::op::FullyConnected>(node)) {
@@ -227,9 +210,9 @@ TEST(TransformationTests, ConvertMatMulTest7) {
             }
             return false;
         };
-
-        m.set_callback(callback);
-        m.run_passes(f);
+        auto p = ngraph::pass::ReshapeFullyConnected();
+        p.setCallback(callback);
+        p.run_on_function(f);
         ASSERT_NO_THROW(check_rt_info(f));
     }
 

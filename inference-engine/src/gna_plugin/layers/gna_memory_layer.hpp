@@ -25,12 +25,6 @@ public:
     InferenceEngine::SizeVector getDims() const {
         return inputLayer->outData.front()->getDims();
     }
-    /**
-     * @brief Reset the gna memory
-     */
-    void Reset() {
-        std::memset(gna_ptr, 0, reserved_size);
-    }
 
     /**
      * @brief possible to store memory in different precision

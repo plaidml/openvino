@@ -11,6 +11,7 @@
 
 #include <ngraph/ops.hpp>
 #include <ngraph/pass/graph_rewrite.hpp>
+#include "transformations/utils/pass_param.hpp"
 
 namespace ngraph {
 namespace pass {
@@ -20,9 +21,9 @@ class TRANSFORMATIONS_API ConvertBatchToSpace;
 }  // namespace pass
 }  // namespace ngraph
 
-class ngraph::pass::ConvertBatchToSpace: public ngraph::pass::GraphRewrite {
+class ngraph::pass::ConvertBatchToSpace: public ngraph::pass::GraphRewrite, public ngraph::pass::PassParam  {
 public:
-    ConvertBatchToSpace() : GraphRewrite() {
+    ConvertBatchToSpace() : GraphRewrite(), PassParam() {
         // convert_batch_to_space();
         convert_batch_to_space_ie_side();
     }

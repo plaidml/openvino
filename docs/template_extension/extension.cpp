@@ -4,7 +4,8 @@
 #include "extension.hpp"
 #include "cpu_kernel.hpp"
 #include "op.hpp"
-#include <ngraph/ngraph.hpp>
+#include <ngraph/factory.hpp>
+#include <ngraph/opsets/opset.hpp>
 
 #include <map>
 #include <memory>

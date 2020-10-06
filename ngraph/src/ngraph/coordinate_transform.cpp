@@ -14,10 +14,8 @@
 // limitations under the License.
 //*****************************************************************************
 
-#include <algorithm>
 #include <cstdio>
 #include <iostream>
-#include <numeric>
 #include <sstream>
 #include <vector>
 
@@ -31,55 +29,6 @@
 
 using namespace ngraph;
 
-namespace
-{
-    Strides default_strides(size_t n_axes) { return Strides(n_axes, 1); }
-    CoordinateDiff default_padding(size_t n_axes) { return CoordinateDiff(n_axes, 0); }
-    AxisVector default_axis_order(size_t n_axes)
-    {
-        AxisVector result(n_axes);
-        std::iota(result.begin(), result.end(), 0);
-        return result;
-    }
-
-    Coordinate default_source_start_corner(size_t n_axes) { return Coordinate(n_axes, 0); }
-    Coordinate default_source_end_corner(const Shape& source_shape) { return source_shape; }
-}
-
-CoordinateTransformBasic::CoordinateTransformBasic(const Shape& source_shape)
-    : m_source_shape(source_shape)
-{
-}
-
-// Compute the index of a source-space coordinate in the buffer.
-size_t CoordinateTransformBasic::index(const Coordinate& c) const noexcept
-{
-    size_t index = 0;
-    size_t stride = 1;
-    size_t const padding = c.size() - m_source_shape.size();
-
-    for (size_t axis = m_source_shape.size(); axis-- > 0;)
-    {
-        if (m_source_shape[axis] > 1)
-        {
-            index += c[axis + padding] * stride;
-            stride *= m_source_shape[axis];
-        }
-    }
-
-    return index;
-}
-
-CoordinateIterator CoordinateTransformBasic::begin() const noexcept
-{
-    return CoordinateIterator(m_source_shape);
-}
-
-const CoordinateIterator& CoordinateTransformBasic::end() const noexcept
-{
-    return CoordinateIterator::end();
-}
-
 CoordinateTransform::CoordinateTransform(const Shape& source_shape,
                                          const Coordinate& source_start_corner,
                                          const Coordinate& source_end_corner,
@@ -88,7 +37,7 @@ CoordinateTransform::CoordinateTransform(const Shape& source_shape,
                                          const CoordinateDiff& target_padding_below,
                                          const CoordinateDiff& target_padding_above,
                                          const Strides& target_dilation_strides)
-    : CoordinateTransformBasic(source_shape)
+    : m_source_shape(source_shape)
     , m_source_start_corner(source_start_corner)
     , m_source_end_corner(source_end_corner)
     , m_source_strides(source_strides)
@@ -96,6 +45,7 @@ CoordinateTransform::CoordinateTransform(const Shape& source_shape,
     , m_target_padding_below(target_padding_below)
     , m_target_padding_above(target_padding_above)
     , m_target_dilation_strides(target_dilation_strides)
+    , m_end_iterator(Shape(), true)
 {
     m_n_axes = source_shape.size();
 
@@ -220,6 +170,11 @@ CoordinateTransform::CoordinateTransform(const Shape& source_shape,
     }
 }
 
+Strides CoordinateTransform::default_strides(size_t n_axes)
+{
+    return Strides(n_axes, 1);
+}
+
 CoordinateTransform::CoordinateTransform(const Shape& source_shape,
                                          const Coordinate& source_start_corner,
                                          const Coordinate& source_end_corner,
@@ -238,6 +193,11 @@ CoordinateTransform::CoordinateTransform(const Shape& source_shape,
 {
 }
 
+CoordinateDiff CoordinateTransform::default_padding(size_t n_axes)
+{
+    return CoordinateDiff(n_axes, 0);
+}
+
 CoordinateTransform::CoordinateTransform(const Shape& source_shape,
                                          const Coordinate& source_start_corner,
                                          const Coordinate& source_end_corner,
@@ -252,6 +212,15 @@ CoordinateTransform::CoordinateTransform(const Shape& source_shape,
                           default_padding(source_shape.size()),
                           default_strides(source_shape.size()))
 {
+}
+
+AxisVector CoordinateTransform::default_axis_order(size_t n_axes)
+{
+    AxisVector result(n_axes);
+    size_t n = 0;
+    std::generate(result.begin(), result.end(), [&n]() -> size_t { return n++; });
+
+    return result;
 }
 
 CoordinateTransform::CoordinateTransform(const Shape& source_shape,
@@ -283,6 +252,16 @@ CoordinateTransform::CoordinateTransform(const Shape& source_shape,
 {
 }
 
+Coordinate CoordinateTransform::default_source_start_corner(size_t n_axes)
+{
+    return Coordinate(n_axes, 0);
+}
+
+Coordinate CoordinateTransform::default_source_end_corner(const Shape& source_shape)
+{
+    return source_shape;
+}
+
 CoordinateTransform::CoordinateTransform(const Shape& source_shape)
     : CoordinateTransform(source_shape,
                           default_source_start_corner(source_shape.size()),
@@ -295,10 +274,25 @@ CoordinateTransform::CoordinateTransform(const Shape& source_shape)
 {
 }
 
+// Compute the index of a source-space coordinate in the buffer.
+size_t CoordinateTransform::index_source(const Coordinate& c) const
+{
+    size_t index = 0;
+    size_t stride = 1;
+
+    for (size_t axis = m_n_axes; axis-- > 0;)
+    {
+        index += c[axis] * stride;
+        stride *= m_source_shape[axis];
+    }
+
+    return index;
+}
+
 // Compute the index of a target-space coordinate in thebuffer.
 size_t CoordinateTransform::index(const Coordinate& c) const
 {
-    return CoordinateTransformBasic::index(to_source_coordinate(c));
+    return index_source(to_source_coordinate(c));
 }
 
 // Convert a target-space coordinate to a source-space coordinate.
@@ -379,109 +373,74 @@ bool CoordinateTransform::has_source_coordinate(const Coordinate& c_target) cons
     return true;
 }
 
-const Shape& CoordinateTransform::get_source_shape() const noexcept
-{
-    return m_source_shape;
-}
-
-const Shape& CoordinateTransform::get_target_shape() const noexcept
+const Shape& CoordinateTransform::get_target_shape() const
 {
     return m_target_shape;
 }
 
-const Coordinate& CoordinateTransform::get_source_start_corner() const noexcept
-{
-    return m_source_start_corner;
-}
-
-const Coordinate& CoordinateTransform::get_source_end_corner() const noexcept
-{
-    return m_source_end_corner;
-}
-
-const Strides& CoordinateTransform::get_source_strides() const noexcept
-{
-    return m_source_strides;
-}
-
-const AxisVector& CoordinateTransform::get_source_axis_order() const noexcept
-{
-    return m_source_axis_order;
-}
-
-const Strides& CoordinateTransform::get_target_dilation_strides() const noexcept
-{
-    return m_target_dilation_strides;
-}
-
-CoordinateIterator CoordinateTransform::begin() const noexcept
-{
-    return CoordinateIterator(m_target_shape);
-}
-
-const CoordinateIterator& CoordinateTransform::end() const noexcept
-{
-    return CoordinateIterator::end();
-}
-
 // The "is_end" parameter is true if we want the "end()" iterator.
-CoordinateIterator::CoordinateIterator(const Shape& target_shape, bool is_end)
+CoordinateTransform::Iterator::Iterator(const Shape& target_shape, bool is_end)
     : m_target_shape(target_shape)
-    , m_coordinate(target_shape.size(), 0)
 {
+    // Initial coordinate is (0,...,0) in the target space.
+    m_coordinate = Coordinate(target_shape.size(), 0);
+
     // The case where we have a zero-length axis is a bit special, in that
     // the iterator always starts out of bounds.
-    bool const empty = std::find(target_shape.begin(), target_shape.end(), 0) != target_shape.end();
+    m_empty = false;
 
-    m_oob = is_end || empty;
+    for (auto s : target_shape)
+    {
+        if (s == 0)
+        {
+            m_empty = true;
+            break;
+        }
+    }
+
+    m_oob = is_end || m_empty;
 }
 
-void CoordinateIterator::operator++()
+void CoordinateTransform::Iterator::operator++()
 {
-    advance(m_target_shape.size() - 1);
-}
-
-size_t CoordinateIterator::advance(size_t axis) noexcept
-{
-    m_oob |= m_target_shape.empty();
-
+    // If we are out of bounds, start over at (0,...0). (TODO: not sure if that's what we want. It
+    // might be best to stay put?)
     if (m_oob)
-        return m_target_shape.size();
-
-    bool carry_out = false;
+    {
+        std::fill(m_coordinate.begin(), m_coordinate.end(), 0);
+        m_oob = m_empty;
+        return;
+    }
 
     // Increment the target coordinate.
-    do
+    for (size_t axis = m_target_shape.size(); axis-- > 0;)
     {
         m_coordinate[axis]++;
 
         if (m_coordinate[axis] < m_target_shape[axis])
         {
             // No carry-out, so we are done.
-            return axis;
+            return;
         }
         else
         {
             m_coordinate[axis] = 0;
-            carry_out = true;
         }
-    } while (axis-- > 0);
+    }
 
     // If we are still here there was carry-out from the most significant axis. We are now out of
     // bounds.
     m_oob = true;
-
-    return m_target_shape.size();
 }
 
-CoordinateIterator CoordinateIterator::operator++(int)
+CoordinateTransform::Iterator CoordinateTransform::Iterator::operator++(int)
 {
-    CoordinateIterator temp = *this;
+    CoordinateTransform::Iterator temp = *this;
     ++(*this);
     return temp;
 }
 
-void CoordinateIterator::operator+=(size_t n)
+void CoordinateTransform::Iterator::operator+=(size_t n)
 {
     for (size_t i = 0; i < n; i++)
     {
@@ -489,17 +448,17 @@ void CoordinateIterator::operator+=(size_t n)
     }
 }
 
-const Coordinate& CoordinateIterator::operator*() const noexcept
+const Coordinate& CoordinateTransform::Iterator::operator*() const
 {
     return m_coordinate;
 }
 
-bool CoordinateIterator::operator!=(const CoordinateIterator& it) const noexcept
+bool CoordinateTransform::Iterator::operator!=(const Iterator& it)
 {
     return !(*this == it);
 }
 
-bool CoordinateIterator::operator==(const CoordinateIterator& it) const noexcept
+bool CoordinateTransform::Iterator::operator==(const Iterator& it)
 {
     if (it.m_oob)
     {
@@ -530,10 +489,4 @@ bool CoordinateIterator::operator==(const CoordinateIterator& it) const noexcept
     }
 
     return true;
-}
-
-const CoordinateIterator& CoordinateIterator::end()
-{
-    static const CoordinateIterator it(Shape(), true);
-    return it;
 }

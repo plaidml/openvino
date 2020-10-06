@@ -55,24 +55,11 @@ private:
                                   permuteStage->output(0)->desc().dimsOrder());
     }
 
-    static bool isTrivialPermute(const PermutationIndexVector& permutation, const vpu::DimValues& dims) {
-        InferenceEngine::SizeVector dimsVector(dims.size());
-        for (const auto& dim : dims) {
-            auto index = dimToIeInd(dim.first, dims.size());
-            dimsVector[dims.size() - 1 - index] = dim.second;
-        }
+    static bool isTrivialPermute(const PermutationIndexVector& permuteDims) {
+        for (size_t i = 0; i < permuteDims.size(); ++i)
+            if (i != permuteDims[i])
+                return false;
 
-        for (size_t i = 0; i < permutation.size() - 1; ++i) {
-            if (i != permutation[i]) {
-                bool swapAdjacentDims = permutation[i] == (i + 1) && permutation[i + 1] == i;
-                bool dimIsOne = dimsVector[i] == 1 || dimsVector[i + 1] == 1;
-                if (swapAdjacentDims && dimIsOne) {
-                    i++;
-                } else {
-                    return false;
-                }
-            }
-        }
         return true;
     }
 
@@ -144,6 +131,7 @@ private:
 void PassImpl::run(const Model& model) {
     VPU_PROFILE(mergePermuteStages);
     const StageMergeGroupList stageMergeGroupList = prepareStagesForMerge(model);
+
     for (const auto& stageMergeGroup : stageMergeGroupList) {
         const auto& firstPermuteStage = stageMergeGroup.first;
         auto resultPermutation = permuteVectorFromStageInternal(firstPermuteStage);
@@ -169,8 +157,8 @@ void PassImpl::run(const Model& model) {
         if (!outputLayout.empty())
             firstPermuteStage->attrs().set(outputOrderKey, outputLayout);
 
-        // if we have no actual permutation, replace it with copy or reshape.
-        if (isTrivialPermute(resultPermutation, firstPermuteStage->input(0)->desc().dims())) {
+        // if we have no actual permutation, replace it with copy.
+        if (isTrivialPermute(resultPermutation)) {
             auto permuteInput  = firstPermuteStage->input(0);
             auto permuteOutput = firstPermuteStage->output(0);
             if (permuteInput->desc().dimsOrder() == permuteOutput->desc().dimsOrder()) {
@@ -178,15 +166,10 @@ void PassImpl::run(const Model& model) {
                 auto origLayer     = firstPermuteStage->origLayer();
                 model->removeStage(firstPermuteStage);
 
-                if (permuteInput->desc().dims() == permuteOutput->desc().dims()) {
-                    auto copyStage = _stageBuilder->addCopyStage(model, stageName + "@merged-to-copy",
-                                                origLayer, permuteInput, permuteOutput, "Eliminated permute");
-                     // TODO: make this optional=true with corresponding fixes in eliminate_copy (it expects Special stages now).
-                    copyStage->attrs().set("optional", false);
-                } else {
-                    _stageBuilder->addReshapeStage(model, stageName + "@merged-to-reshape", origLayer,
-                                                    permuteInput, permuteOutput);
-                }
+                auto copyStage = _stageBuilder->addCopyStage(model, stageName + "@merged-to-copy",
+                                                             origLayer, permuteInput, permuteOutput, "Eliminated permute");
+                // TODO: make this optional=true with corresponding fixes in eliminate_copy (it expects Special stages now).
+                copyStage->attrs().set("optional", false);
             }
         }
     }

@@ -3,7 +3,6 @@
 //
 
 #include "low_precision_transformer_single_layer_tests.hpp"
-#include "common_test_utils/common_utils.hpp"
 
 std::string QuantizationOnInvertedWeightsTestModel::getModel(SingleLayerTransformationsTestParams& p) const {
     size_t type_size = sizeof(InferenceEngine::PrecisionTrait<InferenceEngine::Precision::FP32>::value_type);
@@ -60,13 +59,13 @@ std::string QuantizationOnInvertedWeightsTestModel::getName() const {
 }
 
 bool QuantizationOnInvertedWeightsTestModel::transform(CNNNetwork& network, LayerTransformation::Params& params) const {
-    CNNLayerPtr weightsFakeQuantize = CommonTestUtils::getLayerByName(network, "FakeQuantize12");
+    CNNLayerPtr weightsFakeQuantize = network.getLayerByName("FakeQuantize12");
     Blob::Ptr weights = CNNNetworkHelper::quantizeWeights(*weightsFakeQuantize, false);
 
-    CNNLayerPtr biasesConvolutionConst = CommonTestUtils::getLayerByName(network, "Const13");
+    CNNLayerPtr biasesConvolutionConst = network.getLayerByName("Const13");
     Blob::Ptr biases = getBlob(biasesConvolutionConst, "custom");
 
-    CNNLayerPtr convolution = CommonTestUtils::getLayerByName(network, "Convolution14");
+    CNNLayerPtr convolution = network.getLayerByName("Convolution14");
     convolution->blobs.emplace("weights", weights);
     convolution->blobs.emplace("biases", biases);
 
@@ -74,15 +73,15 @@ bool QuantizationOnInvertedWeightsTestModel::transform(CNNNetwork& network, Laye
     weightableLayer->_weights = weights;
     weightableLayer->_biases = biases;
 
-    CNNLayerPtr weightsConstInput = CommonTestUtils::getLayerByName(network, "Const7");
+    CNNLayerPtr weightsConstInput = network.getLayerByName("Const7");
     CNNNetworkHelper::removeLayer(network, weightsConstInput);
-    CNNLayerPtr weightsConstInputLow = CommonTestUtils::getLayerByName(network, "Const8");
+    CNNLayerPtr weightsConstInputLow = network.getLayerByName("Const8");
     CNNNetworkHelper::removeLayer(network, weightsConstInputLow);
-    CNNLayerPtr weightsConstInputHigh = CommonTestUtils::getLayerByName(network, "Const9");
+    CNNLayerPtr weightsConstInputHigh = network.getLayerByName("Const9");
     CNNNetworkHelper::removeLayer(network, weightsConstInputHigh);
-    CNNLayerPtr weightsConstOutputLow = CommonTestUtils::getLayerByName(network, "Const10");
+    CNNLayerPtr weightsConstOutputLow = network.getLayerByName("Const10");
     CNNNetworkHelper::removeLayer(network, weightsConstOutputLow);
-    CNNLayerPtr weightsConstOutputHigh = CommonTestUtils::getLayerByName(network, "Const11");
+    CNNLayerPtr weightsConstOutputHigh = network.getLayerByName("Const11");
     CNNNetworkHelper::removeLayer(network, weightsConstOutputHigh);
 
     CNNNetworkHelper::removeLayer(network, weightsFakeQuantize);

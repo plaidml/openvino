@@ -167,11 +167,6 @@ namespace ngraph
                                        const AxisSet& reduction_axes,
                                        bool keep_dims = false);
 
-            NGRAPH_API
-            std::shared_ptr<Node> mean(const Output<Node>& node,
-                                       const Output<Node>& reduction_axes,
-                                       bool keep_dims = false);
-
             // clang-format off
             /// \brief Sum-based Variance of a Tensor.
             ///
@@ -203,12 +198,6 @@ namespace ngraph
             std::shared_ptr<Node> variance(const Output<Node>& value,
                                            const AxisSet& reduction_axes,
                                            const bool bessel_correction = false);
-
-            NGRAPH_API
-            std::shared_ptr<Node> variance(const Output<Node>& value,
-                                           const Output<Node>& reduction_axes,
-                                           bool keep_dims = false,
-                                           bool bessel_correction = false);
         }
 
     } // namespace builder

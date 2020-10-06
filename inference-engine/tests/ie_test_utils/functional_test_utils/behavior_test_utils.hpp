@@ -58,7 +58,7 @@ public:
     }
 
     void TearDown() override {
-        if (!configuration.empty()) {
+        if ((targetDevice == CommonTestUtils::DEVICE_GPU) || (!configuration.empty())) {
             PluginCache::get().reset();
         }
         function.reset();

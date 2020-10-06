@@ -12,19 +12,19 @@
 #include <ngraph_ops/tile_ie.hpp>
 #include <ngraph/rt_info.hpp>
 
-ngraph::pass::ConvertTileToLegacyMatcher::ConvertTileToLegacyMatcher() {
+void ngraph::pass::ConvertTileToIETile::convert_tile() {
     auto data = std::make_shared<pattern::op::Label>(element::f32, Shape{1, 1, 1, 1});
     auto shp = std::make_shared<pattern::op::Label>(element::i64, Shape{4});
     auto tile = std::make_shared<ngraph::opset1::Tile>(data, shp);
 
-    ngraph::matcher_pass_callback callback = [](pattern::Matcher& m) {
+    ngraph::graph_rewrite_callback callback = [](pattern::Matcher& m) {
         auto tile = std::dynamic_pointer_cast<ngraph::opset1::Tile> (m.get_match_root());
         if (!tile) {
             return false;
         }
 
-        auto data_node = tile->input_value(0).get_node_shared_ptr();
-        auto tiles_node = std::dynamic_pointer_cast<ngraph::opset1::Constant> (tile->input_value(1).get_node_shared_ptr());
+        auto data_node = tile->get_argument(0);
+        auto tiles_node = std::dynamic_pointer_cast<ngraph::opset1::Constant> (tile->get_argument(1));
         if (!data_node || !tiles_node) return false;
 
         auto tiles = tiles_node->get_vector<int64_t>();
@@ -90,6 +90,6 @@ ngraph::pass::ConvertTileToLegacyMatcher::ConvertTileToLegacyMatcher() {
         return true;
     };
 
-    auto m = std::make_shared<ngraph::pattern::Matcher>(tile, "ConvertTileToIETiles");
-    this->register_matcher(m, callback);
+    auto m = std::make_shared<ngraph::pattern::Matcher>(tile, "CPUFusion.ConvertTileToIETiles");
+    this->add_matcher(m, callback, PassProperty::CHANGE_DYNAMIC_STATE);
 }

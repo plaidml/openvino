@@ -5,15 +5,12 @@
 #include <file_utils.h>
 #include <xml_parse_utils.h>
 
-#include <ie_ir_version.hpp>
 #include <ie_ir_reader.hpp>
 #include <memory>
 #include <ngraph/ngraph.hpp>
 #include <string>
 #include <vector>
 #include <sstream>
-#include <algorithm>
-#include <cctype>
 
 #include "description_buffer.hpp"
 #include "ie_ir_parser.hpp"
@@ -21,22 +18,26 @@
 
 using namespace InferenceEngine;
 
-bool IRReader::supportModel(std::istream& model) const {
-    auto version = details::GetIRVersion(model);
+static size_t GetIRVersion(pugi::xml_node& root) {
+    return XMLParseUtils::GetUIntAttr(root, "version", 0);
+}
 
-#ifdef IR_READER_V10
-    return version == 10;
-#else
-    return version > 1 && version <= 7;
-#endif
+bool IRReader::supportModel(std::istream& model) const {
+    model.seekg(0, model.beg);
+    const int header_size = 128;
+    std::string header(header_size, ' ');
+    model.read(&header[0], header_size);
+    // find '<net ' substring in the .xml file
+    return (header.find("<net ") != std::string::npos) || (header.find("<Net ") != std::string::npos);
 }
 
 CNNNetwork IRReader::read(std::istream& model, const std::vector<IExtensionPtr>& exts) const {
     std::istringstream emptyStream;
     return read(model, emptyStream, exts);
 }
-
 CNNNetwork IRReader::read(std::istream& model, std::istream& weights, const std::vector<IExtensionPtr>& exts) const {
+    model.seekg(0, model.beg);
+    weights.seekg(0, weights.beg);
     pugi::xml_document xmlDoc;
     pugi::xml_parse_result res = xmlDoc.load(model);
     if (res.status != pugi::status_ok) {
@@ -44,7 +45,7 @@ CNNNetwork IRReader::read(std::istream& model, std::istream& weights, const std:
     }
     pugi::xml_node root = xmlDoc.document_element();
 
-    auto version = details::GetIRVersion(root);
+    auto version = GetIRVersion(root);
     IRParser parser(version, exts);
     return CNNNetwork(parser.parse(root, weights));
 }

@@ -6,7 +6,6 @@
 
 #include "behavior/infer_request_output.hpp"
 
-using namespace BehaviorTestsDefinitions;
 namespace {
     const std::vector<InferenceEngine::Precision> netPrecisions = {
             InferenceEngine::Precision::FP32

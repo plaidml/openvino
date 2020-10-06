@@ -30,7 +30,6 @@
 #include "ngraph/ngraph.hpp"
 #include "util/all_close.hpp"
 #include "util/all_close_f.hpp"
-#include "util/engine/test_engines.hpp"
 #include "util/ndarray.hpp"
 #include "util/test_case.hpp"
 #include "util/test_control.hpp"
@@ -40,15 +39,13 @@ using namespace ngraph;
 
 static std::string s_manifest = "${MANIFEST}";
 
-using TestEngine = test::ENGINE_CLASS_NAME(${BACKEND_NAME});
-
 // ONNX LSTM tests (implemented by nGraph LSTMCell and LSTMSequence)
 NGRAPH_TEST(${BACKEND_NAME}, onnx_model_lstm_fwd_with_clip)
 {
     auto function = onnx_import::import_onnx_model(
         file_util::path_join(SERIALIZED_ZOO, "onnx/lstm_fwd_with_clip.prototxt"));
 
-    auto test_case = test::TestCase<TestEngine>(function);
+    auto test_case = ngraph::test::NgraphTestCase(function, "${BACKEND_NAME}");
     test_case.add_input<float>({-0.455351, -0.276391, -0.185934, -0.269585}); // X
     test_case.add_input<float>({-0.494659f,                                   // W
                                 0.0453352f,
@@ -116,7 +113,7 @@ NGRAPH_TEST(${BACKEND_NAME}, onnx_model_lstm_fwd_mixed_seq)
     auto function = onnx_import::import_onnx_model(
         file_util::path_join(SERIALIZED_ZOO, "onnx/lstm_fwd_mixed_seq.prototxt"));
 
-    auto test_case = test::TestCase<TestEngine>(function);
+    auto test_case = ngraph::test::NgraphTestCase(function, "${BACKEND_NAME}");
     int hidden_size{3};
     test_case.add_input<float>({1.f, 2.f, 10.f, 11.f}); // X
     test_case.add_input<float>(
@@ -155,7 +152,7 @@ NGRAPH_TEST(${BACKEND_NAME}, onnx_model_lstm_fwd_hardsigmoid_activation)
     auto function = onnx_import::import_onnx_model(
         file_util::path_join(SERIALIZED_ZOO, "onnx/lstm_fwd_hardsigmoid_activation.prototxt"));
 
-    auto test_case = test::TestCase<TestEngine>(function);
+    auto test_case = ngraph::test::NgraphTestCase(function, "${BACKEND_NAME}");
 
     // X
     test_case.add_input<float>({-0.455351f, -0.276391f, -0.185934f, -0.269585f});
@@ -211,7 +208,7 @@ NGRAPH_TEST(${BACKEND_NAME}, onnx_model_lstm_fwd_large_batch_no_clip)
     auto function = onnx_import::import_onnx_model(
         file_util::path_join(SERIALIZED_ZOO, "onnx/lstm_fwd_large_batch_no_clip.prototxt"));
 
-    auto test_case = test::TestCase<TestEngine>(function);
+    auto test_case = ngraph::test::NgraphTestCase(function, "${BACKEND_NAME}");
 
     std::size_t seq_length = 2;
     std::size_t batch_size = 32;
@@ -256,7 +253,7 @@ NGRAPH_TEST(${BACKEND_NAME}, onnx_model_lstm_bdir_short_input_seq)
     auto function = onnx_import::import_onnx_model(
         file_util::path_join(SERIALIZED_ZOO, "onnx/lstm_bdir_short_input_seq.prototxt"));
 
-    auto test_case = test::TestCase<TestEngine>(function);
+    auto test_case = ngraph::test::NgraphTestCase(function, "${BACKEND_NAME}");
 
     // X
     test_case.add_input<float>({-0.455351f, -0.276391f, -0.185934f, -0.269585f});
@@ -316,7 +313,7 @@ NGRAPH_TEST(${BACKEND_NAME}, onnx_model_lstm_mixed_seq_reverse)
     auto function = onnx_import::import_onnx_model(
         file_util::path_join(SERIALIZED_ZOO, "onnx/lstm_mixed_seq_reverse.prototxt"));
 
-    auto test_case = test::TestCase<TestEngine>(function);
+    auto test_case = ngraph::test::NgraphTestCase(function, "${BACKEND_NAME}");
 
     size_t hidden_size = 3;
 
@@ -473,7 +470,7 @@ NGRAPH_TEST_F(${BACKEND_NAME}, GRUSequenceOp, onnx_model_gru_defaults_fwd)
     auto function = onnx_import::import_onnx_model(
         file_util::path_join(SERIALIZED_ZOO, "onnx/gru_defaults_fwd.prototxt"));
 
-    auto test_case = test::TestCase<TestEngine>(function);
+    auto test_case = ngraph::test::NgraphTestCase(function, "${BACKEND_NAME}");
 
     test_case.add_input<float>(in_X);
     test_case.add_input<float>(in_W);
@@ -521,7 +518,7 @@ NGRAPH_TEST_F(${BACKEND_NAME}, GRUSequenceOp, onnx_model_gru_fwd_activations)
     auto function = onnx_import::import_onnx_model(
         file_util::path_join(SERIALIZED_ZOO, "onnx/gru_fwd_activations.prototxt"));
 
-    auto test_case = test::TestCase<TestEngine>(function);
+    auto test_case = ngraph::test::NgraphTestCase(function, "${BACKEND_NAME}");
 
     test_case.add_input<float>(in_X);
     test_case.add_input<float>(in_W);
@@ -569,7 +566,7 @@ NGRAPH_TEST_F(${BACKEND_NAME}, GRUSequenceOp, onnx_model_gru_fwd_mixed_seq_len)
     auto function = onnx_import::import_onnx_model(
         file_util::path_join(SERIALIZED_ZOO, "onnx/gru_fwd_mixed_seq_len.prototxt"));
 
-    auto test_case = test::TestCase<TestEngine>(function);
+    auto test_case = ngraph::test::NgraphTestCase(function, "${BACKEND_NAME}");
 
     test_case.add_input<float>(in_X);
     test_case.add_input<float>(in_W);
@@ -620,7 +617,7 @@ NGRAPH_TEST_F(${BACKEND_NAME}, GRUSequenceOp, onnx_model_gru_rev_clip)
     auto function = onnx_import::import_onnx_model(
         file_util::path_join(SERIALIZED_ZOO, "onnx/gru_rev_clip.prototxt"));
 
-    auto test_case = test::TestCase<TestEngine>(function);
+    auto test_case = ngraph::test::NgraphTestCase(function, "${BACKEND_NAME}");
 
     test_case.add_input<float>(in_X);
     test_case.add_input<float>(in_W);
@@ -668,7 +665,7 @@ NGRAPH_TEST_F(${BACKEND_NAME}, GRUSequenceOp, onnx_model_gru_reverse)
     auto function = onnx_import::import_onnx_model(
         file_util::path_join(SERIALIZED_ZOO, "onnx/gru_reverse.prototxt"));
 
-    auto test_case = test::TestCase<TestEngine>(function);
+    auto test_case = ngraph::test::NgraphTestCase(function, "${BACKEND_NAME}");
 
     test_case.add_input<float>(in_X);
     test_case.add_input<float>(in_W);
@@ -716,7 +713,7 @@ NGRAPH_TEST_F(${BACKEND_NAME}, GRUSequenceOp, onnx_model_gru_fwd_bias_initial_h)
     auto function = onnx_import::import_onnx_model(
         file_util::path_join(SERIALIZED_ZOO, "onnx/gru_fwd_bias_initial_h.prototxt"));
 
-    auto test_case = test::TestCase<TestEngine>(function);
+    auto test_case = ngraph::test::NgraphTestCase(function, "${BACKEND_NAME}");
 
     test_case.add_input<float>(in_X);
     test_case.add_input<float>(in_W);
@@ -766,7 +763,7 @@ NGRAPH_TEST_F(${BACKEND_NAME}, GRUSequenceOp, onnx_model_gru_bidirectional)
     auto function = onnx_import::import_onnx_model(
         file_util::path_join(SERIALIZED_ZOO, "onnx/gru_bidirectional.prototxt"));
 
-    auto test_case = test::TestCase<TestEngine>(function);
+    auto test_case = ngraph::test::NgraphTestCase(function, "${BACKEND_NAME}");
 
     test_case.add_input<float>(in_X);
     test_case.add_input<float>(in_bdir_W);
@@ -815,7 +812,7 @@ NGRAPH_TEST_F(${BACKEND_NAME}, GRUSequenceOp, onnx_model_gru_fwd_linear_before_r
     auto function = onnx_import::import_onnx_model(
         file_util::path_join(SERIALIZED_ZOO, "onnx/gru_fwd_linear_before_reset.prototxt"));
 
-    auto test_case = test::TestCase<TestEngine>(function);
+    auto test_case = ngraph::test::NgraphTestCase(function, "${BACKEND_NAME}");
 
     test_case.add_input<float>(in_X);
     test_case.add_input<float>(in_W);
@@ -952,7 +949,7 @@ NGRAPH_TEST_F(${BACKEND_NAME}, RNNSequenceOp, onnx_model_rnn_defaults_fwd)
     auto function = onnx_import::import_onnx_model(
         file_util::path_join(SERIALIZED_ZOO, "onnx/rnn_defaults_fwd.prototxt"));
 
-    auto test_case = test::TestCase<TestEngine>(function);
+    auto test_case = ngraph::test::NgraphTestCase(function, "${BACKEND_NAME}");
 
     test_case.add_input<float>(in_X);
     test_case.add_input<float>(in_W);
@@ -1000,7 +997,7 @@ NGRAPH_TEST_F(${BACKEND_NAME}, RNNSequenceOp, onnx_model_rnn_fwd_activations)
     auto function = onnx_import::import_onnx_model(
         file_util::path_join(SERIALIZED_ZOO, "onnx/rnn_fwd_activations.prototxt"));
 
-    auto test_case = test::TestCase<TestEngine>(function);
+    auto test_case = ngraph::test::NgraphTestCase(function, "${BACKEND_NAME}");
 
     test_case.add_input<float>(in_X);
     test_case.add_input<float>(in_W);
@@ -1048,7 +1045,7 @@ NGRAPH_TEST_F(${BACKEND_NAME}, RNNSequenceOp, onnx_model_rnn_fwd_mixed_seq_len)
     auto function = onnx_import::import_onnx_model(
         file_util::path_join(SERIALIZED_ZOO, "onnx/rnn_fwd_mixed_seq_len.prototxt"));
 
-    auto test_case = test::TestCase<TestEngine>(function);
+    auto test_case = ngraph::test::NgraphTestCase(function, "${BACKEND_NAME}");
 
     test_case.add_input<float>(in_X);
     test_case.add_input<float>(in_W);
@@ -1099,7 +1096,7 @@ NGRAPH_TEST_F(${BACKEND_NAME}, RNNSequenceOp, onnx_model_rnn_rev_clip)
     auto function = onnx_import::import_onnx_model(
         file_util::path_join(SERIALIZED_ZOO, "onnx/rnn_rev_clip.prototxt"));
 
-    auto test_case = test::TestCase<TestEngine>(function);
+    auto test_case = ngraph::test::NgraphTestCase(function, "${BACKEND_NAME}");
 
     test_case.add_input<float>(in_X);
     test_case.add_input<float>(in_W);
@@ -1147,7 +1144,7 @@ NGRAPH_TEST_F(${BACKEND_NAME}, RNNSequenceOp, onnx_model_rnn_reverse)
     auto function = onnx_import::import_onnx_model(
         file_util::path_join(SERIALIZED_ZOO, "onnx/rnn_reverse.prototxt"));
 
-    auto test_case = test::TestCase<TestEngine>(function);
+    auto test_case = ngraph::test::NgraphTestCase(function, "${BACKEND_NAME}");
 
     test_case.add_input<float>(in_X);
     test_case.add_input<float>(in_W);
@@ -1195,7 +1192,7 @@ NGRAPH_TEST_F(${BACKEND_NAME}, RNNSequenceOp, onnx_model_rnn_fwd_bias_initial_h)
     auto function = onnx_import::import_onnx_model(
         file_util::path_join(SERIALIZED_ZOO, "onnx/rnn_fwd_bias_initial_h.prototxt"));
 
-    auto test_case = test::TestCase<TestEngine>(function);
+    auto test_case = ngraph::test::NgraphTestCase(function, "${BACKEND_NAME}");
 
     test_case.add_input<float>(in_X);
     test_case.add_input<float>(in_W);
@@ -1245,7 +1242,7 @@ NGRAPH_TEST_F(${BACKEND_NAME}, RNNSequenceOp, onnx_model_rnn_bidirectional)
     auto function = onnx_import::import_onnx_model(
         file_util::path_join(SERIALIZED_ZOO, "onnx/rnn_bidirectional.prototxt"));
 
-    auto test_case = test::TestCase<TestEngine>(function);
+    auto test_case = ngraph::test::NgraphTestCase(function, "${BACKEND_NAME}");
 
     test_case.add_input<float>(in_X);
     test_case.add_input<float>(in_bdir_W);
@@ -1294,7 +1291,7 @@ NGRAPH_TEST_F(${BACKEND_NAME}, RNNSequenceOp, onnx_model_rnn_bidirectional_const
     auto function = onnx_import::import_onnx_model(
         file_util::path_join(SERIALIZED_ZOO, "onnx/rnn_bidirectional_const.prototxt"));
 
-    auto test_case = test::TestCase<TestEngine>(function);
+    auto test_case = ngraph::test::NgraphTestCase(function, "${BACKEND_NAME}");
 
     test_case.add_input<float>(in_X);
 

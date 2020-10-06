@@ -8,6 +8,7 @@
 #include <chrono>
 #include <iostream>
 
+#include "ie_ir_reader.hpp"
 #include "functional_test_utils/plugin_cache.hpp"
 
 using namespace InferenceEngine;

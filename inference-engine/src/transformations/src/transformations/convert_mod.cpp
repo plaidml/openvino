@@ -9,12 +9,13 @@
 
 #include <ngraph/opsets/opset1.hpp>
 #include <ngraph/rt_info.hpp>
-#include <ngraph/pattern/op/wrap_type.hpp>
 
-ngraph::pass::ConvertMod::ConvertMod() {
-    auto mod = ngraph::pattern::wrap_type<opset1::Mod>();
+void ngraph::pass::ConvertMod::convert_mod() {
+    auto input0 = std::make_shared<pattern::op::Label>(element::f32, Shape{1, 1, 1, 1});
+    auto input1 = std::make_shared<pattern::op::Label>(element::f32, Shape{1, 1, 1, 1});
+    auto mod = std::make_shared<ngraph::opset1::Mod>(input0, input1);
 
-    ngraph::matcher_pass_callback callback = [this](pattern::Matcher& m) {
+    ngraph::graph_rewrite_callback callback = [](pattern::Matcher& m) {
         auto mod = std::dynamic_pointer_cast<ngraph::opset1::Mod> (m.get_match_root());
         if (!mod) {
             return false;
@@ -26,13 +27,13 @@ ngraph::pass::ConvertMod::ConvertMod() {
         const auto divisor = std::make_shared<opset1::Abs>(mod->input_value(1));
 
         // truncated(a / b)
-        auto div = register_new_node<opset1::Divide>(dividend, divisor);
+        auto div = std::make_shared<opset1::Divide>(dividend, divisor);
         auto convert_to_i64 = std::make_shared<opset1::Convert>(div, ngraph::element::i64);
         auto convert = std::make_shared<opset1::Convert>(convert_to_i64, dividend_et);
         // truncated(a / b) * b
         auto multiplication = std::make_shared<opset1::Multiply>(convert, divisor);
         // a mod b = a - truncated(a / b) * b
-        auto sub = register_new_node<opset1::Subtract>(dividend, multiplication);
+        auto sub = std::make_shared<opset1::Subtract>(dividend, multiplication);
 
         // apply sign of dividend
         auto mul = std::make_shared<opset1::Multiply>(dividend_sign, sub);
@@ -44,5 +45,5 @@ ngraph::pass::ConvertMod::ConvertMod() {
     };
 
     auto m = std::make_shared<ngraph::pattern::Matcher>(mod, "ConvertMod");
-    this->register_matcher(m, callback, PassProperty::CHANGE_DYNAMIC_STATE);
+    this->add_matcher(m, callback, PassProperty::CHANGE_DYNAMIC_STATE);
 }

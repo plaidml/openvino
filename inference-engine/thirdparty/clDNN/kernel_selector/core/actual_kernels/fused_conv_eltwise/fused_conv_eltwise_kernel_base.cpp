@@ -74,6 +74,14 @@ ParamsKey fused_conv_eltwise_params::GetParamsKey() const {
         k.EnableFusedConvEltwTranspose();
     }
 
+    if (conv.int8_quantization) {
+        k.EnableFusedConvEltwInt8Quantization();
+    }
+
+    if (conv.output_calibration) {
+        k.EnableFusedConvEltwOutputCalibration();
+    }
+
     if (conv.local_convolution) {
         k.EnableFusedConvEltwLocalConvolution();
     }
@@ -125,7 +133,21 @@ JitConstants fused_conv_eltwise_kernel_base::GetJitConstants(const fused_conv_el
         MakeJitConstant("FILTER_ARRAY_NUM", params.conv.split),
         MakeJitConstant("INPUT0_OFFSET_WITH_PADDING", input_offset_with_padding),
         MakeJitConstant("DEPTHWISE_SEPARABLE_OPT", params.conv.depthwise_separable_opt),
+        MakeJitConstant("QUANTIZATION_TERM", params.conv.int8_quantization),
     });
+
+    if (params.conv.int8_quantization) {
+        mem_consts.AddConstants({MakeJitConstant("W_QF", params.conv.weights_quantization_factors[0])});
+        mem_consts.AddConstants({MakeJitConstant("I_QF", params.conv.input_quantization_factor)});
+
+        if (params.conv.output_calibration) {
+            mem_consts.AddConstant(MakeJitConstant("CALIBRATION_TERM", params.conv.output_calibration));
+            mem_consts.AddConstant(MakeJitConstant("O_QF", params.conv.output_calibration_factors[0]));
+
+        } else {
+            mem_consts.AddConstants({MakeJitConstant("O_QF", params.conv.output_quantization_factor)});
+        }
+    }
 
     if (params.conv.local_convolution) {
         mem_consts.AddConstants({MakeJitConstant("LOCAL_CONVOLUTION", params.conv.local_convolution)});
@@ -135,6 +157,7 @@ JitConstants fused_conv_eltwise_kernel_base::GetJitConstants(const fused_conv_el
     mem_consts.Merge(eltw_activations);
     JitConstants conv_activations = MakeActivationJitConstants(params.conv.activations, GetUnitType(params), "_CONV");
     mem_consts.Merge(conv_activations);
+    mem_consts.AddConstant(MakeJitConstant("ELTW_CALIBRATION_TERM", params.eltw.output_calibration));
 
     if (!params.eltw.stride.empty()) {
         mem_consts.AddConstant(MakeJitConstant("ELTW_STRIDE_X", params.eltw.stride[0].x));
@@ -309,6 +332,8 @@ KernelsData fused_conv_eltwise_kernel_base::GetCommonKernelsData(const Params& p
     } else {
         kernel.arguments.push_back({ArgumentDescriptor::Types::INPUT, 1});
     }
+    if (!newParams.eltw.output_calibration_factors.empty())
+        kernel.arguments.push_back({ArgumentDescriptor::Types::OUTPUT_CALIBRATION_FACTORS, 1});
 
     kd.estimatedTime = runInfo.efficiency;
     kd.autoTuneIndex = autoTuneIndex;

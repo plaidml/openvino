@@ -64,6 +64,8 @@ namespace ngraph
                               const HostTensorVector& inputs) override;
 
             protected:
+                virtual void generate_adjoints(autodiff::Adjoints& adjoints,
+                                               const OutputVector& deltas) override;
                 BroadcastModeSpec m_mode;
 
                 bool evaluate_broadcast(const HostTensorPtr& arg0,

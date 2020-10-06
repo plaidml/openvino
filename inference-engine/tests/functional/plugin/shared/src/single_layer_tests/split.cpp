@@ -34,13 +34,7 @@ std::string SplitLayerTest::getTestCaseName(testing::TestParamInfo<splitParams> 
     result << "IS";
     result << "netPRC=" << netPrecision.name() << "_";
     result << "targetDevice=" << targetDevice;
-    auto string = result.str();
-    std::replace(string.begin(), string.end(), '-', '_');
-    std::replace(string.begin(), string.end(), '.', '_');
-    std::replace(string.begin(), string.end(), '(', '_');
-    std::replace(string.begin(), string.end(), ')', '_');
-    std::replace(string.begin(), string.end(), '=', '_');
-    return string;
+    return result.str();
 }
 
 void SplitLayerTest::SetUp() {

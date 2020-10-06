@@ -55,7 +55,8 @@ target_compile_definitions(${TARGET_NAME}
         MODELS_PATH=\"${MODELS_PATH}\" PARENT_SCOPE)
 
 target_include_directories(${TARGET_NAME} PRIVATE
-        ${IE_MAIN_SOURCE_DIR}/src/mkldnn_plugin)
+        ${IE_MAIN_SOURCE_DIR}/src/extension
+        ${IE_MAIN_SOURCE_DIR}/src/extension/common)
 
 target_link_libraries(${TARGET_NAME} PRIVATE ${LIBRARIES})
 

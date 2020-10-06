@@ -32,6 +32,7 @@ public:
         layer.params = params;
         layer.type = _type;
         _validator->parseParams(&layer);
+        _validator->checkParams(&layer);
         auto src_dims = inData[0]->getTensorDesc().getDims();
 
         const auto* src_data = inData[0]->cbuffer().as<const T*>();
@@ -62,6 +63,7 @@ public:
         layer.params = params;
         layer.type = _type;
         _validator->parseParams(&layer);
+        _validator->checkParams(&layer);
         auto src_dims = inData[0]->getTensorDesc().getDims();
 
         const auto* src_data = inData[0]->cbuffer().as<const int16_t*>();

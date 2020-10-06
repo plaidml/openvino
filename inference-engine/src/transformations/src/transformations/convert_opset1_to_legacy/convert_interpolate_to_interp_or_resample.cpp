@@ -15,12 +15,12 @@
 
 #include <ngraph_ops/interp.hpp>
 
-ngraph::pass::ConvertInterpolateToInterpOrResampleMatcher::ConvertInterpolateToInterpOrResampleMatcher() {
+void ngraph::pass::ConvertInterpolateToInterpOrResample::convert_interpolate_to_interp_or_resample() {
     auto data = std::make_shared<pattern::op::Label>(element::f32, Shape{1, 1, 1, 1});
     auto shp = std::make_shared<pattern::op::Label>(element::i64, Shape{2});
     auto interpolate = std::make_shared<ngraph::opset1::Interpolate>(data, shp, ngraph::op::InterpolateAttrs());
 
-    ngraph::matcher_pass_callback callback = [](pattern::Matcher& m) {
+    ngraph::graph_rewrite_callback callback = [](pattern::Matcher& m) {
         auto interpolate = std::dynamic_pointer_cast<ngraph::opset1::Interpolate> (m.get_match_root());
         if (!interpolate)
             return false;
@@ -159,5 +159,5 @@ ngraph::pass::ConvertInterpolateToInterpOrResampleMatcher::ConvertInterpolateToI
     };
 
     auto m = std::make_shared<ngraph::pattern::Matcher>(interpolate, "ConvertInterpolateToInterpOrResample");
-    this->register_matcher(m, callback);
+    this->add_matcher(m, callback, PassProperty::CHANGE_DYNAMIC_STATE);
 }

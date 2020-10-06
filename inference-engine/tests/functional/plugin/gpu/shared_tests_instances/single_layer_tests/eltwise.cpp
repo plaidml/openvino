@@ -27,12 +27,11 @@ std::vector<std::vector<std::vector<size_t>>> inShapes = {
 std::vector<InferenceEngine::Precision> netPrecisions = {
         InferenceEngine::Precision::FP32,
         InferenceEngine::Precision::FP16,
-        InferenceEngine::Precision::I64,
 };
 
-std::vector<ngraph::helpers::InputLayerType> secondaryInputTypes = {
-        ngraph::helpers::InputLayerType::CONSTANT,
-        ngraph::helpers::InputLayerType::PARAMETER,
+std::vector<InputLayerType> secondaryInputTypes = {
+        InputLayerType::CONSTANT,
+        InputLayerType::PARAMETER,
 };
 
 std::vector<OpType> opTypes = {

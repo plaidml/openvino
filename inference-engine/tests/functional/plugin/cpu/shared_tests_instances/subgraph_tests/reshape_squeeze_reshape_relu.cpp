@@ -7,7 +7,7 @@
 using namespace LayerTestsDefinitions;
 
 namespace {
-    std::vector<ShapeAxesTuple> inputs{
+    std::vector<std::vector<std::vector<size_t>>> inputs{
             {{1, 1, 3}, {0, 1}},
             {{1, 1, 3}, {0}},
             {{1, 1, 3}, {1}},
@@ -31,16 +31,19 @@ namespace {
                                                              InferenceEngine::Precision::FP16,
     };
 
-    const std::vector<ngraph::helpers::SqueezeOpType> opTypes = {
-            ngraph::helpers::SqueezeOpType::SQUEEZE,
-            ngraph::helpers::SqueezeOpType::UNSQUEEZE
-    };
-
     INSTANTIATE_TEST_CASE_P(reshape_squeeze_reshape_relu, ReshapeSqueezeReshapeRelu,
                             ::testing::Combine(
                                     ::testing::ValuesIn(inputs),
                                     ::testing::ValuesIn(netPrecisions),
                                     ::testing::Values(CommonTestUtils::DEVICE_CPU),
-                                    ::testing::ValuesIn(opTypes)),
+                                    ::testing::Values(true)),
+                            ReshapeSqueezeReshapeRelu::getTestCaseName);
+
+    INSTANTIATE_TEST_CASE_P(reshape_unsqueeze_reshape_relu, ReshapeSqueezeReshapeRelu,
+                            ::testing::Combine(
+                                    ::testing::ValuesIn(inputs),
+                                    ::testing::ValuesIn(netPrecisions),
+                                    ::testing::Values(CommonTestUtils::DEVICE_CPU),
+                                    ::testing::Values(false)),
                             ReshapeSqueezeReshapeRelu::getTestCaseName);
 }  // namespace

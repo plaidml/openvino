@@ -36,9 +36,6 @@ static constexpr char number_of_shaves_message[] = "Optional. Specifies number o
 static constexpr char number_of_cmx_slices_message[] = "Optional. Specifies number of CMX slices."
                                                        " Should be set with \"VPU_NUMBER_OF_SHAVES\"."
                                                        " Overwrites value from config.";
-static constexpr char tiling_cmx_limit_message[] = "Optional. Specifies CMX limit for data tiling."
-                                                   " Value should be equal or greater than -1."
-                                                   " Overwrites value from config.";
 static constexpr char inputs_precision_message[] = "Optional. Specifies precision for all input layers of network."
                                                    " Supported values: FP32, FP16, U8. Default value: FP16.";
 static constexpr char outputs_precision_message[] = "Optional. Specifies precision for all output layers of network."
@@ -61,7 +58,6 @@ DEFINE_string(iop, "", iop_message);
 DEFINE_string(VPU_MYRIAD_PLATFORM, "", platform_message);
 DEFINE_string(VPU_NUMBER_OF_SHAVES, "", number_of_shaves_message);
 DEFINE_string(VPU_NUMBER_OF_CMX_SLICES, "", number_of_cmx_slices_message);
-DEFINE_string(VPU_TILING_CMX_LIMIT_KB, "", tiling_cmx_limit_message);
 
 static void showUsage() {
     std::cout << std::endl;
@@ -78,7 +74,6 @@ static void showUsage() {
     std::cout << "    -VPU_MYRIAD_PLATFORM         <value>     "   << platform_message             << std::endl;
     std::cout << "    -VPU_NUMBER_OF_SHAVES        <value>     "   << number_of_shaves_message     << std::endl;
     std::cout << "    -VPU_NUMBER_OF_CMX_SLICES    <value>     "   << number_of_cmx_slices_message << std::endl;
-    std::cout << "    -VPU_TILING_CMX_LIMIT_KB     <value>     "   << tiling_cmx_limit_message     << std::endl;
     std::cout << std::endl;
 }
 
@@ -122,10 +117,6 @@ static std::map<std::string, std::string> configure(const std::string &configFil
 
     if (!FLAGS_VPU_NUMBER_OF_CMX_SLICES.empty()) {
         config[VPU_CONFIG_KEY(NUMBER_OF_CMX_SLICES)] = FLAGS_VPU_NUMBER_OF_CMX_SLICES;
-    }
-
-    if (!FLAGS_VPU_TILING_CMX_LIMIT_KB.empty()) {
-        config[VPU_CONFIG_KEY(TILING_CMX_LIMIT_KB)] = FLAGS_VPU_TILING_CMX_LIMIT_KB;
     }
 
     return config;

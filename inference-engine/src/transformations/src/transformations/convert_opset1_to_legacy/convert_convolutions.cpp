@@ -13,12 +13,11 @@
 #include <ngraph_ops/convolution_ie.hpp>
 #include <ngraph_ops/deconvolution_ie.hpp>
 
-#include <ngraph/pattern/op/wrap_type.hpp>
+void ngraph::pass::ConvertConvolutions::convert_convolution() {
+    auto conv = std::make_shared<pattern::op::Label>(element::f32, Shape{},
+            pattern::has_class<opset1::Convolution>());
 
-ngraph::pass::ConvertConvolution::ConvertConvolution() {
-    auto conv = ngraph::pattern::wrap_type<opset1::Convolution>();
-
-    ngraph::matcher_pass_callback callback = [](pattern::Matcher& m) {
+    ngraph::graph_rewrite_callback callback = [](pattern::Matcher& m) {
         auto conv = std::dynamic_pointer_cast<ngraph::opset1::Convolution> (m.get_match_root());
         if (!conv) {
             return false;
@@ -39,13 +38,14 @@ ngraph::pass::ConvertConvolution::ConvertConvolution() {
     };
 
     auto m = std::make_shared<ngraph::pattern::Matcher>(conv, "ConvertConvolution");
-    this->register_matcher(m, callback);
+    this->add_matcher(m, callback, PassProperty::CHANGE_DYNAMIC_STATE);
 }
 
-ngraph::pass::ConvertGroupConvolution::ConvertGroupConvolution() {
-    auto gconv = ngraph::pattern::wrap_type<opset1::GroupConvolution>();
+void ngraph::pass::ConvertConvolutions::convert_group_convolution() {
+    auto gconv = std::make_shared<pattern::op::Label>(element::f32, Shape{},
+            pattern::has_class<opset1::GroupConvolution>());
 
-    ngraph::matcher_pass_callback callback = [](pattern::Matcher& m) {
+    ngraph::graph_rewrite_callback callback = [](pattern::Matcher& m) {
         auto gconv = std::dynamic_pointer_cast<ngraph::opset1::GroupConvolution> (m.get_match_root());
         if (!gconv) {
             return false;
@@ -81,13 +81,14 @@ ngraph::pass::ConvertGroupConvolution::ConvertGroupConvolution() {
     };
 
     auto m = std::make_shared<ngraph::pattern::Matcher>(gconv, "ConvertGroupConvolution");
-    this->register_matcher(m, callback);
+    this->add_matcher(m, callback, PassProperty::CHANGE_DYNAMIC_STATE);
 }
 
-ngraph::pass::ConvertDeconvolution::ConvertDeconvolution() {
-    auto conv = ngraph::pattern::wrap_type<opset1::ConvolutionBackpropData>();
+void ngraph::pass::ConvertConvolutions::convert_convolution_backprop_data() {
+    auto conv = std::make_shared<pattern::op::Label>(element::f32, Shape{},
+            pattern::has_class<opset1::ConvolutionBackpropData>());
 
-    ngraph::matcher_pass_callback callback = [](pattern::Matcher& m) {
+    ngraph::graph_rewrite_callback callback = [](pattern::Matcher& m) {
         auto deconv = std::dynamic_pointer_cast<ngraph::opset1::ConvolutionBackpropData> (m.get_match_root());
         if (!deconv) {
             return false;
@@ -111,13 +112,14 @@ ngraph::pass::ConvertDeconvolution::ConvertDeconvolution() {
     };
 
     auto m = std::make_shared<ngraph::pattern::Matcher>(conv, "ConvertConvolutionBackpropData");
-    this->register_matcher(m, callback);
+    this->add_matcher(m, callback, PassProperty::CHANGE_DYNAMIC_STATE);
 }
 
-ngraph::pass::ConvertGroupDeconvolution::ConvertGroupDeconvolution() {
-    auto gconv = ngraph::pattern::wrap_type<opset1::GroupConvolutionBackpropData>();
+void ngraph::pass::ConvertConvolutions::convert_group_convolution_backprop_data() {
+    auto gconv = std::make_shared<pattern::op::Label>(element::f32, Shape{},
+            pattern::has_class<opset1::GroupConvolutionBackpropData>());
 
-    ngraph::matcher_pass_callback callback = [](pattern::Matcher& m) {
+    ngraph::graph_rewrite_callback callback = [](pattern::Matcher& m) {
         auto gconv = std::dynamic_pointer_cast<ngraph::opset1::GroupConvolutionBackpropData> (m.get_match_root());
         if (!gconv) {
             return false;
@@ -152,5 +154,5 @@ ngraph::pass::ConvertGroupDeconvolution::ConvertGroupDeconvolution() {
     };
 
     auto m = std::make_shared<ngraph::pattern::Matcher>(gconv, "ConvertGroupConvolutionBackpropData");
-    this->register_matcher(m, callback);
+    this->add_matcher(m, callback, PassProperty::CHANGE_DYNAMIC_STATE);
 }

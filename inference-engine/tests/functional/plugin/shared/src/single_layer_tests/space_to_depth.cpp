@@ -48,13 +48,7 @@ std::string SpaceToDepthLayerTest::getTestCaseName(const testing::TestParamInfo<
     result << "M=" << SpaceToDepthModeToString(mode) << "_";
     result << "BS=" << blockSize << "_";
     result << "targetDevice=" << targetName << "_";
-    auto string = result.str();
-    std::replace(string.begin(), string.end(), '-', '_');
-    std::replace(string.begin(), string.end(), '.', '_');
-    std::replace(string.begin(), string.end(), '(', '_');
-    std::replace(string.begin(), string.end(), ')', '_');
-    std::replace(string.begin(), string.end(), '=', '_');
-    return string;
+    return result.str();
 }
 
 void SpaceToDepthLayerTest::SetUp() {

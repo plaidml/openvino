@@ -21,11 +21,9 @@
 
 #include <convert_function_to_cnn_network.hpp>
 #include <generic_ie.hpp>
-#include <ngraph/opsets/opset3.hpp>
 #include <transformations/convert_opset3_to_opset2/convert_opset3_to_opset2.hpp>
 #include <transformations/convert_opset2_to_opset1/convert_opset2_to_opset1.hpp>
 #include <transformations/convert_opset1_to_legacy/convert_opset1_to_legacy.hpp>
-#include <vpu/ngraph/transformations/merge_subsequent_dsr_operations.hpp>
 
 namespace vpu {
 
@@ -116,10 +114,6 @@ FrontEnd::FrontEnd(StageBuilder::Ptr stageBuilder)
         {"DynamicShapeResolver",                               LAYER_PARSER(parseDSR)},
         {"OutShapeOfReshape",                                  LAYER_PARSER(parseOutShapeOfReshape)},
         {"StaticShapeBroadcast",                               LAYER_PARSER(parseBroadcast)},
-        {"StaticShapeNonMaxSuppression",                       LAYER_PARSER(parseStaticShapeNMS)},
-        {"StaticShapeReshape",                                 LAYER_PARSER(parseReshape)},
-        {"Mish",                                               LAYER_PARSER(parseMish)},
-        {"Gelu",                                               LAYER_PARSER(parseGelu)},
     }} {}
 
 ModelPtr FrontEnd::buildInitialModel(ie::ICNNNetwork& network) {
@@ -365,6 +359,15 @@ ModelPtr FrontEnd::runCommonPasses(ie::ICNNNetwork& network, const UnsupportedLa
     model->attrs().set<int>("index", g_counter.fetch_add(1));
     model->attrs().set<Resources>("resources", env.resources);
 
+    if (!env.config.ignoreIRStatistic) {
+        ie::ICNNNetworkStats* stats = nullptr;
+        // V10 IRs doesn't contain stats
+        if (originalOrConvertNetwork->getStats(&stats, nullptr) == InferenceEngine::OK && !stats->isEmpty()) {
+            env.log->trace("Use node statistics from the IR");
+            model->setNodesStats(stats->getNodesStats());
+        }
+    }
+
     //
     // Update IE Network
     //
@@ -376,24 +379,13 @@ ModelPtr FrontEnd::runCommonPasses(ie::ICNNNetwork& network, const UnsupportedLa
         VPU_LOGGER_SECTION(env.log);
 
         auto convertNetwork = [&convertedNetwork, &originalOrConvertNetwork]() {
-            // disable GeLU decomposition
-            const auto transformationsPredicate = [](const std::shared_ptr<const ::ngraph::Node> &node) -> bool {
-                return std::dynamic_pointer_cast<const ::ngraph::opset3::Gelu>(node) != nullptr;
-            };
-
             auto nGraphFunc = originalOrConvertNetwork->getFunction();
             // Disable shape inference (WA for generic operations)
             ngraph::op::GenericIE::DisableReshape noReshape(nGraphFunc);
 
-            ngraph::pass::Manager manager;
-            manager.register_pass<ngraph::pass::ConvertOpSet3ToOpSet2>();
-            manager.register_pass<ngraph::pass::ConvertOpSet2ToOpSet1>();
-            manager.register_pass<ngraph::pass::ConvertOpSet1ToLegacy>();
-            manager.set_callback(transformationsPredicate);
-            manager.run_passes(nGraphFunc);
-
-            vpu::MergeSubsequentDSROperations().run_on_function(nGraphFunc);
-
+            ngraph::pass::ConvertOpSet3ToOpSet2().run_on_function(nGraphFunc);
+            ngraph::pass::ConvertOpSet2ToOpSet1().run_on_function(nGraphFunc);
+            ngraph::pass::ConvertOpSet1ToLegacy().run_on_function(nGraphFunc);
             convertedNetwork = InferenceEngine::details::convertFunctionToICNNNetwork(nGraphFunc, *originalOrConvertNetwork);
             originalOrConvertNetwork = convertedNetwork.get();
         };
@@ -409,7 +401,6 @@ ModelPtr FrontEnd::runCommonPasses(ie::ICNNNetwork& network, const UnsupportedLa
         }
 
         ie::NetPass::ConvertPrecision(*originalOrConvertNetwork, ie::Precision::I64, ie::Precision::I32);
-        ie::NetPass::ConvertPrecision(*originalOrConvertNetwork, ie::Precision::U32, ie::Precision::I32);
         ie::NetPass::ConvertPrecision(*originalOrConvertNetwork, ie::Precision::U64, ie::Precision::I32);
         ie::NetPass::ConvertPrecision(*originalOrConvertNetwork, ie::Precision::BOOL, ie::Precision::I32);
 
@@ -529,7 +520,7 @@ void FrontEnd::getInputAndOutputData(
 
             // Skip adding data if it not utilized
             const bool isNetworkOutput = _ieParsedNetwork.networkOutputs.count(layerOutput->getName()) > 0;
-            const auto isLeaf = getInputTo(layerOutput).empty();
+            const auto isLeaf = layerOutput->getInputTo().empty();
             if (!isNetworkOutput && isLeaf) {
                 outputs[i] = nullptr;
                 continue;

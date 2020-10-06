@@ -21,8 +21,10 @@ import numpy as np
 
 from extensions.front.Pack import Pack
 from extensions.front.TransposeOrderNormalizer import TransposeOrderNormalizer
+from extensions.front.div import Div
 from extensions.front.split_normalizer import SqueezeAxis
 from extensions.front.standalone_const_eraser import StandaloneConstEraser
+from extensions.front.sub import Sub
 from extensions.front.tf.CropAndResizeReplacement import CropAndResizeReplacement
 from extensions.front.tf.FakeQuantWithMinMaxVars import FakeQuantWithMinMaxVarsToQuantize
 from extensions.front.tf.pad_tf_to_pad import PadTFToPad
@@ -475,7 +477,7 @@ class ObjectDetectionAPIPreprocessorReplacement(FrontReplacementFromConfigFileSu
         # But the inputs corresponding to padding values is re-used as inputs for newly created Pad node. This input
         # is removed during removing nodes from the DO sub-graph so the first input to Transpose is missing which
         # results in TransposeOrderNormalizer transformation failure.
-        return [Pack, TransposeOrderNormalizer, PadTFToPad]
+        return [Pack, Sub, TransposeOrderNormalizer, PadTFToPad]
 
     def nodes_to_remove(self, graph: Graph, match: SubgraphMatch):
         new_nodes_to_remove = match.matched_nodes_names()
@@ -547,7 +549,7 @@ class ObjectDetectionAPIDetectionOutputReplacement(FrontReplacementFromConfigFil
     replacement_id = 'ObjectDetectionAPIDetectionOutputReplacement'
 
     def run_before(self):
-        return [ObjectDetectionAPIMaskRCNNROIPoolingSecondReplacement, SqueezeAxis, TransposeOrderNormalizer]
+        return [ObjectDetectionAPIMaskRCNNROIPoolingSecondReplacement, SqueezeAxis, Sub, TransposeOrderNormalizer]
 
     def run_after(self):
         return [ObjectDetectionAPIProposalReplacement, CropAndResizeReplacement, FakeQuantWithMinMaxVarsToQuantize]
@@ -816,7 +818,7 @@ class ObjectDetectionAPIProposalReplacement(FrontReplacementFromConfigFileSubGra
         return [ObjectDetectionAPIPreprocessorReplacement]
 
     def run_before(self):
-        return [CropAndResizeReplacement, TransposeOrderNormalizer]
+        return [Sub, CropAndResizeReplacement, TransposeOrderNormalizer]
 
     def output_edges_match(self, graph: Graph, match: SubgraphMatch, new_sub_graph: dict):
         return {match.output_node(0)[0].id: new_sub_graph['proposal_node'].id}
@@ -967,7 +969,10 @@ class ObjectDetectionAPISSDPostprocessorReplacement(FrontReplacementFromConfigFi
         return [ObjectDetectionAPIPreprocessorReplacement, FakeQuantWithMinMaxVarsToQuantize]
 
     def run_before(self):
-        return [StandaloneConstEraser, TransposeOrderNormalizer]
+        # the replacer uses node of type "RealDiv" as one of the start points, but Model Optimizer replaces nodes of
+        # type "RealDiv" with a new ones, so it is necessary to replace the sub-graph before replacing the "RealDiv"
+        # nodes
+        return [Div, StandaloneConstEraser, TransposeOrderNormalizer]
 
     def output_edges_match(self, graph: Graph, match: SubgraphMatch, new_sub_graph: dict):
         # the DetectionOutput in IE produces single tensor, but in TF it produces two tensors, so create only one output

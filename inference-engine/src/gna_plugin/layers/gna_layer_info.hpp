@@ -96,14 +96,7 @@ class LayerInfo {
              "abs",
              "neglog",
              "neghalflog",
-             "softsign",
-             "power"};
-
-        if (isPower()) {
-            auto powerLayer = as<const InferenceEngine::PowerLayer*>();
-            return powerLayer != nullptr && powerLayer->power != 1.0f;
-        }
-
+             "softsign"};
         return activations.find(layer->type) != activations.end();
     }
 
@@ -113,9 +106,6 @@ class LayerInfo {
     }
     bool isConcatAlignFilter() const noexcept {
         return isOfType("ConcatAlignFilter");
-    }
-    bool isLink() const noexcept {
-        return isOfType("Link");
     }
     bool isAffineFilter() const noexcept {
         return isOfType("AffineFilter");
@@ -138,7 +128,7 @@ class LayerInfo {
     }
     bool isOutput() const noexcept {
         for (auto& out : layer->outData) {
-            if (getInputTo(out).empty()) {
+            if (out->getInputTo().empty()) {
                 return true;
             }
         }

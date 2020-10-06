@@ -9,10 +9,12 @@
 
 #include <ngraph/opsets/opset1.hpp>
 #include <ngraph/rt_info.hpp>
-#include <ngraph/pattern/op/wrap_type.hpp>
 
-ngraph::pass::ConvertBroadcastToTiles::ConvertBroadcastToTiles() {
-    auto broadcast = ngraph::pattern::wrap_type<ngraph::opset1::Broadcast>();
+void ngraph::pass::ConvertBroadcastToTiles::convert_broadcast_to_tiles() {
+    auto weights = std::make_shared<pattern::op::Label>(element::f32, Shape {1});
+    auto shp = std::make_shared<pattern::op::Label>(element::i64, Shape {1});
+    auto axs = std::make_shared<pattern::op::Label>(element::i64, Shape {1});
+    auto broadcast = std::make_shared<ngraph::opset1::Broadcast>(weights, shp, axs);
 
     ngraph::graph_rewrite_callback callback = [](pattern::Matcher& m) {
         auto broadcast = std::dynamic_pointer_cast<ngraph::opset1::Broadcast>(m.get_match_root());
@@ -21,9 +23,9 @@ ngraph::pass::ConvertBroadcastToTiles::ConvertBroadcastToTiles() {
             return false;
         }
 
-        auto data_node = broadcast->input_value(0).get_node_shared_ptr();
-        auto shape_node = std::dynamic_pointer_cast<ngraph::opset1::Constant>(broadcast->input_value(1).get_node_shared_ptr());
-        auto axes_node = std::dynamic_pointer_cast<ngraph::opset1::Constant>(broadcast->input_value(2).get_node_shared_ptr());
+        auto data_node = broadcast->get_argument(0);
+        auto shape_node = std::dynamic_pointer_cast<ngraph::opset1::Constant>(broadcast->get_argument(1));
+        auto axes_node = std::dynamic_pointer_cast<ngraph::opset1::Constant>(broadcast->get_argument(2));
         if (!data_node || !shape_node || !axes_node) return false;
 
         auto output_shape = shape_node->get_vector<int64_t>();
@@ -92,5 +94,5 @@ ngraph::pass::ConvertBroadcastToTiles::ConvertBroadcastToTiles() {
     };
 
     auto m = std::make_shared<ngraph::pattern::Matcher>(broadcast, "ConvertBroadcastToTile");
-    this->register_matcher(m, callback);
+    this->add_matcher(m, callback, PassProperty::CHANGE_DYNAMIC_STATE);
 }

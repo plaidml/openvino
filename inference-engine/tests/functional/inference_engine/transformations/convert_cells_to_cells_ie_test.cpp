@@ -20,8 +20,7 @@
 #include <ngraph_ops/gru_cell_ie.hpp>
 #include <ngraph_ops/rnn_cell_ie.hpp>
 #include <ngraph_ops/lstm_cell_ie.hpp>
-#include <ngraph/pass/manager.hpp>
-#include "common_test_utils/ngraph_test_utils.hpp"
+#include "ngraph_test_utils.hpp"
 
 using namespace testing;
 
@@ -45,10 +44,8 @@ TEST(TransformationTests, GRUCellConversionTest) {
         cell->set_friendly_name("test_cell");
 
         f = std::make_shared<ngraph::Function>(ngraph::NodeVector{cell}, ngraph::ParameterVector{X, H_t});
-        ngraph::pass::Manager manager;
-        manager.register_pass<ngraph::pass::InitNodeInfo>();
-        manager.register_pass<ngraph::pass::ConvertGRUCellMatcher>();
-        manager.run_passes(f);
+        ngraph::pass::InitNodeInfo().run_on_function(f);
+        ngraph::pass::ConvertCellsToCellsIE().run_on_function(f);
         ASSERT_NO_THROW(check_rt_info(f));
     }
 
@@ -96,10 +93,8 @@ TEST(TransformationTests, RNNCellConversionTest) {
         cell->set_friendly_name("test_cell");
 
         f = std::make_shared<ngraph::Function>(ngraph::NodeVector{cell}, ngraph::ParameterVector{X, H});
-        ngraph::pass::Manager manager;
-        manager.register_pass<ngraph::pass::InitNodeInfo>();
-        manager.register_pass<ngraph::pass::ConvertRNNCellMatcher>();
-        manager.run_passes(f);
+        ngraph::pass::InitNodeInfo().run_on_function(f);
+        ngraph::pass::ConvertCellsToCellsIE().run_on_function(f);
         ASSERT_NO_THROW(check_rt_info(f));
     }
 
@@ -151,10 +146,8 @@ TEST(TransformationTests, LSTMCellConversionTest) {
         cell->set_friendly_name("test_cell");
 
         f = std::make_shared<ngraph::Function>(ngraph::NodeVector{cell}, ngraph::ParameterVector{X, H_t, C_t});
-        ngraph::pass::Manager manager;
-        manager.register_pass<ngraph::pass::InitNodeInfo>();
-        manager.register_pass<ngraph::pass::ConvertLSTMCellMatcher>();
-        manager.run_passes(f);
+        ngraph::pass::InitNodeInfo().run_on_function(f);
+        ngraph::pass::ConvertCellsToCellsIE().run_on_function(f);
         ASSERT_NO_THROW(check_rt_info(f));
     }
 

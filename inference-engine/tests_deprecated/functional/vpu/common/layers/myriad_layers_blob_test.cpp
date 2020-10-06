@@ -6,7 +6,6 @@
 #include <ngraph_functions/subgraph_builders.hpp>
 #include "myriad_layers_tests.hpp"
 #include "vpu_tests_config.hpp"
-#include <fstream>
 
 using namespace InferenceEngine;
 using namespace ::testing;

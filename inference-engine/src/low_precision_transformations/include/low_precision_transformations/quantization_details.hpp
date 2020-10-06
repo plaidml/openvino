@@ -7,7 +7,6 @@
 #include <string>
 #include <vector>
 
-#include <ie_layers.h>
 #include <cpp/ie_cnn_network.h>
 
 namespace InferenceEngine {

@@ -17,8 +17,7 @@
 #include <transformations/convert_depth_to_space.hpp>
 #include <transformations/convert_space_to_depth.hpp>
 #include <transformations/init_node_info.hpp>
-#include <ngraph/pass/manager.hpp>
-#include "common_test_utils/ngraph_test_utils.hpp"
+#include "ngraph_test_utils.hpp"
 
 using namespace testing;
 
@@ -29,10 +28,8 @@ TEST(TransformationTests, TestDepthToSpaceTransformBlockFirst) {
     {
         auto depth_to_space = std::make_shared<ngraph::op::DepthToSpace>(input, ngraph::op::DepthToSpace::DepthToSpaceMode::BLOCKS_FIRST, 2);
         f = std::make_shared<ngraph::Function>(ngraph::NodeVector{depth_to_space}, ngraph::ParameterVector{input});
-        ngraph::pass::Manager m;
-        m.register_pass<ngraph::pass::InitNodeInfo>();
-        m.register_pass<ngraph::pass::ConvertDepthToSpace>();
-        m.run_passes(f);
+        ngraph::pass::InitNodeInfo().run_on_function(f);
+        ngraph::pass::ConvertDepthToSpace().run_on_function(f);
         ASSERT_NO_THROW(check_rt_info(f));
     }
 
@@ -69,10 +66,8 @@ TEST(TransformationTests, TestDepthToSpaceTransformDepthFirst) {
     {
         auto depth_to_space = std::make_shared<ngraph::op::DepthToSpace>(input, ngraph::op::DepthToSpace::DepthToSpaceMode::DEPTH_FIRST, 2);
         f = std::make_shared<ngraph::Function>(ngraph::NodeVector{depth_to_space}, ngraph::ParameterVector{input});
-        ngraph::pass::Manager m;
-        m.register_pass<ngraph::pass::InitNodeInfo>();
-        m.register_pass<ngraph::pass::ConvertDepthToSpace>();
-        m.run_passes(f);
+        ngraph::pass::InitNodeInfo().run_on_function(f);
+        ngraph::pass::ConvertDepthToSpace().run_on_function(f);
         ASSERT_NO_THROW(check_rt_info(f));
     }
 
@@ -109,10 +104,8 @@ TEST(TransformationTests, TestSpaceToDepthTransformBlockFirst) {
     {
         auto space_to_depth = std::make_shared<ngraph::op::SpaceToDepth>(input, ngraph::op::SpaceToDepth::SpaceToDepthMode::BLOCKS_FIRST, 2);
         f = std::make_shared<ngraph::Function>(ngraph::NodeVector{space_to_depth}, ngraph::ParameterVector{input});
-        ngraph::pass::Manager m;
-        m.register_pass<ngraph::pass::InitNodeInfo>();
-        m.register_pass<ngraph::pass::ConvertSpaceToDepth>();
-        m.run_passes(f);
+        ngraph::pass::InitNodeInfo().run_on_function(f);
+        ngraph::pass::ConvertSpaceToDepth().run_on_function(f);
         ASSERT_NO_THROW(check_rt_info(f));
     }
 
@@ -149,10 +142,8 @@ TEST(TransformationTests, TestSpaceToDepthTransformDepthFirst) {
     {
         auto space_to_depth = std::make_shared<ngraph::op::SpaceToDepth>(input, ngraph::op::SpaceToDepth::SpaceToDepthMode::DEPTH_FIRST, 2);
         f = std::make_shared<ngraph::Function>(ngraph::NodeVector{space_to_depth}, ngraph::ParameterVector{input});
-        ngraph::pass::Manager m;
-        m.register_pass<ngraph::pass::InitNodeInfo>();
-        m.register_pass<ngraph::pass::ConvertSpaceToDepth>();
-        m.run_passes(f);
+        ngraph::pass::InitNodeInfo().run_on_function(f);
+        ngraph::pass::ConvertSpaceToDepth().run_on_function(f);
         ASSERT_NO_THROW(check_rt_info(f));
     }
 

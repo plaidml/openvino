@@ -21,16 +21,13 @@ from inspect import getsourcefile
 from glob import glob
 import xml.etree.ElementTree as ET
 import hashlib
-import yaml
 from pymongo import MongoClient
 
-# Database arguments
-DATABASE = 'memcheck'   # database name for memcheck results
-DB_COLLECTIONS = ["commit", "nightly", "weekly"]
 
-PRODUCT_NAME = 'dldt'   # product name from build manifest
+DATABASE = 'memcheck'
 RE_GTEST_MODEL_XML = re.compile(r'<model[^>]*>')
-RE_GTEST_CUR_MEASURE = re.compile(r'\[\s*MEASURE\s*\]')
+RE_GTEST_CUR_MEASURE = re.compile(
+    r'Current values of virtual memory consumption')
 RE_GTEST_REF_MEASURE = re.compile(
     r'Reference values of virtual memory consumption')
 RE_GTEST_PASSED = re.compile(r'\[\s*PASSED\s*\]')
@@ -47,39 +44,11 @@ def abs_path(relative_path):
         os.path.join(os.path.dirname(getsourcefile(lambda: 0)), relative_path))
 
 
-def metadata_from_manifest(manifest):
-    """ Extract commit metadata for memcheck record from manifest
-    """
-    with open(manifest, 'r') as manifest_file:
-        manifest = yaml.safe_load(manifest_file)
-    repo_trigger = next(
-        repo for repo in manifest['components'][PRODUCT_NAME]['repository'] if repo['trigger'])
-    # parse OS name/version
-    product_type_str = manifest['components'][PRODUCT_NAME]['product_type']
-    product_type = product_type_str.split('_')
-    if len(product_type) != 5 or product_type[2] != 'ubuntu':
-        logging.error('Product type %s is not supported', product_type_str)
-        return {}
-    return {
-        'os_name': product_type[2],
-        'os_version': [product_type[3], product_type[4]],
-        'commit_sha': repo_trigger['revision'],
-        'commit_date': repo_trigger['commit_time'],
-        'repo_url': repo_trigger['url'],
-        'target_branch': repo_trigger['target_branch'],
-        'event_type': manifest['components'][PRODUCT_NAME]['build_event'].lower(),
-    }
-
-
 def parse_memcheck_log(log_path):
     """ Parse memcheck log
     """
-    try:
-        with open(log_path, 'r') as log_file:
-            log = log_file.read()
-    except FileNotFoundError:
-        # Skip read of broken files
-        return None
+    with open(log_path, 'r') as log_file:
+        log = log_file.read()
 
     passed_match = RE_GTEST_PASSED.search(log)
     failed_match = RE_GTEST_FAILED.search(log)
@@ -98,14 +67,13 @@ def parse_memcheck_log(log_path):
             ref_metrics = dict(zip(heading, values))
     for index in reversed(range(len(log_lines))):
         if RE_GTEST_CUR_MEASURE.search(log_lines[index]):
-            test_name = log_lines[index].split()[-1]
             heading = [name.lower() for name in log_lines[index+1]
                        [len(GTEST_INFO):].split()]
             values = [int(val) for val in log_lines[index+2]
                       [len(GTEST_INFO):].split()]
             entry = SimpleNamespace(
                 metrics=dict(zip(heading, values)),
-                test_name=test_name,
+                test_name=model['test'],
                 model_name=os.path.splitext(
                     os.path.basename(model['path']))[0],
                 precision=next(pr for pr in PRECISSIONS if pr.upper()
@@ -179,22 +147,16 @@ def query_timeline(records, db_url, db_collection, max_items=20, similarity=TIME
     collection = client[DATABASE][db_collection]
     result = []
     for record in records:
-        items = []
-        try:
-            query = dict((key, record[key]) for key in similarity)
-            query['commit_date'] = {'$lt': record['commit_date']}
-            pipeline = [
-                {'$match': query},
-                {'$addFields': {
-                    'commit_date': {'$dateFromString': {'dateString': '$commit_date'}}}},
-                {'$sort': {'commit_date': -1}},
-                {'$limit': max_items},
-                {'$sort': {'commit_date': 1}},
-            ]
-            items += list(collection.aggregate(pipeline))
-        except KeyError:
-            pass  # keep only the record if timeline failed to generate
-        items += [record]
+        query = dict((key, record[key]) for key in similarity)
+        query['commit_date'] = {'$lt': record['commit_date']}
+        pipeline = [
+            {'$match': query},
+            {'$addFields': {'commit_date': {'$dateFromString': {'dateString': '$commit_date'}}}},
+            {'$sort': {'commit_date': -1}},
+            {'$limit': max_items},
+            {'$sort': {'commit_date': 1}},
+        ]
+        items = list(collection.aggregate(pipeline)) + [record]
         timeline = _transpose_dicts(items, template=record)
         result += [timeline]
     return result
@@ -240,7 +202,7 @@ def main():
                         help='MongoDB URL in a for "mongodb://server:port".')
     parser.add_argument('--db_collection', required=not is_dryrun,
                         help=f'Collection name in {DATABASE} database to upload.',
-                        choices=DB_COLLECTIONS)
+                        choices=["commit", "nightly", "weekly"])
     parser.add_argument('--artifact_root', required=True,
                         help=f'A root directory to strip from log path before upload.')
     parser.add_argument('--append', help='JSON to append to each item.')

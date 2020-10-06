@@ -200,8 +200,10 @@ std::string reorder_inst::to_string(reorder_node const& node) {
 
 reorder_inst::typed_primitive_inst(network_impl& network, reorder_node const& node)
     : parent(network, node, !node.can_be_optimized()) {
-    if (node.can_be_optimized())
+    if (node.can_be_optimized()) {
+        build_deps();
         reuse_input();
+    }
 
     auto input_layout = node.input().get_output_layout();
     auto output_layout = node.get_output_layout();
@@ -239,14 +241,13 @@ void reorder_inst::on_execute() {
 }
 
 void reorder_inst::reuse_input() {
-    if (static_cast<bool>(_output) && _network.get_engine().is_the_same_buffer(output_memory(), input_memory()))
+    if (!node.can_be_optimized())
         return;
 
-    build_deps();
-
     if (node.requires_reinterpret()) {
-        _output = _network.get_engine().reinterpret_buffer(input_memory(), node.get_output_layout());
-    } else {
+        if (!_output || !_network.get_engine().is_the_same_buffer(output_memory(), input_memory()))
+            _output = _network.get_engine().reinterpret_buffer(input_memory(), node.get_output_layout());
+    } else if (!_output) {
         _output = (memory_impl::ptr) &input_memory();
     }
 }

@@ -24,7 +24,11 @@ namespace InferenceEngine {
  */
 class INFERENCE_ENGINE_API_CLASS(ConstTransformer) {
 public:
+    explicit ConstTransformer(ICNNNetwork* _network);
     explicit ConstTransformer(details::CNNNetworkImpl* _network);
+    explicit ConstTransformer(std::vector<DataPtr> &_inputs, std::vector<DataPtr> &_outputs);
+
+    virtual ~ConstTransformer() = default;
 
     /**
      * @brief calculates const layers, combines const subgraph into a single const layers
@@ -36,9 +40,12 @@ public:
      */
     void fullTrim();
 
-protected:
-    ConstTransformer(std::vector<DataPtr> &_inputs, std::vector<DataPtr> &_outputs);
+    /**
+     * @brief move blobs from Constant layers to Convolution or FullyConnected layers attributes
+     */
+    void moveWeights();
 
+protected:
     /**
      * @brief collect all const layers with marking if it defines shape (1 - for shape, 0 - otherwise)
      */

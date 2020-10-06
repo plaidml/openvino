@@ -48,9 +48,10 @@ class FullyConnectedDecomposer(FrontReplacementSubgraph):
         # biases normalization
         if 2 in node.in_ports() and not node.in_port(2).disconnected():
             bias_node = Add(graph, {'name': name + '/Bias_'}).create_node()
-            node_name = node.name + '/WithoutBiases'
-            bias_node_name = node.name
-            rename_nodes([(node, node_name), (bias_node, bias_node_name)])
+            if not graph.graph['cmd_params'].generate_deprecated_IR_V7:
+                node_name = node.name + '/WithoutBiases'
+                bias_node_name = node.name
+                rename_nodes([(node, node_name), (bias_node, bias_node_name)])
             node.out_port(0).get_connection().set_source(bias_node.out_port(0))
             node.in_port(2).get_connection().set_destination(bias_node.in_port(1))
             node.out_port(0).connect(bias_node.in_port(0))
@@ -96,9 +97,10 @@ class GemmDecomposer(FrontReplacementSubgraph):
 
         # biases normalization
         bias_node = Add(graph, {'name': name + '/Bias_', 'can_be_scaleshift': False}).create_node()
-        node_name = node.name + '/WithoutBiases'
-        bias_node_name = node.name
-        rename_nodes([(node, node_name), (bias_node, bias_node_name)])
+        if not graph.graph['cmd_params'].generate_deprecated_IR_V7:
+            node_name = node.name + '/WithoutBiases'
+            bias_node_name = node.name
+            rename_nodes([(node, node_name), (bias_node, bias_node_name)])
         node.out_port(0).get_connection().set_source(bias_node.out_port(0))
         node.in_port(2).get_connection().set_destination(bias_node.in_port(1))
         node.out_port(0).connect(bias_node.in_port(0))

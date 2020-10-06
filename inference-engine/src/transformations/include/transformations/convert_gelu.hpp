@@ -12,6 +12,7 @@
 #include <ngraph/pass/graph_rewrite.hpp>
 
 #include "ngraph/op/fused/gelu.hpp"
+#include "transformations/utils/pass_param.hpp"
 
 namespace ngraph {
 namespace pass {
@@ -21,9 +22,9 @@ class TRANSFORMATIONS_API ConvertGELU;
 }  // namespace pass
 }  // namespace ngraph
 
-class ngraph::pass::ConvertGELU: public ngraph::pass::GraphRewrite {
+class ngraph::pass::ConvertGELU: public ngraph::pass::GraphRewrite, public ngraph::pass::PassParam {
 public:
-    ConvertGELU() : GraphRewrite() {
+    ConvertGELU() : GraphRewrite(), PassParam() {
         convert_gelu();
     }
 

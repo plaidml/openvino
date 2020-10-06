@@ -16,6 +16,7 @@
 
 #pragma once
 
+#include "ngraph/autodiff/adjoints.hpp"
 #include "ngraph/node.hpp"
 #include "ngraph/op/util/fused_op.hpp"
 

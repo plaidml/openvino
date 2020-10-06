@@ -20,7 +20,6 @@
 #include "lrn_kernel_across_channel_ref.h"
 #include "lrn_kernel_across_channel_opt_b8.h"
 #include "lrn_kernel_across_channel_multiple_features.h"
-#include "lrn_kernel_across_channel_multiple_features_fsv16.h"
 #include "lrn_kernel_within_channel_byxf_opt.h"
 
 namespace kernel_selector {
@@ -32,7 +31,6 @@ lrn_kernel_selector::lrn_kernel_selector() {
     Attach<LRNKernelAcrossChannel_b8>();
     Attach<LRNKernelWithinChannelByxfOpt>();
     Attach<LRNKernelAcrossChannelMultipleFeatures>();
-    Attach<LRNKernelAcrossChannelMultipleFeaturesFSV16>();
 }
 
 KernelsData lrn_kernel_selector::GetBestKernels(const Params& params, const optional_params& options) const {

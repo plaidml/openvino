@@ -13,13 +13,13 @@
 #include <transformations/utils/utils.hpp>
 #include <ngraph/rt_info.hpp>
 
-ngraph::pass::ConvertSeluToSeluIEMatcher::ConvertSeluToSeluIEMatcher() {
+void ngraph::pass::ConvertSeluToSeluIE::convert_selu() {
     auto input_0 = std::make_shared<pattern::op::Label>(element::f32, Shape{1});
     auto input_1 = std::make_shared<pattern::op::Label>(element::f32, Shape{1});
     auto input_2 = std::make_shared<pattern::op::Label>(element::f32, Shape{1});
     auto selu = std::make_shared<ngraph::opset1::Selu>(input_0, input_1, input_2);
 
-    ngraph::matcher_pass_callback callback = [](pattern::Matcher& m) {
+    ngraph::graph_rewrite_callback callback = [](pattern::Matcher& m) {
         auto selu = std::dynamic_pointer_cast<ngraph::opset1::Selu> (m.get_match_root());
         if (!selu) {
             return false;
@@ -48,5 +48,5 @@ ngraph::pass::ConvertSeluToSeluIEMatcher::ConvertSeluToSeluIEMatcher() {
     };
 
     auto m = std::make_shared<ngraph::pattern::Matcher>(selu, "ConvertSeluToSeluIE");
-    this->register_matcher(m, callback);
+    this->add_matcher(m, callback, PassProperty::CHANGE_DYNAMIC_STATE);
 }

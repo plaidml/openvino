@@ -30,6 +30,8 @@ class GlobalPoolingToReduce(FrontReplacementPattern):
     op = "Pooling"
     enabled = True
 
+    graph_condition = [lambda graph: graph.graph['cmd_params'].generate_experimental_IR_V10]
+
     pool_method_to_reduce_type = {
         'max': ReduceMax,
         'avg': ReduceMean,

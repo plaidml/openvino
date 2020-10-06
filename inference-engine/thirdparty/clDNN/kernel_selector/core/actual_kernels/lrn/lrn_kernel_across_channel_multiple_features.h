@@ -22,12 +22,12 @@ namespace kernel_selector {
 class LRNKernelAcrossChannelMultipleFeatures : public LRNKernelBase {
 public:
     using Parent = LRNKernelBase;
-    LRNKernelAcrossChannelMultipleFeatures(const std::string& s = "lrn_gpu_across_channel_multiple_features") : Parent(s) {}
+    LRNKernelAcrossChannelMultipleFeatures() : Parent("lrn_gpu_across_channel_multiple_features") {}
 
     KernelsData GetKernelsData(const Params& params, const optional_params& options) const override;
     ParamsKey GetSupportedKey() const override;
 
-protected:
+private:
     DispatchData SetDefault(const lrn_params& params) const override;
     std::vector<FusedOpType> GetSupportedFusedOps() const override {
         return { FusedOpType::QUANTIZE,

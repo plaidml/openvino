@@ -10,6 +10,7 @@
 #include <transformations_visibility.hpp>
 
 #include <ngraph/pass/graph_rewrite.hpp>
+#include "transformations/utils/pass_param.hpp"
 
 namespace ngraph {
 namespace pass {
@@ -19,14 +20,15 @@ namespace pass {
 }  // namespace pass
 }  // namespace ngraph
 
-/**
- * @ingroup ie_transformation_common_api
- * @brief DepthToSpaceFusion transformation detects Reshape-Transpose-Reshape pattern
- * and tries to fuse it into a single DepthToSpace layer.
+/*
+ * Description:
+ *     DepthToSpaceFusion transformation detects Reshape-Transpose-Reshape pattern and
+ *     tries to fuse it into a single DepthToSpace layer.
  *
- * DepthToSpaceFusion transformation is optional and disabled by default.
- * The transformation can be enabled with callback using setCallback method.
- * See the example below.
+ * Usage:
+ *     DepthToSpaceFusion transformation is optional and disabled by default.
+ *     The transformation can be enabled with callback using setCallback method.
+ *     See the example below.
  *
  * Callback example:
  *
@@ -41,9 +43,9 @@ namespace pass {
  *
  */
 
-class ngraph::pass::DepthToSpaceFusion: public ngraph::pass::GraphRewrite {
+class ngraph::pass::DepthToSpaceFusion: public ngraph::pass::GraphRewrite, public ngraph::pass::PassParam {
 public:
-    DepthToSpaceFusion() : GraphRewrite() {
+    DepthToSpaceFusion() : GraphRewrite(), PassParam() {
         depth_to_space_fusion();
     }
 

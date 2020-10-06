@@ -6,8 +6,6 @@ jobs:
     #vmImage: 'ubuntu-18.04'
     name: LIN_VMSS_VENV_F8S_WU2
   variables:
-    system.debug: true
-    WORKERS_NUMBER: 8
     BUILD_TYPE: Release
     BIN_DIR: ../bin/intel64/$(BUILD_TYPE)
   steps:
@@ -15,7 +13,6 @@ jobs:
       whoami
       uname -a
       which python3
-      python3 --version
       gcc --version
       lsb_release
       env
@@ -35,10 +32,7 @@ jobs:
       unzip ninja-linux.zip
       sudo cp -v ninja /usr/local/bin/
     displayName: 'Install Ninja'
-  - script: |
-      git clean -xdf
-      git reset --hard HEAD
-      git submodule update --init --recursive --jobs $(WORKERS_NUMBER)
+  - script: git submodule update --init --recursive --jobs 8
     displayName: 'Clone submodules'
   - script: |
       mkdir dldt-build
@@ -59,7 +53,7 @@ jobs:
     workingDirectory: dldt-build
     displayName: 'nGraph UT'
     continueOnError: false
-  - script: $(BIN_DIR)/InferenceEngineUnitTests --gtest_print_time=1
+  - script: $(BIN_DIR)/InferenceEngineUnitTests
     workingDirectory: dldt-build
     displayName: 'IE UT old'
     continueOnError: false
@@ -83,7 +77,7 @@ jobs:
     workingDirectory: dldt-build
     displayName: 'IE FuncTests'
     continueOnError: false
-  - script: $(BIN_DIR)/cpuFuncTests --gtest_print_time=1
+  - script: $(BIN_DIR)/cpuFuncTests
     workingDirectory: dldt-build
     displayName: 'CPU FuncTests'
     continueOnError: false
@@ -91,14 +85,12 @@ jobs:
     workingDirectory: dldt-build
     displayName: 'MklDnnBehaviorTests'
     continueOnError: false
-  - script: |
-      git clone https://github.com/openvinotoolkit/testdata.git
-      git clone https://github.com/google/gtest-parallel.git
-    displayName: 'Clone testdata & gtest-parallel'
+  - script: git clone https://github.com/openvinotoolkit/testdata.git
+    displayName: 'Clone testdata'
   - script: |
       export DATA_PATH=`pwd`/../testdata
       export MODELS_PATH=`pwd`/../testdata
-      python3 ../gtest-parallel/gtest-parallel $(BIN_DIR)/MklDnnFunctionalTests --workers=$(WORKERS_NUMBER) --print_test_times --dump_json_test_results=MklDnnFunctionalTests.json --gtest_filter=-smoke_MobileNet/ModelTransformationsTest.LPT/mobilenet_v2_tf_depthwise_batch1_inPluginDisabled_inTestDisabled_asymmetric* -- --gtest_print_time=1
+      $(BIN_DIR)/MklDnnFunctionalTests --gtest_filter=*smoke*:-smoke_MobileNet/ModelTransformationsTest.LPT/mobilenet_v2_tf_depthwise_batch1_inPluginDisabled_inTestDisabled_asymmetric*
     workingDirectory: dldt-build
     displayName: 'MklDnnFunctionalTests'
     continueOnError: false
@@ -128,8 +120,6 @@ jobs:
   pool:
     vmImage: 'macOS-10.15'
   variables:
-    system.debug: true
-    WORKERS_NUMBER: 3
     BUILD_TYPE: Release
     BIN_DIR: ../bin/intel64/$(BUILD_TYPE)
   steps:
@@ -140,7 +130,6 @@ jobs:
       whoami
       uname -a
       which python3
-      python3 --version
       gcc --version
       xcrun --sdk macosx --show-sdk-version
       env
@@ -152,10 +141,7 @@ jobs:
     displayName: 'Install dependencies'
   - script: brew install ninja
     displayName: 'Install Ninja'
-  - script: |
-      git clean -xdf
-      git reset --hard HEAD
-      git submodule update --init --recursive --jobs $(WORKERS_NUMBER)
+  - script: git submodule update --init --recursive --jobs 8
     displayName: 'Clone submodules'
   - script: |
       mkdir dldt-build
@@ -181,7 +167,7 @@ jobs:
     workingDirectory: dldt-build
     displayName: 'nGraph UT'
     continueOnError: false
-  - script: $(BIN_DIR)/InferenceEngineUnitTests --gtest_print_time=1
+  - script: $(BIN_DIR)/InferenceEngineUnitTests
     workingDirectory: dldt-build
     displayName: 'IE UT old'
     continueOnError: false
@@ -201,7 +187,7 @@ jobs:
     workingDirectory: dldt-build
     displayName: 'IE FuncTests'
     continueOnError: false
-  - script: $(BIN_DIR)/cpuFuncTests --gtest_print_time=1
+  - script: $(BIN_DIR)/cpuFuncTests
     workingDirectory: dldt-build
     displayName: 'CPU FuncTests'
     continueOnError: false
@@ -209,14 +195,12 @@ jobs:
     workingDirectory: dldt-build
     displayName: 'MklDnnBehaviorTests'
     continueOnError: false
-  - script: |
-      git clone https://github.com/openvinotoolkit/testdata.git
-      git clone https://github.com/google/gtest-parallel.git
-    displayName: 'Clone testdata & gtest-parallel'
+  - script: git clone https://github.com/openvinotoolkit/testdata.git
+    displayName: 'Clone testdata'
   - script: |
       export DATA_PATH=`pwd`/../testdata
       export MODELS_PATH=`pwd`/../testdata
-      python3 ../gtest-parallel/gtest-parallel $(BIN_DIR)/MklDnnFunctionalTests --workers=$(WORKERS_NUMBER) --print_test_times --dump_json_test_results=MklDnnFunctionalTests.json --gtest_filter=-smoke_MobileNet/ModelTransformationsTest.LPT/mobilenet_v2_tf_depthwise_batch1_inPluginDisabled_inTestDisabled_asymmetric* -- --gtest_print_time=1
+      $(BIN_DIR)/MklDnnFunctionalTests --gtest_filter=*smoke*:-smoke_MobileNet/ModelTransformationsTest.LPT/mobilenet_v2_tf_depthwise_batch1_inPluginDisabled_inTestDisabled_asymmetric*
     workingDirectory: dldt-build
     displayName: 'MklDnnFunctionalTests'
     continueOnError: false
@@ -235,8 +219,6 @@ jobs:
     #vmImage: 'vs2017-win2016'
     name: WIN_VMSS_VENV_F8S_WU2
   variables:
-    system.debug: true
-    WORKERS_NUMBER: 8
     BUILD_TYPE: Release
     BUILD_DIR: D:\dldt-build
     BIN_DIR: ..\bin\intel64
@@ -245,8 +227,6 @@ jobs:
   steps:
   - script: |
       where python3
-      where python
-      python --version
       wmic computersystem get TotalPhysicalMemory
       wmic cpu list
       wmic logicaldisk get description,name
@@ -257,10 +237,7 @@ jobs:
       certutil -urlcache -split -f https://github.com/ninja-build/ninja/releases/download/v1.10.0/ninja-win.zip ninja-win.zip
       powershell -command "Expand-Archive -Force ninja-win.zip"
     displayName: Install Ninja
-  - script: |
-      git clean -xdf
-      git reset --hard HEAD
-      git submodule update --init --recursive --jobs $(WORKERS_NUMBER)
+  - script: git submodule update --init --recursive --jobs 8
     displayName: 'Clone submodules'
   - script: |
       rd /Q /S $(BUILD_DIR)
@@ -289,7 +266,7 @@ jobs:
     continueOnError: false
   - script: |
       set PATH=$(Build.Repository.LocalPath)\inference-engine\temp\tbb\bin;%PATH%
-      $(BIN_DIR)\InferenceEngineUnitTests --gtest_print_time=1
+      $(BIN_DIR)\InferenceEngineUnitTests
     workingDirectory: dldt-build
     displayName: 'IE UT old'
     continueOnError: false
@@ -325,7 +302,7 @@ jobs:
     continueOnError: false
   - script: |
       set PATH=$(Build.Repository.LocalPath)\inference-engine\temp\tbb\bin;%PATH%
-      $(BIN_DIR)\cpuFuncTests --gtest_print_time=1
+      $(BIN_DIR)\cpuFuncTests
     workingDirectory: dldt-build
     displayName: 'CPU FuncTests'
     continueOnError: false
@@ -335,18 +312,14 @@ jobs:
     workingDirectory: dldt-build
     displayName: 'MklDnnBehaviorTests'
     continueOnError: false
-  - script: |
-      git clone https://github.com/openvinotoolkit/testdata.git
-      git clone https://github.com/google/gtest-parallel.git
+  - script: git clone https://github.com/openvinotoolkit/testdata.git
     workingDirectory: $(BUILD_DIR)
-    displayName: 'Clone testdata & gtest-parallel'
-    # Add for gtest-parallel, it hangs now (CVS-33386)
-    #python $(BUILD_DIR)\gtest-parallel\gtest-parallel $(BIN_DIR)\MklDnnFunctionalTests --workers=$(WORKERS_NUMBER) --print_test_times --dump_json_test_results=MklDnnFunctionalTests.json --gtest_filter=-smoke_MobileNet/ModelTransformationsTest.LPT/mobilenet_v2_tf_depthwise_batch1_inPluginDisabled_inTestDisabled_asymmetric* -- --gtest_print_time=1
+    displayName: 'Clone testdata'
   - script: |
       set PATH=$(Build.Repository.LocalPath)\inference-engine\temp\tbb\bin;$(Build.Repository.LocalPath)\inference-engine\temp\opencv_4.3.0\opencv\bin;%PATH%
       set DATA_PATH=$(BUILD_DIR)\testdata
       set MODELS_PATH=$(BUILD_DIR)\testdata
-      $(BIN_DIR)\MklDnnFunctionalTests --gtest_print_time=1 --gtest_filter=-smoke_MobileNet/ModelTransformationsTest.LPT/mobilenet_v2_tf_depthwise_batch1_inPluginDisabled_inTestDisabled_asymmetric*
+      $(BIN_DIR)\MklDnnFunctionalTests --gtest_filter=*smoke*:-smoke_MobileNet/ModelTransformationsTest.LPT/mobilenet_v2_tf_depthwise_batch1_inPluginDisabled_inTestDisabled_asymmetric*
     workingDirectory: dldt-build
     displayName: 'MklDnnFunctionalTests'
     continueOnError: false

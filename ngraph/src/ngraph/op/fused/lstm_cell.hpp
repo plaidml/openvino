@@ -21,6 +21,7 @@
 #include <string>
 #include <vector>
 
+#include "ngraph/autodiff/adjoints.hpp"
 #include "ngraph/node.hpp"
 #include "ngraph/op/util/activation_functions.hpp"
 #include "ngraph/op/util/fused_op.hpp"

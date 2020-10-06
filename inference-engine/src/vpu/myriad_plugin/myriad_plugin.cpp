@@ -11,18 +11,14 @@
 #include <cpp/ie_cnn_network.h>
 #include <cpp_interfaces/base/ie_plugin_base.hpp>
 #include <cpp_interfaces/impl/ie_executable_network_internal.hpp>
-#include <ie_util_internal.hpp>
 
 #include <vpu/vpu_plugin_config.hpp>
 #include <vpu/parsed_config.hpp>
 #include <vpu/utils/profiling.hpp>
 #include <vpu/utils/error.hpp>
 #include <transformations/common_optimizations/common_optimizations.hpp>
-#include <vpu/ngraph/transformations/convert_nms_4_to_nms_dynamic.hpp>
 
 #include "vpu/ngraph/transformations/dynamic_to_static_shape.hpp"
-#include "vpu/ngraph/transformations/eliminate_shapeof_after_dsr.hpp"
-
 #include "generic_ie.hpp"
 
 #include "myriad_plugin.h"
@@ -43,10 +39,8 @@ ExecutableNetworkInternal::Ptr Engine::LoadExeNetworkImpl(
     auto clonedNetwork = cloneNetwork(network);
     if (auto function = clonedNetwork->getFunction()) {
         ngraph::op::GenericIE::DisableReshape noReshape(function);
-        vpu::UpgradeNMS4ToNMSDynamic().run_on_function(function);
         ngraph::pass::CommonOptimizations().run_on_function(function);
         vpu::DynamicToStaticShape().transform(function);
-        vpu::EliminateShapeOfAfterDSR().run_on_function(function);
     }
 
     return std::make_shared<ExecutableNetwork>(*clonedNetwork, _mvnc, _devicePool, parsedConfigCopy);
@@ -90,10 +84,6 @@ void Engine::QueryNetwork(
         VPU_THROW_UNLESS(!(std::find(deviceIDs.begin(), deviceIDs.end(), deviceName) == deviceIDs.end()), "Myriad device: {} not found.", deviceName);
     }
 
-    if (network.getFunction()) {
-        THROW_IE_EXCEPTION << NOT_IMPLEMENTED_str << " ngraph::Function is not supported natively";
-    }
-
     const auto log = std::make_shared<Logger>(
         "GraphCompiler",
         parsedConfigCopy.logLevel(),
@@ -122,6 +112,7 @@ Engine::Engine(std::shared_ptr<IMvnc> mvnc) :
         { KEY_LOG_LEVEL, "LOG_NONE" },
         { KEY_VPU_PRINT_RECEIVE_TENSOR_TIME, "OFF" },
         { KEY_VPU_CUSTOM_LAYERS, "" },
+        { KEY_VPU_IGNORE_IR_STATISTIC, "OFF" },
         { KEY_VPU_MYRIAD_FORCE_RESET, "OFF" },
         { KEY_VPU_MYRIAD_PLATFORM, "" },
         { KEY_EXCLUSIVE_ASYNC_REQUESTS, "OFF" },

@@ -51,11 +51,11 @@ void ScaleShiftToConvolutionTransformation::transform(TransformationContext& con
         return;
     }
 
-    if (getInputTo(outData).size() == 1ul && parents[0]->type != "Concat") {
+    if (outData->getInputTo().size() == 1ul && parents[0]->type != "Concat") {
         return;
     }
 
-    if (getInputTo(layer.outData[0]).size() == 0ul) {
+    if (layer.outData[0]->getInputTo().size() == 0ul) {
         return;
     }
 

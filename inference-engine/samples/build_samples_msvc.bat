@@ -88,9 +88,8 @@ if !VSWHERE! == "true" (
          )
       )
    )
-   if exist "C:\Program Files (x86)\MSBuild\14.0\Bin\MSBuild.exe" (
-      set "MSBUILD_BIN=C:\Program Files (x86)\MSBuild\14.0\Bin\MSBuild.exe"
-      set "MSBUILD_VERSION=14 2015"
+   if exist "!VS_PATH!\MSBuild\14.0\Bin\MSBuild.exe" (
+      set "MSBUILD_BIN=!VS_PATH!\MSBuild\14.0\Bin\MSBuild.exe"
    )
    if exist "!VS_PATH!\MSBuild\15.0\Bin\MSBuild.exe" (
       set "MSBUILD_BIN=!VS_PATH!\MSBuild\15.0\Bin\MSBuild.exe"

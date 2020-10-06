@@ -343,9 +343,9 @@ void MKLDNNGraphOptimizer::FuseConvolutionAndZeroPoints(MKLDNNGraph &graph) {
         if (convNode->inputZeroPoints.empty())
             return;
 
-        auto weightsLayer = getCreatorLayer(convLayer->insData[1].lock()).lock();
+        auto weightsLayer = convLayer->insData[1].lock()->getCreatorLayer().lock();
         if (weightsLayer->type != "Const") {
-            weightsLayer = getCreatorLayer(weightsLayer->insData[0].lock()).lock();
+            weightsLayer = weightsLayer->insData[0].lock()->getCreatorLayer().lock();
         }
 
         auto weightsBlob = dynamic_cast<TBlob<int8_t>*>(weightsLayer->blobs["custom"].get());

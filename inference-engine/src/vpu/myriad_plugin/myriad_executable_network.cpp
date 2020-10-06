@@ -12,6 +12,7 @@
 #include <vpu/blob_reader.hpp>
 #include <vpu/utils/profiling.hpp>
 #include <vpu/utils/runtime_graph.hpp>
+#include <details/ie_cnn_network_tools.h>
 #include <net_pass.h>
 #include <vpu/compile_env.hpp>
 

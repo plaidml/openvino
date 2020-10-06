@@ -60,7 +60,7 @@ class UpstreamLayersIterator {
         if (!data) {
             THROW_GNA_EXCEPTION << "Cannot lock insData for layer: " << origin->name;
         }
-        auto parent = getCreatorLayer(data).lock();
+        auto parent = data->getCreatorLayer().lock();
         if (!parent) {
             THROW_GNA_EXCEPTION << "Cannot getParent for layer: " << origin->name;
         }

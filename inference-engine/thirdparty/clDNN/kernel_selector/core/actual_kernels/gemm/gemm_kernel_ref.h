@@ -30,8 +30,7 @@ protected:
     std::vector<FusedOpType> GetSupportedFusedOps() const override {
         return { FusedOpType::QUANTIZE,
                  FusedOpType::ACTIVATION,
-                 FusedOpType::SCALE,
-                 FusedOpType::ELTWISE };
+                 FusedOpType::SCALE };
     }
     bool Validate(const Params& params, const optional_params& options) const override;
     JitConstants GetJitConstants(const gemm_params& params) const override;

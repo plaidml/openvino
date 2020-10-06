@@ -54,10 +54,12 @@ public:
             std::string model_name,
             std::string img_name,
             double reference_delta,
-            Regression::EMean mean = Regression::EMean::eValues);
+            Regression::EMean mean = Regression::EMean::eValues,
+            bool with_stat_file = false);
 
     // Accessors
     inline Regression::EMean mean() const;
+    inline bool withStatFile() const;
 
     // Operations
     inline std::string name() const override;
@@ -70,6 +72,7 @@ public:
 private:
     //Data section
     Regression::EMean mean_;
+    bool with_stat_file_;
 };
 
 //------------------------------------------------------------------------------
@@ -137,13 +140,19 @@ inline ClassificationSrcParam::ClassificationSrcParam(
         std::string model_name,
         std::string img_name,
         double reference_delta,
-        Regression::EMean mean):
+        Regression::EMean mean,
+        bool with_stat_file):
         SourceParameterBase(model_name, img_name, reference_delta),
-        mean_(mean) {
+        mean_(mean),
+        with_stat_file_(with_stat_file) {
 }
 
 inline Regression::EMean ClassificationSrcParam::mean() const {
     return mean_;
+}
+
+inline bool ClassificationSrcParam::withStatFile() const {
+    return with_stat_file_;
 }
 
 inline std::string ClassificationSrcParam::name() const {

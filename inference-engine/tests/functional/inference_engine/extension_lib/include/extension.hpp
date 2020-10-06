@@ -12,6 +12,8 @@
 #include <string>
 #include <map>
 
+IE_SUPPRESS_DEPRECATED_START
+
 class ExtensionTestOp : public ngraph::op::Op {
 public:
     static constexpr ngraph::NodeTypeInfo type_info{"Test", 0};
@@ -33,7 +35,7 @@ public:
         set_output_type(0, get_input_element_type(0), ngraph::PartialShape(output_shape));
     }
 
-    std::shared_ptr<ngraph::Node> clone_with_new_inputs(const ngraph::OutputVector& new_args) const override {
+    std::shared_ptr<ngraph::Node> copy_with_new_args(const ngraph::NodeVector& new_args) const override {
         if (new_args.size() != 1) {
             throw ngraph::ngraph_error("Incorrect number of new arguments");
         }
@@ -50,9 +52,45 @@ class TestExtension : public InferenceEngine::IExtension {
 public:
     TestExtension() = default;
     void GetVersion(const InferenceEngine::Version*& versionInfo) const noexcept override;
+    IE_SUPPRESS_DEPRECATED_START
+    void SetLogCallback(InferenceEngine::IErrorListener& /*listener*/) noexcept override {}
+    IE_SUPPRESS_DEPRECATED_END
     void Unload() noexcept override {}
     void Release() noexcept override {
         delete this;
+    }
+    InferenceEngine::StatusCode getFactoryFor(InferenceEngine::ILayerImplFactory*& factory,
+                                              const InferenceEngine::CNNLayer* cnnLayer,
+                                              InferenceEngine::ResponseDesc* resp) noexcept override {
+        if (cnnLayer == nullptr || cnnLayer->type != "test")
+            return InferenceEngine::GENERAL_ERROR;
+        return InferenceEngine::OK;
+    }
+
+    /**
+     * @brief Fills passed array with types of layers which kernel implementations are included in the extension
+     *
+     * @param types Array to store the layer types
+     * @param size Size of the layer types array
+     * @param resp Response descriptor
+     * @return Status code
+     */
+    InferenceEngine::StatusCode getPrimitiveTypes(char**& types, unsigned int& size, InferenceEngine::ResponseDesc* resp) noexcept override {
+        size = 1;
+        return InferenceEngine::OK;
+    }
+
+    InferenceEngine::StatusCode getShapeInferTypes(char**& types, unsigned int& size, InferenceEngine::ResponseDesc* resp) noexcept override {
+        size = 1;
+        return InferenceEngine::OK;
+    }
+
+    InferenceEngine::StatusCode getShapeInferImpl(InferenceEngine::IShapeInferImpl::Ptr& impl, const char* type,
+                                                  InferenceEngine::ResponseDesc* resp) noexcept override {
+        std::string type_str = type;
+        if (type_str != "test")
+            return InferenceEngine::GENERAL_ERROR;
+        return InferenceEngine::OK;
     }
 
     /**
@@ -77,3 +115,5 @@ public:
      */
     InferenceEngine::ILayerImpl::Ptr getImplementation(const std::shared_ptr<ngraph::Node>& node, const std::string& implType) override;
 };
+
+IE_SUPPRESS_DEPRECATED_END

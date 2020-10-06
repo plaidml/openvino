@@ -37,6 +37,7 @@ public:
     {
         RESHAPE,
         BROADCAST,
+        DYN_BROADCAST,
         PAD,
         DEQUANTIZE,
         UNARY,
@@ -51,6 +52,7 @@ public:
         GATHER,
         SCATTER,
         SLICE,
+        DYN_SLICE,
         DYN_RESHAPE,
         TRANSPOSE,
         RANGE,
@@ -71,6 +73,7 @@ public:
         m_enable_shape_inference = true;
         construct_constant_split();
         construct_constant_variadic_split();
+        construct_constant_dyn_broadcast();
         construct_constant_pad();
         construct_constant_quantize();
         construct_constant_dequantize();
@@ -81,6 +84,7 @@ public:
         construct_constant_gather_with_subgraph();
         construct_constant_scatter_elements_update();
         construct_constant_slice();
+        construct_constant_dyn_slice();
         construct_constant_dyn_reshape();
         construct_constant_transpose();
         construct_constant_select();
@@ -90,6 +94,7 @@ public:
     }
 
 private:
+    void construct_constant_dyn_broadcast();
     void construct_constant_pad();
     void construct_constant_quantize();
     void construct_constant_dequantize();
@@ -100,6 +105,7 @@ private:
     void construct_constant_gather_with_subgraph();
     void construct_constant_scatter_elements_update();
     void construct_constant_slice();
+    void construct_constant_dyn_slice();
     void construct_constant_dyn_reshape();
     void construct_constant_transpose();
     void construct_constant_select();

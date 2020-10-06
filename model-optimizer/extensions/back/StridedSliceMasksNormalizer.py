@@ -25,6 +25,8 @@ class StridedSliceMasksNormalizer(BackReplacementPattern):
     enabled = True
     force_clean_up = True
 
+    graph_condition = [lambda graph: graph.graph['cmd_params'].generate_experimental_IR_V10]
+
     def run_after(self):
         return [CropToStridedSlice, DeconvolutionNormalizer]
 

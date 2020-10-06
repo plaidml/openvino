@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include <list>
 #include <limits>
 #include <gtest/gtest.h>
 #include "base_matcher.hpp"

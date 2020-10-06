@@ -63,6 +63,10 @@ namespace ngraph
 
                 bool evaluate(const HostTensorVector& outputs,
                               const HostTensorVector& inputs) override;
+
+            protected:
+                virtual void generate_adjoints(autodiff::Adjoints& adjoints,
+                                               const OutputVector& deltas) override;
             };
         }
 
@@ -98,6 +102,10 @@ namespace ngraph
                 void set_axis(const size_t axis) { m_axis = axis; }
                 bool evaluate(const HostTensorVector& outputs,
                               const HostTensorVector& inputs) override;
+
+            protected:
+                virtual void generate_adjoints(autodiff::Adjoints& adjoints,
+                                               const OutputVector& deltas) override;
 
             private:
                 size_t m_axis;

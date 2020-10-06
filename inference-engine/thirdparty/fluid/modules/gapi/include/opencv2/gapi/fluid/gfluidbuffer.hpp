@@ -18,6 +18,7 @@
 #include <opencv2/gapi/gmat.hpp>
 
 #include <opencv2/gapi/util/optional.hpp>
+#include <opencv2/gapi/own/scalar.hpp>
 #include <opencv2/gapi/own/mat.hpp>
 
 namespace cv {
@@ -26,11 +27,13 @@ namespace fluid {
 
 struct Border
 {
+#if !defined(GAPI_STANDALONE)
     // This constructor is required to support existing kernels which are part of G-API
-    Border(int _type, cv::Scalar _val) : type(_type), value(_val) {};
-
+    Border(int _type, cv::Scalar _val) : type(_type), value(to_own(_val)) {};
+#endif // !defined(GAPI_STANDALONE)
+    Border(int _type, cv::gapi::own::Scalar _val) : type(_type), value(_val) {};
     int type;
-    cv::Scalar value;
+    cv::gapi::own::Scalar value;
 };
 
 using BorderOpt = util::optional<Border>;

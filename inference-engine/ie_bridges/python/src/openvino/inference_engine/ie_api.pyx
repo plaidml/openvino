@@ -245,7 +245,7 @@ cdef class IECore:
         return versions
 
     ## Reads a network from the Intermediate Representation (IR) and creates an `IENetwork`.
-    #  @param model: A `.xml`, `.onnx`or `.prototxt` model file or string with IR.
+    #  @param model: A `.xml` file of the IR or string with IR.
     #  @param weights: A `.bin` file of the IR. Depending on `init_from_buffer` value, can be a string path or
     #                  bytes with file content.
     #  @param init_from_buffer: Defines the way of how `model` and `weights` attributes are interpreted.
@@ -259,21 +259,25 @@ cdef class IECore:
     #  net = ie.read_network(model=path_to_xml_file, weights=path_to_bin_file)
     #  ```
     cpdef IENetwork read_network(self, model: [str, bytes, Path], weights: [str, bytes, Path] = "", init_from_buffer: bool = False):
+        cdef char*xml_buffer
         cdef uint8_t*bin_buffer
         cdef string weights_
         cdef string model_
         cdef IENetwork net = IENetwork()
         if init_from_buffer:
+            xml_buffer = <char*> malloc(len(model)+1)
             bin_buffer = <uint8_t *> malloc(len(weights))
+            memcpy(xml_buffer, <char*> model, len(model))
             memcpy(bin_buffer, <uint8_t *> weights, len(weights))
-            model_ = bytes(model)
-            net.impl = self.impl.readNetwork(model_, bin_buffer, len(weights))
+            xml_buffer[len(model)] = b'\0'
+            net.impl = self.impl.readNetwork(xml_buffer, bin_buffer, len(weights))
+            free(xml_buffer)
         else:
             weights_ = "".encode()
-            if isinstance(model, Path) and (isinstance(weights, Path) or not weights):
+            if isinstance(model, Path) and isinstance(weights, Path):
                 if not model.is_file():
                     raise Exception("Path to the model {} doesn't exist or it's a directory".format(model))
-                if model.suffix not in [ ".onnx", ".prototxt"]:
+                if model.suffix != ".onnx":
                     if not weights.is_file():
                         raise Exception("Path to the weights {} doesn't exist or it's a directory".format(weights))
                     weights_ = bytes(weights)
@@ -281,7 +285,7 @@ cdef class IECore:
             else:
                 if not os.path.isfile(model):
                     raise Exception("Path to the model {} doesn't exist or it's a directory".format(model))
-                if not (fnmatch(model, "*.onnx") or fnmatch(model, "*.prototxt")):
+                if not fnmatch(model, "*.onnx"):
                     if not os.path.isfile(weights):
                         raise Exception("Path to the weights {} doesn't exist or it's a directory".format(weights))
                     weights_ = weights.encode()
@@ -499,14 +503,6 @@ cdef class PreProcessChannel:
 
 ## This class stores pre-process information for the input
 cdef class PreProcessInfo:
-    def __cinit__(self):
-        self._ptr = new CPreProcessInfo()
-        self._user_data  = True
-
-    def __dealloc__(self):
-        if self._user_data:
-            del self._ptr
-
     def __getitem__(self, size_t index):
         cdef CPreProcessChannel.Ptr c_channel = deref(self._ptr)[index]
         channel = PreProcessChannel()
@@ -548,18 +544,10 @@ cdef class PreProcessInfo:
 
     ## Resize Algorithm to be applied for input before inference if needed.
     #
-    #  \note It's need to set your input via the set_blob method.
-    #
     #  Usage example:\n
     #  ```python
     #  net = ie_core.read_network(model=path_to_xml_file, weights=path_to_bin_file)
     #  net.input_info['data'].preprocess_info.resize_algorithm = ResizeAlgorithm.RESIZE_BILINEAR
-    #  exec_net = ie_core.load_network(net, 'CPU')
-    #  tensor_desc = ie.TensorDesc("FP32", [1, 3, image.shape[2], image.shape[3]], "NCHW")
-    #  img_blob = ie.Blob(tensor_desc, image)
-    #  request = exec_net.requests[0]
-    #  request.set_blob('data', img_blob)
-    #  request.infer()
     #  ```
     @property
     def resize_algorithm(self):
@@ -627,8 +615,6 @@ cdef class InputInfoPtr:
     def preprocess_info(self):
         cdef CPreProcessInfo* c_preprocess_info = &deref(self._ptr).getPreProcess()
         preprocess_info = PreProcessInfo()
-        del preprocess_info._ptr
-        preprocess_info._user_data = False
         preprocess_info._ptr = c_preprocess_info
         return preprocess_info
 
@@ -647,7 +633,6 @@ cdef class InputInfoPtr:
     def input_data(self):
         cdef C.DataPtr c_data_ptr = deref(self._ptr).getInputData()
         data_ptr = DataPtr()
-        data_ptr._ptr_network = self._ptr_network
         data_ptr._ptr = c_data_ptr
         return data_ptr
 
@@ -691,10 +676,6 @@ cdef class InputInfoCPtr:
 
 ## This class is the layer data representation.
 cdef class DataPtr:
-    ## Default constructor
-    def __init__(self):
-        self._ptr_network = NULL
-
     ## Name of the data object
     @property
     def name(self):
@@ -736,13 +717,8 @@ cdef class DataPtr:
 
     @property
     def creator_layer(self):
-        cdef C.CNNLayerWeakPtr _l_ptr
+        cdef C.CNNLayerWeakPtr _l_ptr = deref(self._ptr).getCreatorLayer()
         cdef IENetLayer creator_layer
-
-        if self._ptr_network != NULL:
-            deref(self._ptr_network).convertToOldRepresentation()
-        _l_ptr = C.getCreatorLayer(self._ptr)
-
         creator_layer = IENetLayer()
         if _l_ptr.lock() != NULL:
             creator_layer._ptr = _l_ptr.lock()
@@ -752,13 +728,8 @@ cdef class DataPtr:
 
     @property
     def input_to(self):
-        cdef map[string, C.CNNLayerPtr] _l_ptr_map
+        cdef map[string, C.CNNLayerPtr] _l_ptr_map = deref(self._ptr).getInputTo()
         cdef IENetLayer input_to
-
-        if self._ptr_network != NULL:
-            deref(self._ptr_network).convertToOldRepresentation()
-        _l_ptr_map = C.getInputTo(self._ptr)
-
         input_to_list = []
         for layer in _l_ptr_map:
             input_to = IENetLayer()
@@ -788,6 +759,28 @@ cdef class CDataPtr:
     @property
     def initialized(self):
         return deref(self._ptr).isInitialized()
+
+    # TODO: Resolve compilation error
+    # @property
+    # def creator_layer(self):
+    #     cdef C.CNNLayerWeakPtr _l_ptr = deref(self._ptr).getCreatorLayer()
+    #     cdef IENetLayer creator_layer
+    #     creator_layer = IENetLayer()
+    #     if _l_ptr.lock() != NULL:
+    #         creator_layer._ptr = _l_ptr.lock()
+    #     else:
+    #         raise RuntimeError("Creator IENetLayer of DataPtr object with name {} already released!".format(self.name))
+    #     return creator_layer
+    # @property
+    # def input_to(self):
+    #     cdef map[string, C.CNNLayerPtr] _l_ptr_map = deref(self._ptr).getInputTo()
+    #     cdef IENetLayer input_to
+    #     input_to_list = []
+    #     for layer in _l_ptr_map:
+    #         input_to = IENetLayer()
+    #         input_to._ptr = layer.second
+    #         input_to_list.append(input_to)
+    #     return input_to_list
 
 
 ## This class represents a network instance loaded to plugin and ready for inference.
@@ -821,8 +814,8 @@ cdef class ExecutableNetwork:
         current_request = self.requests[0]
         current_request.infer(inputs)
         res = {}
-        for name, value in current_request.output_blobs.items():
-            res[name] = deepcopy(value.buffer)
+        for out in current_request._outputs_list:
+            res[out] = deepcopy(current_request.output_blobs[out].buffer)
         return res
 
 
@@ -1057,24 +1050,9 @@ cdef class InferRequest:
             output_blobs[output] = deepcopy(blob)
         return output_blobs
 
-    ## Dictionary that maps input layer names to corresponding preprocessing information
-    @property
-    def preprocess_info(self):
-        preprocess_info = {}
-        cdef const CPreProcessInfo** c_preprocess_info
-        for input_blob in self.input_blobs.keys():
-            preprocess = PreProcessInfo()
-            del preprocess._ptr
-            preprocess._user_data = False
-            c_preprocess_info = <const CPreProcessInfo**>(&preprocess._ptr)
-            deref(self.impl).getPreProcess(input_blob.encode(), c_preprocess_info)
-            preprocess_info[input_blob] = preprocess
-        return preprocess_info
-
     ## Sets user defined Blob for the infer request
     #  @param blob_name: A name of input blob
     #  @param blob: Blob object to set for the infer request
-    #  @param preprocess_info: PreProcessInfo object to set for the infer request.
     #  @return None
     #
     #  Usage example:\n
@@ -1087,11 +1065,8 @@ cdef class InferRequest:
     #  blob = Blob(td, blob_data)
     #  exec_net.requests[0].set_blob(blob_name="input_blob_name", blob=blob),
     #  ```
-    def set_blob(self, blob_name : str, blob : Blob, preprocess_info: PreProcessInfo = None):
-        if preprocess_info:
-            deref(self.impl).setBlob(blob_name.encode(), blob._ptr, deref(preprocess_info._ptr))
-        else:
-            deref(self.impl).setBlob(blob_name.encode(), blob._ptr)
+    def set_blob(self, blob_name : str, blob : Blob):
+        deref(self.impl).setBlob(blob_name.encode(), blob._ptr)
         self._user_blobs[blob_name] = blob
     ## Starts synchronous inference of the infer request and fill outputs array
     #
@@ -1260,6 +1235,42 @@ cdef class InferRequest:
             self.input_blobs[k].buffer[:] = v
 
 
+## Layer calibration statistic container.
+class LayerStats:
+
+    ## Class constructor
+    #
+    #  @param min: Tuple with per-channel minimum layer activation values
+    #  @param max: Tuple with per-channel maximum layer activation values
+    #  @return An instance of LayerStats class
+    def __init__(self, min: tuple = (), max: tuple = ()):
+        self._min = min
+        self._max = max
+
+    ## Tuple with per-channel minimum layer activation values
+    @property
+    def min(self):
+        return self._min
+
+    ## Tuple with per-channel maximum layer activation values
+    @property
+    def max(self):
+        return self._max
+
+
+## Class inherited from built-in python `dict` class and overrides default `update()`method to allow
+#  to set or modify layers calibration statistics.
+cdef class LayersStatsMap(dict):
+    def update(self, other=None, **kwargs):
+        super(LayersStatsMap, self).update(other, **kwargs)
+        cdef map[string, map[string, vector[float]]] c_stats_map
+        cdef map[string, vector[float]] c_node_stats
+        for k, v in self.items():
+            c_node_stats["min".encode()] = v.min
+            c_node_stats["max".encode()] = v.max
+            c_stats_map[k.encode()] = c_node_stats
+        self.net_impl.setStats(c_stats_map)
+
 ## This class represents a main layer information and providing setters allowing to modify layer properties
 cdef class IENetLayer:
     ## Name of the layer
@@ -1318,7 +1329,6 @@ cdef class IENetLayer:
     @params.setter
     def params(self, new_params):
         deref(self._ptr).params = dict_to_c_map(new_params)
-
     ## Returns a list, which contains names of layers preceding this layer
     @property
     def parents(self):
@@ -1338,10 +1348,11 @@ cdef class IENetLayer:
         cdef map[string, C.CNNLayerPtr] _l_ptr_map
         input_to_list = []
         for l in c_outs:
-            _l_ptr_map = C.getInputTo(l)
+            _l_ptr_map = deref(l).getInputTo()
             for layer in _l_ptr_map:
                 input_to_list.append(deref(layer.second).name.decode())
         return input_to_list
+
     ## \note This property is deprecated.
     # Please, use out_data property to access DataPtr objects for all output ports, which contains full
     # information about layer's output data including layout
@@ -1459,10 +1470,11 @@ cdef class IENetwork:
     #   ```
 
     def __cinit__(self, model: [str, bytes] = "", weights: [str, bytes] = "", init_from_buffer: bool = False):
+        # TODO: ucomment when ngraph python api will work
         # Try to create Inference Engine network from capsule
-        if model.__class__.__name__ == 'PyCapsule' and weights == '' and init_from_buffer is False:
-            self.impl = C.IENetwork(model)
-            return
+        # if model.__class__.__name__ == 'PyCapsule' and weights == '' and init_from_buffer is False:
+        #     self.impl = C.IENetwork(model)
+        #     return
         cdef char*xml_buffer = <char*> malloc(len(model)+1)
         cdef uint8_t*bin_buffer = <uint8_t *> malloc(len(weights))
         cdef string model_
@@ -1507,7 +1519,6 @@ cdef class IENetwork:
         for input in c_inputs:
             input_info_ptr = InputInfoPtr()
             input_info_ptr._ptr = input.second
-            input_info_ptr._ptr_network = &self.impl
             inputs[input.first.decode()] = input_info_ptr
         return inputs
 
@@ -1526,7 +1537,6 @@ cdef class IENetwork:
         cdef DataPtr data_ptr
         for input in c_inputs:
             data_ptr = DataPtr()
-            data_ptr._ptr_network = &self.impl
             data_ptr._ptr = input.second
             inputs[input.first.decode()] = data_ptr
         return inputs
@@ -1539,7 +1549,6 @@ cdef class IENetwork:
         cdef DataPtr data_ptr
         for output in c_outputs:
             data_ptr = DataPtr()
-            data_ptr._ptr_network = &self.impl
             data_ptr._ptr = output.second
             outputs[output.first.decode()] = data_ptr
         return outputs
@@ -1557,6 +1566,18 @@ cdef class IENetwork:
     @property
     def batch_size(self):
         return self.impl.getBatch()
+
+    ## \note This property is deprecated:
+    #  network precision does not make sense, use precision on edges.
+    #
+    #  Precision of the network
+    @property
+    def precision(self):
+        warnings.warn("Network precision is deprecated "
+                      "because it does not make sence, "
+                      "use precision on egdes.",
+                      DeprecationWarning)
+        return self.impl.precision.decode()
 
     @batch_size.setter
     def batch_size(self, batch: int):
@@ -1576,6 +1597,33 @@ cdef class IENetwork:
             net_l._ptr = l
             layers[deref(l).name.decode()] = net_l
         return layers
+
+    ## \note This property is deprecated.
+    #  New Calibration Tool doesn't generate statistics
+    #
+    #  Returns `LayersStatsMap` object containing dictionary that maps network layer names to calibration statistics
+    #  represented by `LayerStats`  objects.
+    #
+    #  Usage example:\n
+    #  ```python
+    #  ie = IECore()
+    #  net = ie.read_network(model=path_to_xml_file, weights=path_to_bin_file)
+    #  net.stats.update({"conv1_2d" : LayserStats(min=(-25, -1, 0), max=(63, 124, 70)),
+    #                    "conv2_2d" : LayserStats(min=(-5, -1, 0, 1, -7, 2), max=(63, 124, 70, 174, 99, 106))
+    #                   })
+    #  ```
+    @property
+    def stats(self):
+        warnings.warn("stats property of IENetwork is deprecated.",
+                          DeprecationWarning)
+        cdef map[string, map[string, vector[float]]] c_stats_map = self.impl.getStats()
+        py_stats_map = LayersStatsMap()
+        py_stats_map.net_impl = self.impl
+        for it in c_stats_map:
+            py_stats_map[it.first.decode()] = LayerStats(min=tuple(it.second["min".encode()]),
+                                                         max=tuple(it.second["max".encode()]))
+        return py_stats_map
+
 
     ## Marks any intermediate layer as output layer to retrieve the inference results from the specified layers.
     #  @param outputs: List of layers to be set as model outputs. The list can contain strings with layer names to be set
@@ -1646,8 +1694,123 @@ cdef class IENetwork:
             c_input_shapes[input.encode()] = c_shape
         self.impl.reshape(c_input_shapes)
 
-    def _get_function_capsule(self):
-        return self.impl.getFunction()
+    # TODO: ucomment when ngraph python api will work
+
+    # def get_function(self):
+    #     return self.impl.getFunction()
+
+## This class is the main plugin interface and serves to initialize and configure the plugin.
+#
+#  \note This class is deprecated: Use IECore instead
+#
+cdef class IEPlugin:
+    ##  Class constructor
+    #
+    #  @param device: Target device name. Supported devices: CPU, GPU, FPGA, MYRIAD, HETERO, MULTI
+    #  @param plugin_dirs: List of paths to plugin directories
+    #  @return IEPlugin instance
+    def __cinit__(self, device: str, plugin_dirs=None):
+        warnings.warn("IEPlugin class is deprecated. "
+                      "Please use IECore class instead.",
+                      DeprecationWarning)
+        plugin_base = device.split(':')[0]
+        if plugin_base not in known_plugins:
+            raise ValueError("Unknown plugin: {}, expected one of: {}"
+                             .format(plugin_base, ",".join(known_plugins)))
+        if plugin_dirs is None:
+            plugin_dirs = [""]
+        elif isinstance(plugin_dirs, str):
+            plugin_dirs = [plugin_dirs]
+
+        # add package directory to plugin_dirs
+        lib_location = os.path.dirname(os.path.realpath(__file__))
+        plugin_dirs.append(lib_location)
+
+        cpdef string device_ = <string> device.encode()
+        cdef vector[string] dirs_
+        for d in plugin_dirs:
+            dirs_.push_back(<string> d.encode())
+
+        self.impl = C.IEPlugin(device_, dirs_)
+
+    ## Loads a network that was read from the IR to the plugin and creates an executable network from a network object.
+    #  You can create as many networks as you need and use them simultaneously (up to the limitation of the hardware
+    #  resources).
+    #
+    #  @param network:  A valid `IENetwork` instance
+    #  @param num_requests: A positive integer value of infer requests to be created. Number of infer
+    #                       requests may be limited by device capabilities.
+    #  @param config: A dictionary of plugin configuration keys and their values
+    #  @return  Valid instance of ExecutableNetwork class
+    #
+    #  Usage example:\n
+    #  ```python
+    #  net = IENetwork(model=path_to_xml_file, weights=path_to_bin_file)
+    #  ie = IECore()
+    #  exec_net = ie.load_network(network=net, device_name="CPU", num_requests=2)
+    #  ```
+    cpdef ExecutableNetwork load(self, IENetwork network, int num_requests=1, config=None):
+        cdef ExecutableNetwork exec_net = ExecutableNetwork()
+        cdef map[string, string] c_config
+        if num_requests < 0:
+            raise ValueError("Incorrect number of requests specified: {}. Expected positive integer number "
+                             "or zero for auto detection".format(num_requests))
+        if config:
+            for k, v in config.items():
+                c_config[to_std_string(k)] = to_std_string(v)
+        exec_net.plugin_impl = self.impl
+        exec_net.impl = move(self.impl.load(network.impl, num_requests, c_config))
+        return exec_net
+
+    ## Sets initial affinity for model layers according to the HETERO plugin logic. Applicable only if
+    #  `IEPlugin` was initialized for a HETERO device.
+    #
+    #  @param net: A valid instance of IENetwork
+    #  @return None
+    #
+    #  Usage example: See `affinity` attribute of the `IENetLayer` class.
+    cpdef void set_initial_affinity(self, IENetwork net) except *:
+        if self.device.find("HETERO") == -1:
+            raise RuntimeError("set_initial_affinity method applicable only for HETERO device")
+        self.impl.setInitialAffinity(net.impl)
+
+    cpdef set get_supported_layers(self, IENetwork net):
+        return set([l.decode() for l in self.impl.queryNetwork(net.impl)])
+
+    ## A name of the device that was specified to initialize IEPlugin
+    @property
+    def device(self):
+        device_name = bytes(self.impl.device_name)
+        return to_py_string(device_name)
+
+    ## A version of the plugin
+    @property
+    def version(self):
+        version = bytes(self.impl.version)
+        return version.decode()
+
+    ## Loads extensions library to the plugin. Applicable only for a CPU device and a HETERO device with CPU
+    #
+    #  @param extension_path: A full path to CPU extensions library
+    #  @return None
+    cpdef void add_cpu_extension(self, str extension_path) except *:
+        if self.device.find("CPU") == -1:
+            raise RuntimeError("add_cpu_extension method applicable only for CPU or HETERO devices")
+        cdef string extension_str = extension_path.encode()
+        self.impl.addCpuExtension(extension_str)
+
+    ## Sets a configuration for the plugin. Refer to `SetConfig()` in Inference Engine C++ documentation for acceptable
+    #  keys and values list.
+    #
+    #  @param config: A dictionary of keys and values of acceptable configuration parameters
+    #  @return None
+    cpdef void set_config(self, config):
+        cdef map[string, string] c_config
+        for k, v in config.items():
+            c_config[to_std_string(k)] = to_std_string(v)
+        self.impl.setConfig(c_config)
+
+    # TODO: Add export compiled network functionality
 
 cdef class BlobBuffer:
     """Copy-less accessor for Inference Engine Blob"""
@@ -1701,9 +1864,8 @@ cdef class BlobBuffer:
             'I8': 'b',  # signed char
             'I16': 'h',  # signed short
             'I32': 'i',  # signed int
-            'U32': 'I',  # unsigned int
             'I64': 'q',  # signed long int
-            'U64': 'Q',  # unsigned long int
+            'U64': 'Q',  # signed long int
         }
         if name not in precision_to_format:
             raise ValueError("Unknown Blob precision: {}".format(name))

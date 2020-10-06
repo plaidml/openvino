@@ -6,6 +6,7 @@
 
 
 #include "test_precomp.hpp"
+#include <opencv2/gapi/cpu/gcpukernel.hpp>
 #include "gapi_mock_kernels.hpp"
 
 #include <opencv2/gapi/cpu/gcpukernel.hpp>     // cpu::backend

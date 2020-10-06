@@ -31,10 +31,7 @@ namespace ngraph
                 static constexpr NodeTypeInfo type_info{"GreaterEq", 0};
                 const NodeTypeInfo& get_type_info() const override { return type_info; }
                 /// \brief Constructs a greater-than-or-equal operation.
-                GreaterEq()
-                    : util::BinaryElementwiseComparison(AutoBroadcastSpec::NONE)
-                {
-                }
+                GreaterEq() = default;
                 /// \brief Constructs a greater-than-or-equal operation.
                 ///
                 /// \param arg0 Node that produces the first input tensor.
@@ -60,10 +57,7 @@ namespace ngraph
                 static constexpr NodeTypeInfo type_info{"GreaterEqual", 1};
                 const NodeTypeInfo& get_type_info() const override { return type_info; }
                 /// \brief Constructs a greater-than-or-equal operation.
-                GreaterEqual()
-                    : util::BinaryElementwiseComparison(AutoBroadcastSpec::NUMPY)
-                {
-                }
+                GreaterEqual() = default;
                 /// \brief Constructs a greater-than-or-equal operation.
                 ///
                 /// \param arg0 Node that produces the first input tensor.

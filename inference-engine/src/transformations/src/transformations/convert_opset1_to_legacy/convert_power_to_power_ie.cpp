@@ -13,13 +13,13 @@
 #include <transformations/utils/utils.hpp>
 #include <ngraph/rt_info.hpp>
 
-ngraph::pass::ConvertPowerToPowerIEMatcher::ConvertPowerToPowerIEMatcher() {
+void ngraph::pass::ConvertPowerToPowerIE::convert_power() {
     auto input_0 = std::make_shared<pattern::op::Label>(element::f32, Shape{1});
     auto input_1 = std::make_shared<pattern::op::Label>(element::f32, Shape{1});
     auto power = std::make_shared<ngraph::opset1::Power>(input_0, input_1);
 
 
-    ngraph::matcher_pass_callback callback = [](pattern::Matcher& m) {
+    ngraph::graph_rewrite_callback callback = [](pattern::Matcher& m) {
         auto power = std::dynamic_pointer_cast<ngraph::opset1::Power> (m.get_match_root());
         if (!power) {
             return false;
@@ -41,5 +41,5 @@ ngraph::pass::ConvertPowerToPowerIEMatcher::ConvertPowerToPowerIEMatcher() {
     };
 
     auto m = std::make_shared<ngraph::pattern::Matcher>(power, "ConvertPowerToPowerIE");
-    this->register_matcher(m, callback);
+    this->add_matcher(m, callback, PassProperty::CHANGE_DYNAMIC_STATE);
 }

@@ -19,5 +19,6 @@ public:
                  std::shared_ptr<InferRequestInternal>(InputsDataMap networkInputs, OutputsDataMap networkOutputs));
     MOCK_METHOD1(Export, void(const std::string &));
     void Export(std::ostream &) override {}
+    MOCK_METHOD1(GetMappedTopology, void(std::map<std::string, std::vector<PrimitiveInfo::Ptr>> &));
 };
 IE_SUPPRESS_DEPRECATED_END

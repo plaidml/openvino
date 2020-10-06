@@ -16,7 +16,6 @@
 
 #pragma once
 
-#include "ngraph/attribute_adapter.hpp"
 #include "ngraph/op/op.hpp"
 #include "ngraph/op/util/attr_types.hpp"
 
@@ -125,6 +124,17 @@ namespace ngraph
                     // specifies type of interpolation
                     // one of `nearest`, `linear`, `linear_onnx`, `cubic`, `area`. Required.
                     InterpolateMode mode;
+                    // specifies how to transform the coordinate in the resized tensor to the
+                    // coordinate in the original tensor. one of `half_pixel`, `pytorch_half_pixel`,
+                    // `asymmetric`, `tf_half_pixel_for_nn`, `align_corners`
+                    CoordinateTransformMode coordinate_transformation_mode =
+                        CoordinateTransformMode::half_pixel;
+                    // specifies round mode when `mode == nearest` and is used only when `mode ==
+                    // nearest`. one of `round_prefer_floor`, `round_prefer_ceil`, `floor`, `ceil`,
+                    // `simple`
+                    NearestMode nearest_mode = NearestMode::round_prefer_floor;
+                    // a flag that specifies whether to perform anti-aliasing. default is `false`
+                    bool antialias = false;
                     // specify the number of pixels to add to the beginning of the image being
                     // interpolated. This addition of pixels is done before interpolation
                     // calculation.
@@ -133,48 +143,10 @@ namespace ngraph
                     // interpolated. This addition of pixels is done before interpolation
                     // calculation.
                     std::vector<size_t> pads_end;
-                    // specifies how to transform the coordinate in the resized tensor to the
-                    // coordinate in the original tensor. one of `half_pixel`, `pytorch_half_pixel`,
-                    // `asymmetric`, `tf_half_pixel_for_nn`, `align_corners`
-                    CoordinateTransformMode coordinate_transformation_mode;
-                    // specifies round mode when `mode == nearest` and is used only when `mode ==
-                    // nearest`. one of `round_prefer_floor`, `round_prefer_ceil`, `floor`, `ceil`,
-                    // `simple`
-                    NearestMode nearest_mode;
-                    // a flag that specifies whether to perform anti-aliasing. default is `false`
-                    bool antialias;
                     // specifies the parameter *a* for cubic interpolation (see, e.g.
                     // [article](https://ieeexplore.ieee.org/document/1163711/)).  *cube_coeff* is
                     // used only when `mode == cubic`
-                    double cube_coeff;
-
-                    InterpolateAttrs()
-                        : coordinate_transformation_mode(CoordinateTransformMode::half_pixel)
-                        , nearest_mode(NearestMode::round_prefer_floor)
-                        , antialias(false)
-                        , cube_coeff(-0.75f)
-                    {
-                    }
-
-                    InterpolateAttrs(AxisSet axes,
-                                     InterpolateMode mode,
-                                     std::vector<size_t> pads_begin,
-                                     std::vector<size_t> pads_end,
-                                     CoordinateTransformMode coordinate_transformation_mode =
-                                         CoordinateTransformMode::half_pixel,
-                                     NearestMode nearest_mode = NearestMode::round_prefer_floor,
-                                     bool antialias = false,
-                                     double cube_coeff = -0.75)
-                        : axes(axes)
-                        , mode(mode)
-                        , pads_begin(pads_begin)
-                        , pads_end(pads_end)
-                        , coordinate_transformation_mode(coordinate_transformation_mode)
-                        , nearest_mode(nearest_mode)
-                        , antialias(antialias)
-                        , cube_coeff(cube_coeff)
-                    {
-                    }
+                    double cube_coeff = -0.75;
                 };
 
                 static constexpr NodeTypeInfo type_info{"Interpolate", 3};
@@ -204,22 +176,6 @@ namespace ngraph
         using v0::Interpolate;
     }
 
-    //---------------------------------------- v0 --------------------------------------------------
-
-    template <>
-    class NGRAPH_API AttributeAdapter<op::v0::InterpolateAttrs> : public VisitorAdapter
-    {
-    public:
-        AttributeAdapter(op::v0::InterpolateAttrs& ref);
-
-        virtual bool visit_attributes(AttributeVisitor& visitor) override;
-        static constexpr DiscreteTypeInfo type_info{"AttributeAdapter<op::v0::InterpolateAttrs>",
-                                                    0};
-        const DiscreteTypeInfo& get_type_info() const override { return type_info; }
-    protected:
-        op::v0::InterpolateAttrs& m_ref;
-    };
-
     NGRAPH_API
     std::ostream& operator<<(std::ostream& s, const op::v0::Interpolate::InterpolateMode& type);
 
@@ -237,8 +193,6 @@ namespace ngraph
             "AttributeAdapter<op::v0::Interpolate::InterpolateMode>", 0};
         const DiscreteTypeInfo& get_type_info() const override { return type_info; }
     };
-
-    //---------------------------------------- v3 --------------------------------------------------
 
     NGRAPH_API
     std::ostream& operator<<(std::ostream& s, const op::v3::Interpolate::InterpolateMode& type);
@@ -293,19 +247,5 @@ namespace ngraph
         static constexpr DiscreteTypeInfo type_info{
             "AttributeAdapter<op::v3::Interpolate::NearestMode>", 3};
         const DiscreteTypeInfo& get_type_info() const override { return type_info; }
-    };
-
-    template <>
-    class NGRAPH_API AttributeAdapter<op::v3::Interpolate::InterpolateAttrs> : public VisitorAdapter
-    {
-    public:
-        AttributeAdapter(op::v3::Interpolate::InterpolateAttrs& ref);
-
-        virtual bool visit_attributes(AttributeVisitor& visitor) override;
-        static constexpr DiscreteTypeInfo type_info{
-            "AttributeAdapter<op::v3::Interpolate::InterpolateAttrs>", 3};
-        const DiscreteTypeInfo& get_type_info() const override { return type_info; }
-    protected:
-        op::v3::Interpolate::InterpolateAttrs& m_ref;
     };
 }

@@ -44,7 +44,6 @@ enum class GShape: int
     GMAT,
     GSCALAR,
     GARRAY,
-    GOPAQUE,
 };
 
 struct GCompileArg;

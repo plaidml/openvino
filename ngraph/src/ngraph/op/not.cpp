@@ -16,7 +16,6 @@
 
 #include "ngraph/op/not.hpp"
 #include "ngraph/op/op.hpp"
-#include "ngraph/op/util/elementwise_args.hpp"
 
 #include "ngraph/runtime/host_tensor.hpp"
 #include "ngraph/runtime/reference/not.hpp"
@@ -40,7 +39,7 @@ bool ngraph::op::v1::LogicalNot::visit_attributes(AttributeVisitor& visitor)
 // TODO(amprocte): Update this to allow only boolean, for consistency with logical binops.
 void op::v1::LogicalNot::validate_and_infer_types()
 {
-    auto args_et_pshape = op::util::validate_and_infer_elementwise_args(this);
+    auto args_et_pshape = validate_and_infer_elementwise_args();
     element::Type& args_et = std::get<0>(args_et_pshape);
     PartialShape& args_pshape = std::get<1>(args_et_pshape);
 
@@ -73,17 +72,29 @@ namespace
         {
             TYPE_CASE(boolean)(arg0, out, count);
             break;
+            TYPE_CASE(i8)(arg0, out, count);
+            break;
+            TYPE_CASE(i16)(arg0, out, count);
+            break;
             TYPE_CASE(i32)(arg0, out, count);
             break;
             TYPE_CASE(i64)(arg0, out, count);
+            break;
+            TYPE_CASE(u8)(arg0, out, count);
+            break;
+            TYPE_CASE(u16)(arg0, out, count);
             break;
             TYPE_CASE(u32)(arg0, out, count);
             break;
             TYPE_CASE(u64)(arg0, out, count);
             break;
+            TYPE_CASE(bf16)(arg0, out, count);
+            break;
             TYPE_CASE(f16)(arg0, out, count);
             break;
             TYPE_CASE(f32)(arg0, out, count);
+            break;
+            TYPE_CASE(f64)(arg0, out, count);
             break;
         default: rc = false; break;
         }
@@ -107,7 +118,7 @@ op::v0::Not::Not(const Output<Node>& arg)
 // TODO(amprocte): Update this to allow only boolean, for consistency with logical binops.
 void op::v0::Not::validate_and_infer_types()
 {
-    auto args_et_pshape = ngraph::op::util::validate_and_infer_elementwise_args(this);
+    auto args_et_pshape = validate_and_infer_elementwise_args();
     element::Type& args_et = std::get<0>(args_et_pshape);
     PartialShape& args_pshape = std::get<1>(args_et_pshape);
 

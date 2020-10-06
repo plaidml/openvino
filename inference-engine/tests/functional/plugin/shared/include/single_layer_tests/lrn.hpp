@@ -19,10 +19,9 @@ namespace LayerTestsDefinitions {
 
 typedef std::tuple<
         double,                        // Alpha
-        double,                        // Beta
-        double,                        // Bias
-        size_t,                        // Size
-        std::vector<int64_t>,          // Reduction axes
+        size_t,                        // Beta
+        size_t,                        // Bias
+        size_t,                        // Size,
         InferenceEngine::Precision,    // Network precision
         InferenceEngine::SizeVector,   // Input shapes
         std::string                    // Device name

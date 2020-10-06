@@ -19,7 +19,12 @@ class TRANSFORMATIONS_API ConvertDivide;
 }  // namespace pass
 }  // namespace ngraph
 
-class ngraph::pass::ConvertDivide: public ngraph::pass::MatcherPass {
+class ngraph::pass::ConvertDivide: public ngraph::pass::GraphRewrite {
 public:
-    ConvertDivide();
+    ConvertDivide() : GraphRewrite() {
+        convert_divide();
+    }
+
+private:
+    void convert_divide();
 };

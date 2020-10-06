@@ -128,15 +128,6 @@ bool WeightableLayerTransformation::isPrecisionPreserved(const CNNLayer& layer) 
     return false;
 }
 
-bool WeightableLayerTransformation::getDequantizationDimIsSupported(const CNNLayer& fullyConnected) {
-    const DataPtr inputData = fullyConnected.insData[0].lock();
-    if (inputData == nullptr) {
-        THROW_IE_LPT_EXCEPTION(fullyConnected) << "input data is absent";
-    }
-
-    return inputData->getDims().size() != 3ul;
-}
-
 void WeightableLayerTransformation::updateLayerBiases(
     TransformationContext& context,
     const CNNLayer& weightableLayer,
@@ -144,17 +135,7 @@ void WeightableLayerTransformation::updateLayerBiases(
     std::vector<float>& dequantizationScales,
     std::vector<float>& dequantizationShifts,
     std::vector<float>& biasesShifts) const {
-    const bool dequantizationShiftsAreZero = std::all_of(
-        dequantizationShifts.begin(),
-        dequantizationShifts.end(),
-        [](float value) { return value == 0.0; });
-
-    const bool dequantizationDimIsNotSupported = !getDequantizationDimIsSupported(weightableLayer);
-    CNNLayerPtr biasesLayer = CNNNetworkHelper::getParent(weightableLayer, 2);
-
-    // we need to correct biases if dequantization shifts values are not zero or
-    // dequantization dimention is not supported (as result dequantization shifts can not be calculated)
-    if ((dequantizationDimIsNotSupported && (biasesLayer != nullptr)) || (!dequantizationShiftsAreZero)) {
+    if (!std::all_of(dequantizationShifts.begin(), dequantizationShifts.end(), [](float value) { return value == 0.0; })) {
         const DataPtr insData = weightableLayer.insData[0].lock();
         if (insData == nullptr) {
             THROW_IE_LPT_EXCEPTION(weightableLayer) << "input data is absent";
@@ -163,6 +144,7 @@ void WeightableLayerTransformation::updateLayerBiases(
 
         std::shared_ptr<float> biasesBufferPtr;
         Blob::Ptr biasesBlob;
+        CNNLayerPtr biasesLayer = CNNNetworkHelper::getParent(weightableLayer, 2);
         if (biasesLayer == nullptr) {
             if (weightableLayer.outData.size() != 1ul) {
                 THROW_IE_LPT_EXCEPTION(weightableLayer) << "unexpected output data count " << weightableLayer.outData.size();

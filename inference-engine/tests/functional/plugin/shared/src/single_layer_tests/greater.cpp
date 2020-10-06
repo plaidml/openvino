@@ -30,13 +30,8 @@ std::string GreaterLayerTest::getTestCaseName(const testing::TestParamInfo<Great
     result << "inPrc=" << inPrecision.name() << "_";
     result << "outPrc=" << outPrecision.name() << "_";
     result << "targetDevice=" << targetDevice;
-    auto string = result.str();
-    std::replace(string.begin(), string.end(), '-', '_');
-    std::replace(string.begin(), string.end(), '.', '_');
-    std::replace(string.begin(), string.end(), '(', '_');
-    std::replace(string.begin(), string.end(), ')', '_');
-    std::replace(string.begin(), string.end(), '=', '_');
-    return string;
+
+    return result.str();
 }
 
 void GreaterLayerTest::SetUp() {
@@ -57,5 +52,9 @@ void GreaterLayerTest::SetUp() {
 
 TEST_P(GreaterLayerTest, CompareWithRefs) {
     Run();
+
+    if (targetDevice == std::string{CommonTestUtils::DEVICE_GPU}) {
+        PluginCache::get().reset();
+    }
 }
 }  // namespace LayerTestsDefinitions

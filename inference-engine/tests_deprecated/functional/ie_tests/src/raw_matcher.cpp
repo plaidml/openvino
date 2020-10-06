@@ -50,7 +50,7 @@ void RawMatcher::match() {
             if (config._inputPrecision) q->setPrecision(config._inputPrecision);
             DataPtr p = q->getInputData();
             IE_SUPPRESS_DEPRECATED_START
-            layer = getInputTo(p).begin()->second;
+            layer = p->getInputTo().begin()->second;
             IE_SUPPRESS_DEPRECATED_END
         }
 

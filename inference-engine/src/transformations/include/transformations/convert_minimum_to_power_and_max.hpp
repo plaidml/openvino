@@ -19,7 +19,12 @@ class TRANSFORMATIONS_API ConvertMinimum;
 }  // namespace pass
 }  // namespace ngraph
 
-class ngraph::pass::ConvertMinimum: public ngraph::pass::MatcherPass {
+class ngraph::pass::ConvertMinimum: public ngraph::pass::GraphRewrite {
 public:
-    ConvertMinimum();
+    ConvertMinimum() : GraphRewrite() {
+        convert_minimum();
+    }
+
+private:
+    void convert_minimum();
 };

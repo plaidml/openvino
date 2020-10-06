@@ -30,10 +30,6 @@ public:
 template<Precision::ePrecision P>
 class TestNoRegressionDynBatch : public Regression::RegressionTests,
                                  public WithParamInterface<CommonDynBatchFuncTestParams> {
-    void SetUp() override  {
-//        PluginCache::;
-    }
-
     std::string getDeviceName() const override {
         return GetParam().deviceName;
     }
@@ -53,7 +49,7 @@ using TestNoRegressionDynBatchFP32 = TestNoRegressionDynBatch<Precision::FP32>;
 TEST_P(TestNoRegressionDynBatchFP32, dynBatch) {
     int bl = get_batch_limit();
     int bsz = get_cur_batch();
-    auto fnPtr = ngraph::builder::subgraph::makeSingleConv({static_cast<size_t>(bl), 3, 24, 24});
+    auto fnPtr = ngraph::builder::subgraph::makeSingleConv({static_cast<size_t>(bl), 4, 20, 20});
 
     CNNNetwork net(fnPtr);
     auto ieCore = PluginCache::get().ie();
@@ -82,6 +78,9 @@ TEST_P(TestNoRegressionDynBatchFP32, dynBatch) {
                                      outElementsCount, outElementsCount,
                                      FuncTestUtils::CompareType::ABS_AND_REL,
                                      thr1, thr2);
+    if (GetParam().deviceName.find(CommonTestUtils::DEVICE_GPU) != std::string::npos) {
+        PluginCache::get().reset();
+    }
 }
 
 std::string getTestCaseName(TestParamInfo<CommonDynBatchFuncTestParams> obj) {

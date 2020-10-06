@@ -37,6 +37,5 @@ protected:
     }
 
     size_t GetBlockSize(const pooling_params& params) const;
-    size_t GetSimdSize(const pooling_params& params) const;
 };
 }  // namespace kernel_selector

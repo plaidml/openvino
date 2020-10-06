@@ -11,7 +11,6 @@
 #include <vector>
 #include <memory>
 #include <map>
-#include "ie_ishape_infer_extension.hpp"
 
 namespace MKLDNNPlugin {
 
@@ -37,7 +36,10 @@ public:
 
 
 protected:
+    IE_SUPPRESS_DEPRECATED_START
     InferenceEngine::ILayerImplFactory::Ptr extFactory;
+    InferenceEngine::IShapeInferImpl::Ptr extShapeInference;
+    IE_SUPPRESS_DEPRECATED_END
     std::vector<InferenceEngine::ILayerExecImpl::Ptr> impls;
     std::map<std::string, std::string> params;
     std::map<std::string, InferenceEngine::Blob::Ptr> blobs;

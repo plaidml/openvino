@@ -17,12 +17,17 @@
 namespace ngraph {
 namespace pass {
 
-class TRANSFORMATIONS_API ConvertInterpolateToInterpOrResampleMatcher;
+class TRANSFORMATIONS_API ConvertInterpolateToInterpOrResample;
 
 }  // namespace pass
 }  // namespace ngraph
 
-class ngraph::pass::ConvertInterpolateToInterpOrResampleMatcher: public ngraph::pass::MatcherPass {
+class ngraph::pass::ConvertInterpolateToInterpOrResample: public ngraph::pass::GraphRewrite {
 public:
-    ConvertInterpolateToInterpOrResampleMatcher();
+    ConvertInterpolateToInterpOrResample() : GraphRewrite() {
+        convert_interpolate_to_interp_or_resample();
+    }
+
+private:
+    void convert_interpolate_to_interp_or_resample();
 };

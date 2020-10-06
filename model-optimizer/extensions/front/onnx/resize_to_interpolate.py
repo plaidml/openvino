@@ -17,6 +17,7 @@ import logging as log
 
 import numpy as np
 
+from extensions.front.div import Div
 from extensions.ops.elementwise import Mul
 from extensions.ops.interpolate import Interpolate
 from mo.front.common.partial_infer.utils import int64_array
@@ -27,6 +28,9 @@ from mo.ops.const import Const
 
 class ResizeToInterpolate2D(FrontReplacementSubgraph):
     enabled = True
+
+    def run_before(self):
+        return [Div]
 
     def pattern(self):
         return dict(
@@ -100,6 +104,9 @@ class ResizeToInterpolate2D(FrontReplacementSubgraph):
 
 class ResizeToInterpolate3D(FrontReplacementSubgraph):
     enabled = True
+
+    def run_before(self):
+        return [Div]
 
     def pattern(self):
         return dict(

@@ -16,17 +16,27 @@ namespace ngraph {
 namespace pass {
 
 class TRANSFORMATIONS_API ConvertNormalizeL2WithMulToNormalizeIE;
-class TRANSFORMATIONS_API ConvertNormalizeL2ToLegacyMatcher;
+class TRANSFORMATIONS_API ConvertNormalizeL2ToNormalizeIE;
 
 }  // namespace pass
 }  // namespace ngraph
 
-class ngraph::pass::ConvertNormalizeL2WithMulToNormalizeIE: public ngraph::pass::MatcherPass {
+class ngraph::pass::ConvertNormalizeL2WithMulToNormalizeIE: public ngraph::pass::GraphRewrite {
 public:
-    ConvertNormalizeL2WithMulToNormalizeIE();
+    ConvertNormalizeL2WithMulToNormalizeIE() : GraphRewrite() {
+        convert_normalize_l2_with_mul();
+    }
+
+private:
+    void convert_normalize_l2_with_mul();
 };
 
-class ngraph::pass::ConvertNormalizeL2ToLegacyMatcher: public ngraph::pass::MatcherPass {
+class ngraph::pass::ConvertNormalizeL2ToNormalizeIE: public ngraph::pass::GraphRewrite {
 public:
-    ConvertNormalizeL2ToLegacyMatcher();
+    ConvertNormalizeL2ToNormalizeIE() : GraphRewrite() {
+        convert_normalize_l2();
+    }
+
+private:
+    void convert_normalize_l2();
 };

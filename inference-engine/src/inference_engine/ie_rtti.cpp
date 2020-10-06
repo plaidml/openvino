@@ -13,21 +13,10 @@
 #include <ie_parameter.hpp>
 #include <ie_iextension.h>
 #include <ie_extension.h>
-#include <exec_graph_info.hpp>
 
 #include <ngraph/opsets/opset.hpp>
 
 using namespace InferenceEngine;
-
-//
-// exec_graph_info.hpp
-//
-constexpr ngraph::NodeTypeInfo ExecGraphInfoSerialization::ExecutionNode::type_info;
-
-const ngraph::NodeTypeInfo&
-ExecGraphInfoSerialization::ExecutionNode::get_type_info() const {
-    return type_info;
-}
 
 //
 // ie_blob.h
@@ -109,14 +98,12 @@ TBlob<T, U>::~TBlob() {
 
 template class InferenceEngine::TBlob<float>;
 template class InferenceEngine::TBlob<double>;
-template class InferenceEngine::TBlob<int8_t>;
-template class InferenceEngine::TBlob<uint8_t>;
 template class InferenceEngine::TBlob<int16_t>;
 template class InferenceEngine::TBlob<uint16_t>;
-template class InferenceEngine::TBlob<int32_t>;
-template class InferenceEngine::TBlob<uint32_t>;
+template class InferenceEngine::TBlob<int8_t>;
+template class InferenceEngine::TBlob<uint8_t>;
+template class InferenceEngine::TBlob<int>;
 template class InferenceEngine::TBlob<long>;
 template class InferenceEngine::TBlob<long long>;
-template class InferenceEngine::TBlob<unsigned long>;
-template class InferenceEngine::TBlob<unsigned long long>;
+template class InferenceEngine::TBlob<uint64_t>;
 #endif  // __clang__

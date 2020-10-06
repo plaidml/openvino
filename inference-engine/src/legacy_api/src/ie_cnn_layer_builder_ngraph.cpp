@@ -6,7 +6,6 @@
 #include <cnn_network_ngraph_impl.hpp>
 #include <precision_utils.h>
 #include <cpp/ie_cnn_network.h>
-#include <cnn_network_impl.hpp>
 
 #include <limits>
 #include <cmath>
@@ -152,8 +151,7 @@ CNNLayer::Ptr NodeConverter<ngraph::op::TensorIterator>::createLayer(const std::
     std::map<std::string, std::vector<TensorDesc>> layer_name_to_tensor_desc;
     {
         auto tiBody = std::make_shared<details::TINGraphBody>(std::make_shared<ngraph::Function>(results, parameters));
-        CNNNetwork ngraphNet(tiBody);
-        CNNNetwork net(std::make_shared<InferenceEngine::details::CNNNetworkImpl>(ngraphNet));
+        CNNNetwork net(tiBody);
         // Paranoid check for cycles
         bool res = CNNNetForestDFS(
             CNNNetGetAllInputLayers(net), [](const CNNLayerPtr& layer) {}, false);
@@ -171,7 +169,7 @@ CNNLayer::Ptr NodeConverter<ngraph::op::TensorIterator>::createLayer(const std::
         for (const auto& param : parameters) {
             auto info = in_info_map_with_parameters.at(param->get_friendly_name());
             auto data_ptr = info->getInputData();
-            auto input_to = getInputTo(data_ptr);
+            auto input_to = data_ptr->getInputTo();
             for (const auto& next_layer : input_to) {
                 auto port_idx = find_input_idx(next_layer.second, data_ptr);
                 ngraph_parameter_id_to_ie_layer_port[counter].push_back({next_layer.first, port_idx});
@@ -192,7 +190,7 @@ CNNLayer::Ptr NodeConverter<ngraph::op::TensorIterator>::createLayer(const std::
         // This deep copy will hold all unreachable constants. See the comment in CopyTIBody function.
         auto deep_cp_body = InferenceEngine::NetPass::CopyTIBody(temp_body);
         for (const auto& data_ptr : deep_cp_body.inputs) {
-            auto input_to = getInputTo(data_ptr);
+            auto input_to = data_ptr->getInputTo();
             for (const auto& node : input_to) {
                 // Make it compatible with ir v7: delete Input layers in body
                 if (node.second->type != "Input") {
@@ -214,7 +212,7 @@ CNNLayer::Ptr NodeConverter<ngraph::op::TensorIterator>::createLayer(const std::
     for (const auto& input_layer : body_input_layers) {
         // Save all constants to the holder so that they are not deleted.
         if (input_layer->insData.empty()) {
-            getInputTo(holder)[input_layer->name] = input_layer;
+            holder->getInputTo()[input_layer->name] = input_layer;
             continue;
         }
 
@@ -227,7 +225,7 @@ CNNLayer::Ptr NodeConverter<ngraph::op::TensorIterator>::createLayer(const std::
 
                 DataPtr data(new Data(data_name, layer_name_to_tensor_desc[input_layer->name][i]));
                 input_layer->insData[i] = data;
-                getInputTo(data)[input_layer->name] = input_layer;
+                data->getInputTo()[input_layer->name] = input_layer;
                 in_info_map[data_name] = data;
             }
         }
@@ -244,7 +242,7 @@ CNNLayer::Ptr NodeConverter<ngraph::op::TensorIterator>::createLayer(const std::
         res->body.inputs.emplace_back(in.second);
 
         // Fill the map to get the input index by layer and port of the body.
-        auto input_to = getInputTo(in.second);
+        auto input_to = in.second->getInputTo();
         for (const auto& next_layer : input_to) {
             auto port_idx = find_input_idx(next_layer.second, in.second);
             ie_layer_port_to_tensor_iterator_input_id[{next_layer.first, port_idx}] = counter;
@@ -261,7 +259,7 @@ CNNLayer::Ptr NodeConverter<ngraph::op::TensorIterator>::createLayer(const std::
 
     // Port map: outputs
     for (const auto& desc : tensor_iterator->get_output_descriptions()) {
-        auto result = results[desc->m_body_value_index]->input(0).get_source_output();
+        auto result = results[desc->m_body_value_index]->inputs()[0].get_source_output();
 
         // GetOutputElement layer can be inserted by ngraph deep copy functions
         // (e.g. specialize_function, clone_function)
@@ -403,17 +401,14 @@ CNNLayer::Ptr NodeConverter<ngraph::op::Convert>::createLayer(const std::shared_
     case Precision::I64:
         precision_str = "I64";
         break;
+    case Precision::U64:
+        precision_str = "U64";
+        break;
     case Precision::U8:
         precision_str = "U8";
         break;
     case Precision::U16:
         precision_str = "U16";
-        break;
-    case Precision::U32:
-        precision_str = "U32";
-        break;
-    case Precision::U64:
-        precision_str = "U64";
         break;
     case Precision::BOOL:
         precision_str = "BOOL";
@@ -785,7 +780,7 @@ CNNLayer::Ptr NodeConverter<ngraph::op::ConvolutionIE>::createLayer(
         res->_weights = weights->blobs["custom"];
 
         if (castedLayer->inputs().size() == 3) {
-            const auto biasNode = castedLayer->input_value(2).get_node_shared_ptr();
+            const auto biasNode = castedLayer->get_inputs()[2].get_output().get_node();
             if (converter.canCreate(biasNode)) {
                 const auto& bias = converter.createLayer(biasNode);
                 res->blobs["biases"] = bias->blobs["custom"];
@@ -853,7 +848,7 @@ CNNLayer::Ptr NodeConverter<ngraph::op::DeconvolutionIE>::createLayer(
         res->_weights = weights->blobs["custom"];
 
         if (castedLayer->inputs().size() == 3) {
-            const auto biasNode = castedLayer->input_value(2).get_node_shared_ptr();
+            const auto biasNode = castedLayer->get_inputs()[2].get_output().get_node();
             if (converter.canCreate(biasNode)) {
                 const auto& bias = converter.createLayer(biasNode);
                 res->blobs["biases"] = bias->blobs["custom"];
@@ -1137,7 +1132,7 @@ CNNLayer::Ptr NodeConverter<ngraph::op::PRelu>::createLayer(const std::shared_pt
     auto castedLayer = ngraph::as_type_ptr<ngraph::op::PRelu>(layer);
     if (castedLayer == nullptr) THROW_IE_EXCEPTION << "Cannot get " << params.type << " layer " << params.name;
 
-    const auto weightsNode = castedLayer->input_value(1).get_node_shared_ptr();
+    const auto weightsNode = castedLayer->input(1).get_source_output().get_node_shared_ptr();
     if (auto const_weights = ngraph::as_type_ptr<ngraph::op::Constant>(weightsNode)) {
         SizeVector dataShape = const_weights->get_shape();
         if (dataShape.size() >= 2 && ngraph::shape_size(dataShape) == dataShape[1]) {
@@ -1282,7 +1277,7 @@ CNNLayer::Ptr NodeConverter<ngraph::op::v1::Reshape>::createLayer(const std::sha
         THROW_IE_EXCEPTION << "Cannot get " << params.type << " layer " << params.name;
 
 
-    const auto constNode = castedLayer->input_value(1).get_node_shared_ptr();
+    const auto constNode = castedLayer->get_inputs()[1].get_output().get_node();
     if (auto constValue = ngraph::as_type_ptr<ngraph::op::Constant>(constNode)) {
         auto value = constValue->cast_vector<int64_t>();
         for (auto & i : value) {
@@ -1344,14 +1339,14 @@ CNNLayer::Ptr NodeConverter<ngraph::op::ScaleShiftIE>::createLayer(const std::sh
     auto res = std::make_shared<InferenceEngine::ScaleShiftLayer>(params);
 
     NodeConverter<ngraph::op::Constant> converter;
-    const auto weightsNode = layer->input_value(1).get_node_shared_ptr();
+    const auto weightsNode = layer->get_inputs()[1].get_output().get_node();
     if (converter.canCreate(weightsNode)) {
         const auto& weightsLayer = converter.createLayer(weightsNode);
         res->blobs["weights"] = weightsLayer->blobs["custom"];
         res->_weights = weightsLayer->blobs["custom"];
     }
 
-    const auto biasNode = layer->input_value(2).get_node_shared_ptr();
+    const auto biasNode = layer->get_inputs()[2].get_output().get_node();
     if (converter.canCreate(biasNode)) {
         const auto& bias = converter.createLayer(biasNode);
         res->blobs["biases"] = bias->blobs["custom"];
@@ -1641,13 +1636,13 @@ CNNLayer::Ptr NodeConverter<ngraph::op::FullyConnected>::createLayer(const std::
 
     NodeConverter<ngraph::op::Constant> converter;
 
-    const auto weightsNode = layer->input_value(1).get_node_shared_ptr();
+    const auto weightsNode = layer->get_inputs()[1].get_output().get_node();
     if (!keep_constants && converter.canCreate(weightsNode)) {
         const auto& weights = converter.createLayer(weightsNode);
         res->blobs["weights"] = weights->blobs["custom"];
         res->_weights = weights->blobs["custom"];
 
-        const auto biasNode = layer->input_value(2).get_node_shared_ptr();
+        const auto biasNode = layer->get_inputs()[2].get_output().get_node();
         if (converter.canCreate(biasNode)) {
             const auto& bias = converter.createLayer(biasNode);
             res->blobs["biases"] = bias->blobs["custom"];
@@ -1694,14 +1689,14 @@ CNNLayer::Ptr NodeConverter<ngraph::op::LSTMCellIE>::createLayer(const std::shar
     res->params["clip"] = asString(castedLayer->get_clip());
 
     NodeConverter<ngraph::op::Constant> converter;
-    const auto weightsNode = layer->input_value(3).get_node_shared_ptr();
+    const auto weightsNode = layer->get_inputs()[3].get_output().get_node();
     if (converter.canCreate(weightsNode)) {
         const auto& weights = converter.createLayer(weightsNode);
         res->blobs["weights"] = weights->blobs["custom"];
         res->_weights = weights->blobs["custom"];
     }
 
-    const auto biasNode = layer->input_value(4).get_node_shared_ptr();
+    const auto biasNode = layer->get_inputs()[4].get_output().get_node();
     if (converter.canCreate(biasNode)) {
         const auto& bias = converter.createLayer(biasNode);
         res->blobs["biases"] = bias->blobs["custom"];
@@ -1862,7 +1857,7 @@ CNNLayer::Ptr NodeConverter<ngraph::op::NormalizeIE>::createLayer(const std::sha
     res->params["across_spatial"] = castedLayer->get_across_spatial() ? "1" : "0";
 
     NodeConverter<ngraph::op::Constant> converter;
-    const auto weightsNode = castedLayer->input_value(1).get_node_shared_ptr();
+    const auto weightsNode = castedLayer->get_inputs()[1].get_output().get_node();
     if (converter.canCreate(weightsNode)) {
         const auto& weights = converter.createLayer(weightsNode);
         res->blobs["weights"] = weights->blobs["custom"];
@@ -2103,6 +2098,19 @@ CNNLayer::Ptr NodeConverter<ngraph::op::v1::ReduceLogicalOr>::createLayer(const 
 template <>
 CNNLayer::Ptr NodeConverter<ngraph::op::v1::NonMaxSuppression>::createLayer(const std::shared_ptr<ngraph::Node>& layer) const {
     THROW_IE_EXCEPTION << "NonMaxSuppression operation must be converted to NonMaxSuppressionIE operation.";
+}
+
+template <>
+CNNLayer::Ptr NodeConverter<ngraph::op::NonMaxSuppressionIE>::createLayer(const std::shared_ptr<ngraph::Node>& layer) const {
+    LayerParams params = {layer->get_friendly_name(), "NonMaxSuppression", Precision::I32};
+
+    auto castedLayer = std::dynamic_pointer_cast<ngraph::op::NonMaxSuppressionIE>(layer);
+    if (castedLayer == nullptr) THROW_IE_EXCEPTION << "Cannot get " << params.type << " layer " << params.name;
+
+    auto res = std::make_shared<InferenceEngine::NonMaxSuppressionLayer>(params);
+    res->params["sort_result_descending"] = std::to_string(castedLayer->m_sort_result_descending);
+    res->params["center_point_box"] = std::to_string(castedLayer->m_sort_result_descending);
+    return res;
 }
 
 }  // namespace Builder

@@ -34,14 +34,20 @@ protected:
     ~IRelease() override = default;
 };
 
+IE_SUPPRESS_DEPRECATED_START
+
 template <class T>
 inline std::shared_ptr<T> shared_from_irelease(T* ptr) {
+    IE_SUPPRESS_DEPRECATED_START
     std::shared_ptr<T> pointer(ptr, [](IRelease* p) {
         if (p)
             p->Release();
     });
+    IE_SUPPRESS_DEPRECATED_END
     return pointer;
 }
+
+IE_SUPPRESS_DEPRECATED_END
 
 }  // namespace details
 }  // namespace InferenceEngine

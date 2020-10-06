@@ -24,5 +24,4 @@ class ShapeOfExtender(Extender):
 
     @staticmethod
     def extend(op: Node):
-        if op.has_valid('output_type'):
-            op['output_type'] = destination_type_to_np_data_type(op.output_type)
+        op['output_type'] = destination_type_to_np_data_type(op.output_type)

@@ -37,13 +37,7 @@ std::string SoftMaxLayerTest::getTestCaseName(testing::TestParamInfo<softMaxLaye
     result << "axis=" << axis << "_";
     result << "targetDevice=" << targetDevice;
 
-    auto string = result.str();
-    std::replace(string.begin(), string.end(), '-', '_');
-    std::replace(string.begin(), string.end(), '.', '_');
-    std::replace(string.begin(), string.end(), '(', '_');
-    std::replace(string.begin(), string.end(), ')', '_');
-    std::replace(string.begin(), string.end(), '=', '_');
-    return string;
+    return result.str();
 }
 
 void SoftMaxLayerTest::SetUp() {

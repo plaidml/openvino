@@ -149,14 +149,14 @@ void BackEnd::serializeConstShapes(const Model& model, const mv_blob_header& blo
 
         if (shapeLocation.dimsLocation == Location::Blob) {
             serializeToBlob(data->desc().dims(), shapeLocation.dimsOffset);
-        } else if (data->usage() == DataUsage::Output || data->usage() == DataUsage::Input) {
+        } else if (data->usage() == DataUsage::Output) {
             auto ioDimsUpperBoundOffset = data->attrs().get<int>("ioDimsUpperBoundOffset");
             serializeToBlob(data->desc().dims(), ioDimsUpperBoundOffset);
         }
 
         if (shapeLocation.stridesLocation == Location::Blob) {
             serializeToBlob(data->strides(), shapeLocation.stridesOffset);
-        } else if (data->usage() == DataUsage::Output || data->usage() == DataUsage::Input) {
+        } else if (data->usage() == DataUsage::Output) {
             auto ioStridesUpperBoundOffset = data->attrs().get<int>("ioStridesUpperBoundOffset");
             serializeToBlob(data->strides(), ioStridesUpperBoundOffset);
         }

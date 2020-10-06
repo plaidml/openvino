@@ -6,7 +6,6 @@
 #include "vpu/vpu_plugin_config.hpp"
 #include "behavior/infer_request_config.hpp"
 
-using namespace BehaviorTestsDefinitions;
 namespace {
     const std::vector<InferenceEngine::Precision> netPrecisions = {
             InferenceEngine::Precision::FP16
@@ -20,8 +19,10 @@ namespace {
             {{ MULTI_CONFIG_KEY(DEVICE_PRIORITIES) , CommonTestUtils::DEVICE_MYRIAD}}
     };
 
-    const std::vector<std::map<std::string, std::string>> inferConfigs = {
+    const std::vector<std::map<std::string, std::string>> Inconfigs = {
             {},
+            {{VPU_CONFIG_KEY(IGNORE_IR_STATISTIC), CONFIG_VALUE(YES)}},
+            {{VPU_CONFIG_KEY(IGNORE_IR_STATISTIC), CONFIG_VALUE(NO)}},
 
             {{VPU_MYRIAD_CONFIG_KEY(FORCE_RESET), CONFIG_VALUE(YES)}},
             {{VPU_MYRIAD_CONFIG_KEY(FORCE_RESET), CONFIG_VALUE(NO)}},
@@ -33,10 +34,6 @@ namespace {
             {{CONFIG_KEY(LOG_LEVEL), CONFIG_VALUE(LOG_DEBUG)}},
             {{CONFIG_KEY(LOG_LEVEL), CONFIG_VALUE(LOG_TRACE)}},
 
-            {{VPU_CONFIG_KEY(TILING_CMX_LIMIT_KB), "-1"}},
-            {{VPU_CONFIG_KEY(TILING_CMX_LIMIT_KB), "0"}},
-            {{VPU_CONFIG_KEY(TILING_CMX_LIMIT_KB), "1"}},
-
             {{VPU_CONFIG_KEY(HW_STAGES_OPTIMIZATION), CONFIG_VALUE(YES)}},
             {{VPU_CONFIG_KEY(HW_STAGES_OPTIMIZATION), CONFIG_VALUE(NO)}},
 
@@ -44,7 +41,7 @@ namespace {
             {{VPU_CONFIG_KEY(PRINT_RECEIVE_TENSOR_TIME), CONFIG_VALUE(NO)}}
     };
 
-    const std::vector<std::map<std::string, std::string>> inferMultiConfigs = {
+    const std::vector<std::map<std::string, std::string>> InmultiConfigs = {
             {{InferenceEngine::MultiDeviceConfigParams::KEY_MULTI_DEVICE_PRIORITIES, CommonTestUtils::DEVICE_MYRIAD},
             {CONFIG_KEY(LOG_LEVEL), CONFIG_VALUE(LOG_DEBUG)}},
             {{InferenceEngine::MultiDeviceConfigParams::KEY_MULTI_DEVICE_PRIORITIES, CommonTestUtils::DEVICE_MYRIAD},
@@ -69,13 +66,13 @@ namespace {
                             ::testing::Combine(
                                     ::testing::ValuesIn(netPrecisions),
                                     ::testing::Values(CommonTestUtils::DEVICE_MYRIAD),
-                                    ::testing::ValuesIn(inferConfigs)),
+                                    ::testing::ValuesIn(Inconfigs)),
                             InferConfigInTests::getTestCaseName);
 
     INSTANTIATE_TEST_CASE_P(smoke_Multi_BehaviorTests, InferConfigInTests,
                             ::testing::Combine(
                                     ::testing::ValuesIn(netPrecisions),
                                     ::testing::Values(CommonTestUtils::DEVICE_MULTI),
-                                    ::testing::ValuesIn(inferMultiConfigs)),
+                                    ::testing::ValuesIn(InmultiConfigs)),
                             InferConfigInTests::getTestCaseName);
 }  // namespace

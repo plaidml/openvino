@@ -24,6 +24,8 @@ class Negate(BackReplacementPattern):
     enabled = True
     force_clean_up = True
 
+    graph_condition = [lambda graph: graph.graph['cmd_params'].generate_experimental_IR_V10]
+
     @staticmethod
     def pattern():
         return dict(
@@ -56,6 +58,7 @@ class Negate(BackReplacementPattern):
 class EltwisesToSubtract(BackReplacementPattern):
     enabled = True
     force_clean_up = True
+    graph_condition = [lambda graph: graph.graph['cmd_params'].generate_experimental_IR_V10]
 
     def run_after(self):
         return [Negate]
@@ -95,6 +98,7 @@ class EltwisesToSubtract(BackReplacementPattern):
 class EltwisesToDiv(BackReplacementPattern):
     enabled = True
     force_clean_up = True
+    graph_condition = [lambda graph: graph.graph['cmd_params'].generate_experimental_IR_V10]
 
     @staticmethod
     def pattern():

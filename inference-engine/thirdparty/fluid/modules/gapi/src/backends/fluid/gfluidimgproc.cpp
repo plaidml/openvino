@@ -15,6 +15,8 @@
 #include <opencv2/gapi/core.hpp>
 #include <opencv2/gapi/imgproc.hpp>
 
+#include <opencv2/gapi/own/types.hpp>
+
 #include <opencv2/gapi/fluid/gfluidbuffer.hpp>
 #include <opencv2/gapi/fluid/gfluidkernel.hpp>
 #include <opencv2/gapi/fluid/imgproc.hpp>
@@ -29,7 +31,7 @@
 #include <opencv2/core/hal/intrin.hpp>
 
 #include <cmath>
-#include <algorithm>
+#include <cstdlib>
 
 namespace cv {
 namespace gapi {
@@ -449,7 +451,7 @@ GAPI_FLUID_KERNEL(GFluidBlur, cv::gapi::imgproc::GBlur, true)
 
         int buflen = width * chan * Window;  // work buffers
 
-        cv::Size bufsize(buflen, 1);
+        cv::gapi::own::Size bufsize(buflen, 1);
         GMatDesc bufdesc = {CV_32F, 1, bufsize};
         Buffer buffer(bufdesc);
         scratch = std::move(buffer);
@@ -524,7 +526,7 @@ GAPI_FLUID_KERNEL(GFluidBoxFilter, cv::gapi::imgproc::GBoxFilter, true)
 
         int buflen = width * chan * Window;  // work buffers
 
-        cv::Size bufsize(buflen, 1);
+        cv::gapi::own::Size bufsize(buflen, 1);
         GMatDesc bufdesc = {CV_32F, 1, bufsize};
         Buffer buffer(bufdesc);
         scratch = std::move(buffer);
@@ -746,7 +748,7 @@ GAPI_FLUID_KERNEL(GFluidSepFilter, cv::gapi::imgproc::GSepFilter, true)
         int buflen = kxLen + kyLen +         // x, y kernels
                      width * chan * Window;  // work buffers
 
-        cv::Size bufsize(buflen, 1);
+        cv::gapi::own::Size bufsize(buflen, 1);
         GMatDesc bufdesc = {CV_32F, 1, bufsize};
         Buffer buffer(bufdesc);
         scratch = std::move(buffer);
@@ -849,7 +851,7 @@ GAPI_FLUID_KERNEL(GFluidGaussBlur, cv::gapi::imgproc::GGaussBlur, true)
         int buflen = kxsize + kysize +       // x, y kernels
                      width * chan * ksize.height;  // work buffers
 
-        cv::Size bufsize(buflen, 1);
+        cv::gapi::own::Size bufsize(buflen, 1);
         GMatDesc bufdesc = {CV_32F, 1, bufsize};
         Buffer buffer(bufdesc);
         scratch = std::move(buffer);
@@ -1014,7 +1016,7 @@ GAPI_FLUID_KERNEL(GFluidSobel, cv::gapi::imgproc::GSobel, true)
         int buflen = ksz + ksz            // kernels: kx, ky
                    + ksz * width * chan;  // working buffers
 
-        cv::Size bufsize(buflen, 1);
+        cv::gapi::own::Size bufsize(buflen, 1);
         GMatDesc bufdesc = {CV_32F, 1, bufsize};
         Buffer buffer(bufdesc);
         scratch = std::move(buffer);
@@ -1169,7 +1171,7 @@ GAPI_FLUID_KERNEL(GFluidSobelXY, cv::gapi::imgproc::GSobelXY, true)
         int chan  = in.chan;
         int buflen = BufHelper::length(ksz, width, chan);
 
-        cv::Size bufsize(buflen, 1);
+        cv::gapi::own::Size bufsize(buflen, 1);
         GMatDesc bufdesc = {CV_32F, 1, bufsize};
         Buffer buffer(bufdesc);
         scratch = std::move(buffer);
@@ -1317,7 +1319,7 @@ GAPI_FLUID_KERNEL(GFluidFilter2D, cv::gapi::imgproc::GFilter2D, true)
 
         int buflen = krows * kcols;  // kernel size
 
-        cv::Size bufsize(buflen, 1);
+        cv::gapi::own::Size bufsize(buflen, 1);
         GMatDesc bufdesc = {CV_32F, 1, bufsize};
         Buffer buffer(bufdesc);
         scratch = std::move(buffer);
@@ -1494,7 +1496,7 @@ GAPI_FLUID_KERNEL(GFluidErode, cv::gapi::imgproc::GErode, true)
         int k_cols = kernel.cols;
         int k_size = k_rows * k_cols;
 
-        cv::Size bufsize(k_size + 1, 1);
+        cv::gapi::own::Size bufsize(k_size + 1, 1);
         GMatDesc bufdesc = {CV_8U, 1, bufsize};
         Buffer buffer(bufdesc);
         scratch = std::move(buffer);
@@ -1523,7 +1525,7 @@ GAPI_FLUID_KERNEL(GFluidErode, cv::gapi::imgproc::GErode, true)
     #if 1
         // TODO: saturate borderValue to image type in general case (not only maximal border)
         GAPI_Assert(borderType == cv::BORDER_CONSTANT && borderValue[0] == DBL_MAX);
-        return { borderType, cv::Scalar::all(INT_MAX) };
+        return { borderType, cv::gapi::own::Scalar::all(INT_MAX) };
     #else
         return { borderType, borderValue };
     #endif
@@ -1580,7 +1582,7 @@ GAPI_FLUID_KERNEL(GFluidDilate, cv::gapi::imgproc::GDilate, true)
         int k_cols = kernel.cols;
         int k_size = k_rows * k_cols;
 
-        cv::Size bufsize(k_size + 1, 1);
+        cv::gapi::own::Size bufsize(k_size + 1, 1);
         GMatDesc bufdesc = {CV_8U, 1, bufsize};
         Buffer buffer(bufdesc);
         scratch = std::move(buffer);
@@ -1609,7 +1611,7 @@ GAPI_FLUID_KERNEL(GFluidDilate, cv::gapi::imgproc::GDilate, true)
     #if 1
         // TODO: fix borderValue for Dilate in general case (not only minimal border)
         GAPI_Assert(borderType == cv::BORDER_CONSTANT && borderValue[0] == DBL_MAX);
-        return { borderType, cv::Scalar::all(INT_MIN) };
+        return { borderType, cv::gapi::own::Scalar::all(INT_MIN) };
     #else
         return { borderType, borderValue };
     #endif
@@ -1747,7 +1749,7 @@ GAPI_FLUID_KERNEL(GFluidRGB2HSV, cv::gapi::imgproc::GRGB2HSV, true)
         cv::GMatDesc desc;
         desc.chan  = 1;
         desc.depth = CV_32S;
-        desc.size  = cv::Size(512, 1);
+        desc.size  = cv::gapi::own::Size(512, 1);
 
         cv::gapi::fluid::Buffer buffer(desc);
         scratch = std::move(buffer);
@@ -1798,12 +1800,12 @@ GAPI_FLUID_KERNEL(GFluidBayerGR2RGB, cv::gapi::imgproc::GBayerGR2RGB, false)
         if (in.y() == -1)
         {
             run_bayergr2rgb_bg_impl(dst[1], src + border_size, width);
-            std::copy_n(dst[1], width * 3, dst[0]);
+            std::memcpy(dst[0], dst[1], width * 3);
         }
         else if (in.y() == height - LPI - 2 * border_size + 1)
         {
             run_bayergr2rgb_gr_impl(dst[0], src, width);
-            std::copy_n(dst[0], width * 3, dst[1]);
+            std::memcpy(dst[1], dst[0], width * 3);
         }
         else
         {

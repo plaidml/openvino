@@ -6,6 +6,7 @@
 
 #include <map>
 
+#include "ie_plugin.hpp"
 #include "ie_iexecutable_network.hpp"
 #include <gmock/gmock.h>
 #include <string>

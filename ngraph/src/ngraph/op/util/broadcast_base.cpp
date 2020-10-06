@@ -19,7 +19,6 @@
 #include "ngraph/op/concat.hpp"
 #include "ngraph/op/constant.hpp"
 #include "ngraph/op/sum.hpp"
-#include "ngraph/op/util/op_types.hpp"
 #include "ngraph/partial_shape.hpp"
 
 #include "ngraph/runtime/reference/broadcast.hpp"
@@ -193,7 +192,7 @@ void op::util::BroadcastBase::validate_and_infer_types()
                                   " doesn't match rank of input tensor ",
                                   arg_shape.size());
 
-            if (shape_constant && op::is_constant(input_value(2).get_node()))
+            if (shape_constant && input_value(2).get_node_shared_ptr()->is_constant())
             {
                 auto target_shape = shape_constant->get_shape_val();
                 auto axes_mapping_val =
@@ -290,6 +289,24 @@ std::pair<bool, AxisSet> op::util::BroadcastBase::get_broadcast_axes() const
     }
 
     return std::make_pair(axes_known, broadcast_axes);
+}
+
+void op::util::BroadcastBase::generate_adjoints(autodiff::Adjoints& adjoints,
+                                                const OutputVector& deltas)
+{
+    auto delta = deltas.at(0);
+
+    auto x = input_value(0);
+
+    auto broadcast_axes = get_broadcast_axes();
+    if (broadcast_axes.first)
+    {
+        adjoints.add_delta(x, make_shared<op::Sum>(delta, broadcast_axes.second));
+    }
+    else
+    {
+        throw ngraph_error("Autodiff not supported on dynamic op variants");
+    }
 }
 
 template <element::Type_t ET>
@@ -433,9 +450,13 @@ bool op::util::BroadcastBase::evaluate_broadcast(const HostTensorPtr& arg0,
         break;
         TYPE_CASE(u64)(arg0, out, pair_broadcast_axes.second);
         break;
+        TYPE_CASE(bf16)(arg0, out, pair_broadcast_axes.second);
+        break;
         TYPE_CASE(f16)(arg0, out, pair_broadcast_axes.second);
         break;
         TYPE_CASE(f32)(arg0, out, pair_broadcast_axes.second);
+        break;
+        TYPE_CASE(f64)(arg0, out, pair_broadcast_axes.second);
         break;
     default: rc = false; break;
     }
