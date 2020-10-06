@@ -20,6 +20,7 @@
 
 #include "vpu/ngraph/transformations/dynamic_to_static_shape.hpp"
 #include "generic_ie.hpp"
+#include <ie_util_internal.hpp>
 
 #include "myriad_plugin.h"
 
@@ -107,6 +108,7 @@ Engine::Engine(std::shared_ptr<IMvnc> mvnc) :
 
     _pluginName = "MYRIAD";
 
+IE_SUPPRESS_DEPRECATED_START
     _config = {
         { KEY_VPU_HW_STAGES_OPTIMIZATION, "ON" },
         { KEY_LOG_LEVEL, "LOG_NONE" },
@@ -120,6 +122,7 @@ Engine::Engine(std::shared_ptr<IMvnc> mvnc) :
         { KEY_CONFIG_FILE, "" },
         { KEY_DEVICE_ID, "" },
     };
+IE_SUPPRESS_DEPRECATED_END
 }
 
 InferenceEngine::ExecutableNetwork Engine::ImportNetwork(

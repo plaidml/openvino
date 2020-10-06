@@ -107,6 +107,9 @@ class LayerInfo {
     bool isConcatAlignFilter() const noexcept {
         return isOfType("ConcatAlignFilter");
     }
+    bool isLink() const noexcept {
+        return isOfType("Link");
+    }
     bool isAffineFilter() const noexcept {
         return isOfType("AffineFilter");
     }
@@ -204,6 +207,7 @@ class LayerInfo {
         if (layerOrder == std::vector<int>({ 0, 3, 2, 1 })) {
             return true;  // supported case
         }
+        IE_ASSERT(!layer->insData.empty());
         auto inputs = layer->insData.begin()->lock();
         auto inputsOrder = inputs->getTensorDesc().getDims();
 

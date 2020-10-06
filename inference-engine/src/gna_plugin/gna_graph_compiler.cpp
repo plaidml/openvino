@@ -337,6 +337,7 @@ void GNAGraphCompiler::ConvolutionPrimitive(InferenceEngine::CNNLayerPtr layer) 
 void GNAGraphCompiler::PowerPrimitive(InferenceEngine::CNNLayerPtr layer) {
     auto& power = dynamic_cast<PowerLayer&>(*layer.get());
     auto quantized = InferenceEngine::getInjectedData<QuantizedLayerParams>(layer);
+    IE_ASSERT(gnaFlags->sw_fp32 ? (quantized == nullptr) : (quantized != nullptr));
 
     if (power.power != 1.0) {
         THROW_IE_EXCEPTION << "[GNA plugin] unsupported power factor, expected 1 but was " << power.power;
@@ -386,29 +387,14 @@ void GNAGraphCompiler::PowerPrimitive(InferenceEngine::CNNLayerPtr layer) {
 
     if (gnaFlags->sw_fp32) {
         gnamem->readonly().push_value(ptr_weights, power.scale, num_rows_out, 64);
-        gnamem->readonly().push_value(ptr_biases, power.scale, num_rows_out, 64);
+        gnamem->readonly().push_value(ptr_biases, power.offset, num_rows_out, 64);
     } else {
-        auto weightsScaledIdentity = power.scale;
-        auto biasesScaledIdentity = power.scale;
-        if (quantized != nullptr) {
-            weightsScaledIdentity = quantized->_weights_quant.scale * weightsScaledIdentity;
-            biasesScaledIdentity = quantized->_bias_quant.scale * biasesScaledIdentity;
-        }
-
-        auto weightQuantizedIdentity = FLOAT_TO_INT16(std::min(weightsScaledIdentity, static_cast<float>(INT16_MAX)));
-        auto biasesQuantizedIdentity = FLOAT_TO_INT16(std::min(biasesScaledIdentity, static_cast<float>(INT16_MAX)));
-        gnamem->readonly().push_value<int16_t>(ptr_weights, weightQuantizedIdentity, num_rows_out, 64);
-        gnamem->readonly().push_value<int32_t>(ptr_biases, biasesQuantizedIdentity, num_rows_out, 64);
-    }
-
-    if (power.offset != 0.0f) {
-        if (quantized == nullptr) {
-            gnamem->readonly().push_value(ptr_biases, 0.0f, num_rows_out, 64);
-        } else {
-            gnamem->readonly().push_value<int32_t>(ptr_biases, 0, num_rows_out, 64);
-        }
-    } else {
-        gnamem->readonly().push_value(ptr_biases, 0.0f, num_rows_out, 64);
+        auto quantizedScale = FLOAT_TO_INT16(std::min(quantized->_weights_quant.scale * power.scale,
+                                                      static_cast<float>(INT16_MAX)));
+        auto quantizedOffset = FLOAT_TO_INT32(std::min(quantized->_dst_quant.scale * power.offset,
+                                                       static_cast<float>(INT32_MAX)));
+        gnamem->readonly().push_value<int16_t>(ptr_weights, quantizedScale, num_rows_out, 64);
+        gnamem->readonly().push_value<int32_t>(ptr_biases, quantizedOffset, num_rows_out, 64);
     }
 }
 
@@ -1417,6 +1403,7 @@ void GNAGraphCompiler::PermutePrimitive(InferenceEngine::CNNLayerPtr layer) {
     }
     auto layerOrder = layer->GetParamAsInts("order");
     auto quantized = InferenceEngine::getInjectedData<QuantizedLayerParams>(layer);
+    IE_ASSERT(!layer->insData.empty());
     auto inputs = layer->insData.begin()->lock();
     auto inputsOrder = inputs->getTensorDesc().getDims();
     auto outputs = layer->outData.front();
