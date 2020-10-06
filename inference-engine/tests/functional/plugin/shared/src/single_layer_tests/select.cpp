@@ -34,12 +34,12 @@ namespace LayerTestsDefinitions {
         result << "_" << broadcast.m_type;
         result << "_targetDevice=" << targetDevice;
         auto string = result.str();
-    	std::replace(string.begin(), string.end(), '-', '_');
-    	std::replace(string.begin(), string.end(), '.', '_');
-    	std::replace(string.begin(), string.end(), '(', '_');
-    	std::replace(string.begin(), string.end(), ')', '_');
-    	std::replace(string.begin(), string.end(), '=', '_');
-    	return string;
+        std::replace(string.begin(), string.end(), '-', '_');
+        std::replace(string.begin(), string.end(), '.', '_');
+        std::replace(string.begin(), string.end(), '(', '_');
+        std::replace(string.begin(), string.end(), ')', '_');
+        std::replace(string.begin(), string.end(), '=', '_');
+        return string;
     }
 
     void SelectLayerTest::SetUp() {
