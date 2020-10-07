@@ -182,7 +182,7 @@ int main(int argc, char *argv[]) {
             slog::info << "GPU extensions is loaded " << ext << slog::endl;
         }
 
-	if (FLAGS_d.find("PlaidML") != std::string::npos) {
+        if (FLAGS_d.find("PlaidML") != std::string::npos) {
             ie.RegisterPlugin("PlaidML", "PlaidMLPlugin");
         }
 
