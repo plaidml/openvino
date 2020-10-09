@@ -7,9 +7,8 @@
 
 #include "plaidml_plugin.hpp"
 
-#include <memory>
-
 #include "cpp_interfaces/base/ie_plugin_base.hpp"
+#include <memory>  // TODO
 // #include "details/caseless.hpp"
 // #include "details/ie_cnn_network_tools.h"
 #include "ie_plugin_config.hpp"
@@ -67,7 +66,6 @@ CreatePluginEngine(IInferencePlugin*& plugin, ResponseDesc* resp) noexcept {
     return DescriptionBuffer(GENERAL_ERROR, resp) << ex.what();
   }
 }
-
 Parameter Engine::GetMetric(const std::string& name, const std::map<std::string, Parameter>&) const {
   if (name == METRIC_KEY(SUPPORTED_METRICS)) {
     std::vector<std::string> metrics = {
@@ -77,7 +75,6 @@ Parameter Engine::GetMetric(const std::string& name, const std::map<std::string,
     };
     IE_SET_METRIC_RETURN(SUPPORTED_METRICS, metrics);
   } else if (name == METRIC_KEY(SUPPORTED_CONFIG_KEYS)) {
-    // TODO: May now be supported
     // FIXME I think it would be more correct to use special CONFIG_KEY
     // is defined in plaidml_config.hpp. But now the bechmark set parameters
     // and we can't use this key there since the plugin is't part of IE.
@@ -95,5 +92,4 @@ Parameter Engine::GetMetric(const std::string& name, const std::map<std::string,
 }
 
 IE_SUPPRESS_DEPRECATED_END
-
 }  // namespace PlaidMLPlugin
