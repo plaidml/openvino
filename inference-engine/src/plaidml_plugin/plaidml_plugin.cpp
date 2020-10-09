@@ -18,7 +18,6 @@
 #include "plaidml/exec/exec.h"
 #include "plaidml/op/op.h"
 #include "plaidml_executable_network.hpp"
-#include "pmlc/util/logging.h"
 
 using namespace InferenceEngine;  // NOLINT[build/namespaces]
 
@@ -28,20 +27,20 @@ void Engine::GetVersion(const Version*& versionInfo) noexcept {}
 
 ExecutableNetworkInternal::Ptr Engine::LoadExeNetworkImpl(const ICNNNetwork& network,
                                                           const std::map<std::string, std::string>& config) {
-  IVLOG(1, "Engine::LoadExeNetworkImpl> config: " << config);
+  // IVLOG(1, "Engine::LoadExeNetworkImpl> config: " << config);
   auto it = config.find("device");
   const auto& device = it != config.end() ? it->second : "";
   return std::make_shared<PlaidMLExecutableNetwork>(network, device);
 }
 
 void Engine::SetConfig(const std::map<std::string, std::string>& config) {
-  IVLOG(1, "Engine::SetConfig>");
+  // IVLOG(1, "Engine::SetConfig>");
   // Do nothing
 }
 
 void Engine::QueryNetwork(const ICNNNetwork& network, const std::map<std::string, std::string>& config,
                           QueryNetworkResult& result) const {
-  IVLOG(1, "Engine::QueryNetwork>");
+  // IVLOG(1, "Engine::QueryNetwork>");
   // TODO: do we still need this?
   // std::unordered_set<std::string, details::CaselessHash<std::string>,
   // details::CaselessEq<std::string>>
@@ -65,7 +64,7 @@ CreatePluginEngine(IInferencePlugin*& plugin, ResponseDesc* resp) noexcept {
     plaidml::op::init();
     plaidml::exec::init();
 
-    IVLOG(1, "CreatePluginEngine>");
+    // IVLOG(1, "CreatePluginEngine>");
     plugin = make_ie_compatible_plugin({{1, 6}, CI_BUILD_NUMBER, "PlaidMLPlugin"}, std::make_shared<Engine>());
     return OK;
   } catch (std::exception& ex) {
@@ -74,7 +73,7 @@ CreatePluginEngine(IInferencePlugin*& plugin, ResponseDesc* resp) noexcept {
 }
 
 Parameter Engine::GetMetric(const std::string& name, const std::map<std::string, Parameter>&) const {
-  IVLOG(1, "Engine::GetMetric> " << name);
+  // IVLOG(1, "Engine::GetMetric> " << name);
   if (name == METRIC_KEY(SUPPORTED_METRICS)) {
     std::vector<std::string> metrics = {
         METRIC_KEY(AVAILABLE_DEVICES),
