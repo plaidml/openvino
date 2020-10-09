@@ -43,15 +43,11 @@ PlaidMLInferRequest::PlaidMLInferRequest(const InputsDataMap& networkInputs, con
       tensorIOMap_(tensorIOMap),
       binder_(program),
       exec_(binder_.compile()) {
-  // IVLOG(1, "Program:\n" << program.str());
   AllocateInputs();
   AllocateOutputs();
 }
 
 void PlaidMLInferRequest::InferImpl() {
-  // IVLOG(1, "PlaidMLInferRequest::InferImpl>");
-  // IVLOG(2, "  _inputs: " << _inputs);
-  // IVLOG(3, "  tensorIOMap_: " << tensorIOMap_);
   execDataPreprocessing(_inputs);
 
   SyncInput();
