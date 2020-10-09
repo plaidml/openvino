@@ -16,23 +16,21 @@ file(GLOB HEADERS
 
 addVersionDefines(plaidml_plugin.cpp CI_BUILD_NUMBER PLAIDML_VERSION)
 
-include_directories(
-        $<TARGET_PROPERTY:inference_engine_plugin_api,INTERFACE_INCLUDE_DIRECTORIES>
-        ${CMAKE_CURRENT_SOURCE_DIR}
-        ${CMAKE_BINARY_DIR}/include)
+add_library(plaidml SHARED IMPORTED)
+
+set_target_properties(plaidml PROPERTIES IMPORTED_LOCATION ${PLAIDML_SRC_PATH}/bazel-bin/plaidml/libplaidml.so)
 
 ie_add_plugin(NAME ${TARGET_NAME}
-              DEVICE_NAME "PLAIDML"
+              DEVICE_NAME "PlaidML"
               OBJECT_LIBRARIES ${object_libraries}
               SOURCES ${SOURCES} ${HEADERS})
 
-target_link_libraries(${TARGET_NAME} PRIVATE inference_engine inference_engine_lp_transformations
-                      inference_engine_transformations
-                      ${INTEL_ITT_LIBS} plaidml)
+set(ngraph_DIR ${CMAKE_BINARY_DIR}/ngraph)
+find_package(ngraph REQUIRED)
 
+target_link_libraries(${TARGET_NAME} PRIVATE inference_engine ${NGRAPH_LIBRARIES} plaidml)
 
-
-
-add_library(${TARGET_NAME}_obj OBJECT ${SOURCES} ${HEADERS})
-
-
+include_directories(
+        ${PLAIDML_SRC_PATH}
+        ${CMAKE_CURRENT_SOURCE_DIR}
+        ${CMAKE_BINARY_DIR}/include)
