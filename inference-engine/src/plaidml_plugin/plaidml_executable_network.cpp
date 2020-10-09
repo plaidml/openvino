@@ -41,9 +41,9 @@ PlaidMLExecutableNetwork::PlaidMLExecutableNetwork(const ICNNNetwork& network, c
   auto fcn = network.getFunction();
   IE_ASSERT(fcn);  // PlaidML requires that the nGraph-based API be used
   for (const std::shared_ptr<ngraph::Node>& node : fcn->get_ordered_ops()) {
-    if (node->is_constant()) {
+    if (node->is_constant() || node->description() == "Constant") {
       handleConstant(node);
-    } else if (node->is_parameter()) {
+    } else if (node->is_parameter() || node->description() == "Parameter") {
       handleParameter(node);
     } else if (node->is_output() || node->description() == "Result") {
       handleOutput(node);
@@ -65,7 +65,7 @@ void PlaidMLExecutableNetwork::handleConstant(const std::shared_ptr<ngraph::Node
   auto* layer = dynamic_cast<ngraph::opset1::Constant*>(ctx.layer);
   buffer.copy_from(layer->get_data_ptr());
   auto tensor = edsl::Constant(buffer, node->get_friendly_name());
-  tensorMap_[node->output(0).get_tensor_ptr()] = tensor;
+  tensorMap_[std::make_pair(node->get_name(), 0)] = tensor;
 }
 
 void PlaidMLExecutableNetwork::handleParameter(const std::shared_ptr<ngraph::Node>& node) {
@@ -73,14 +73,15 @@ void PlaidMLExecutableNetwork::handleParameter(const std::shared_ptr<ngraph::Nod
   std::vector<int64_t> dims{node->get_shape().begin(), node->get_shape().end()};
   auto type = to_plaidml(node->get_element_type());
   auto tensor = edsl::Placeholder(type, dims, node->get_friendly_name());
-  tensorMap_[node->output(0).get_tensor_ptr()] = tensor;
-  tensorIONameMap_[node->get_name()] = tensor;
+  tensorMap_[std::make_pair(node->get_name(), 0)] = tensor;
+  tensorIONameMap_[node->get_friendly_name()] = tensor;
 }
 
 void PlaidMLExecutableNetwork::handleOutput(const std::shared_ptr<ngraph::Node>& node) {
   // The OV output name is the name of the node _prior_ to the result
-  tensorIONameMap_[node->inputs()[0].get_source_output().get_node()->get_name()] =
-      tensorMap_.at(node->input(0).get_tensor_ptr());
+  const auto& src_output = node->input(0).get_source_output();
+  tensorIONameMap_[src_output.get_node()->get_friendly_name()] =
+      tensorMap_.at(std::make_pair(src_output.get_node()->get_name(), src_output.get_index()));
 }
 
 void PlaidMLExecutableNetwork::handleOp(const std::shared_ptr<ngraph::Node>& node) {
@@ -91,7 +92,10 @@ void PlaidMLExecutableNetwork::handleOp(const std::shared_ptr<ngraph::Node>& nod
 
   Context ctx{node.get()};
   for (const auto& input : node->inputs()) {
-    auto tensor = tensorMap_.at(input.get_tensor_ptr());
+    const auto& src_output = input.get_source_output();
+    const auto& name = src_output.get_node()->get_name();
+    const auto& index = src_output.get_index();
+    auto tensor = tensorMap_.at(std::make_pair(name, index));
     ctx.operands.push_back(tensor);
   }
   auto value = op(ctx);
@@ -99,7 +103,7 @@ void PlaidMLExecutableNetwork::handleOp(const std::shared_ptr<ngraph::Node>& nod
   IE_ASSERT(tuple.size() == node->get_output_size());
   for (unsigned i = 0; i < tuple.size(); i++) {
     auto tensor = tuple.at(i).as_tensor();
-    tensorMap_[node->output(i).get_tensor_ptr()] = tensor;
+    tensorMap_[std::make_pair(node->get_name(), i)] = tensor;
   }
 }
 
