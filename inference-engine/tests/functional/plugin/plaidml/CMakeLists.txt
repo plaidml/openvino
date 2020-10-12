@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-set(TARGET_NAME plaidMLFuncTests)
+set(TARGET_NAME PlaidMLFuncTests)
 
 addIeTargetTest(
         NAME ${TARGET_NAME}
