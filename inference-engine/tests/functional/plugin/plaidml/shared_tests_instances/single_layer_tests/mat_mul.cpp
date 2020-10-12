@@ -16,10 +16,6 @@ const std::vector<InferenceEngine::Precision> netPrecisions = {
     InferenceEngine::Precision::FP32,
 };
 
-// const auto params_NoTranspose = ::testing::Combine(::testing::Values(false),  //
-//                                                    ::testing::Values(false)   //
-// );
-
 const auto params_ATranspose = ::testing::Combine(::testing::Values(true),  //
                                                   ::testing::Values(false)  //
 );
@@ -46,27 +42,5 @@ INSTANTIATE_TEST_CASE_P(MatMul_NoTranspose, MatMulTest,
                                             ::testing::ValuesIn(inputShapesB),                     //
                                             ::testing::Values(CommonTestUtils::DEVICE_PLAIDML)),  //
                          MatMulTest::getTestCaseName);
-
-// INSTANTIATE_TEST_CASE_P(MatMul, MatMulTest,
-//         ::testing::Combine(
-//                 ::testing::ValuesIn(inputPrecisions),
-//                 ::testing::ValuesIn(shapesA),
-//                 ::testing::ValuesIn(shapesB),
-//                 ::testing::Values(CommonTestUtils::DEVICE_CPU)),
-//         MatMulTest::getTestCaseName);
-
-// INSTANTIATE_TEST_CASE_P(MatMul_ATranspose, MatMulTest,
-//                          ::testing::Combine(params_ATranspose,                                    //
-//                                             ::testing::ValuesIn(netPrecisions),                   //
-//                                             ::testing::ValuesIn(inputShapesATrans),               //
-//                                             ::testing::Values(CommonTestUtils::DEVICE_PLAIDML)),  //
-//                          MatMulTest::getTestCaseName);
-
-// INSTANTIATE_TEST_CASE_P(MatMul_BTranspose, MatMulTest,
-//                          ::testing::Combine(params_BTranspose,                                    //
-//                                             ::testing::ValuesIn(netPrecisions),                   //
-//                                             ::testing::ValuesIn(inputShapesBTrans),               //
-//                                             ::testing::Values(CommonTestUtils::DEVICE_PLAIDML)),  //
-//                          MatMulTest::getTestCaseName);
 
 }  // namespace
