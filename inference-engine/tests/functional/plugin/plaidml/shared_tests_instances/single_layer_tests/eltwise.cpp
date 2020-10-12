@@ -6,8 +6,10 @@
 #include "common_test_utils/test_constants.hpp"
 #include <vector>
 
-using CommonTestUtils::OpType;
+// using CommonTestUtils::OpType;
 using LayerTestsDefinitions::EltwiseLayerTest;
+using LayerTestsDefinitions::EltwiseParams::InputLayerType;
+using LayerTestsDefinitions::EltwiseParams::OpType;
 
 namespace {
 std::vector<std::vector<std::vector<size_t>>> inShapes = {
@@ -28,9 +30,9 @@ std::vector<InferenceEngine::Precision> netPrecisions = {
     InferenceEngine::Precision::FP32,
 };
 
-std::vector<ngraph::helpers::InputLayerType> secondaryInputTypes = {
-    ngraph::helpers::InputLayerType::CONSTANT,
-    ngraph::helpers::InputLayerType::PARAMETER,
+std::vector<InputLayerType> secondaryInputTypes = {
+    InputLayerType::CONSTANT,
+    InputLayerType::PARAMETER,
 };
 
 std::vector<OpType> opTypes = {
@@ -52,5 +54,5 @@ const auto multiply_params = ::testing::Combine(::testing::ValuesIn(inShapes),  
                                                 ::testing::Values(CommonTestUtils::DEVICE_PLAIDML),  //
                                                 ::testing::Values(additional_config));
 
-INSTANTIATE_TEST_SUITE_P(CompareWithRefs, EltwiseLayerTest, multiply_params, EltwiseLayerTest::getTestCaseName);
+INSTANTIATE_TEST_CASE_P(CompareWithRefs, EltwiseLayerTest, multiply_params, EltwiseLayerTest::getTestCaseName);
 }  // namespace
