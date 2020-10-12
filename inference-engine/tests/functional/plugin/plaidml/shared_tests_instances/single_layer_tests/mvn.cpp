@@ -43,7 +43,6 @@ const auto MvnCases =
                        ::testing::Values(InferenceEngine::Precision::FP32),                          //
                        ::testing::ValuesIn(acrossChannels), ::testing::ValuesIn(normalizeVariance),  //
                        ::testing::ValuesIn(epsilon),                                                 //
-                       ::testing::Values(CommonTestUtils::DEVICE_PLAIDML),                           //
-                       ::testing::ValuesIn(Configs));
+                       ::testing::Values(CommonTestUtils::DEVICE_PLAIDML));
 
-INSTANTIATE_TEST_SUITE_P(smoke_PlaidML_TestsMVN, MvnLayerTest, MvnCases, MvnLayerTest::getTestCaseName);
+INSTANTIATE_TEST_CASE_P(smoke_PlaidML_TestsMVN, MvnLayerTest, MvnCases, MvnLayerTest::getTestCaseName);

@@ -20,7 +20,7 @@ const std::vector<size_t> levels = {16, 255, 256};
 const auto fqParams = ::testing::Combine(::testing::ValuesIn(levels),        //
                                          ::testing::ValuesIn(constShapes));  //
 
-INSTANTIATE_TEST_SUITE_P(FakeQuantize, FakeQuantizeLayerTest,
+INSTANTIATE_TEST_CASE_P(FakeQuantize, FakeQuantizeLayerTest,
                          ::testing::Combine(fqParams,                                             //
                                             ::testing::ValuesIn(netPrecisions),                   //
                                             ::testing::ValuesIn(inputShapes),                     //

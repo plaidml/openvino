@@ -24,7 +24,7 @@ std::vector<InferenceEngine::Precision> netPrecisions = {
     // InferenceEngine::Precision::FP16  // TODO: Not yet supported
 };
 
-INSTANTIATE_TEST_SUITE_P(NoReshape, ConcatLayerTest,
+INSTANTIATE_TEST_CASE_P(NoReshape, ConcatLayerTest,
                          ::testing::Combine(::testing::ValuesIn(axes),           //
                                             ::testing::ValuesIn(inShapes),       //
                                             ::testing::ValuesIn(netPrecisions),  //
