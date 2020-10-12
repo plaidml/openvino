@@ -31,7 +31,7 @@ const auto extractImagePatchesParamsSet = ::testing::Combine(::testing::ValuesIn
                                                              ::testing::ValuesIn(autoPads)      //
 );
 
-INSTANTIATE_TEST_SUITE_P(layers_PlaidML, ExtractImagePatchesTest,
+INSTANTIATE_TEST_CASE_P(layers_PlaidML, ExtractImagePatchesTest,
                          ::testing::Combine(::testing::ValuesIn(inDataShape),                     //
                                             ::testing::ValuesIn(kernels),                         //
                                             ::testing::ValuesIn(strides),                         //
