@@ -84,7 +84,7 @@ void PlaidMLInferRequest::SyncInput() {
   size_t i = 0;
   for (const auto& kvp : _networkInputs) {
     const auto& name = kvp.first;
-    input_buffers_[i++].copy_from(_inputs[name]->buffer());
+    input_buffers_[i++].copy_from(_inputs.at(name)->buffer());
   }
 }
 
@@ -92,7 +92,7 @@ void PlaidMLInferRequest::SyncOutput() {
   size_t i = 0;
   for (const auto& kvp : _networkOutputs) {
     const auto& name = kvp.first;
-    output_buffers_[i++].copy_into(_outputs[name]->buffer());
+    output_buffers_[i++].copy_into(_outputs.at(name)->buffer());
   }
 }
 
