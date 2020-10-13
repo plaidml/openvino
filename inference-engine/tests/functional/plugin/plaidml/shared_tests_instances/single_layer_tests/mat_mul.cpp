@@ -25,14 +25,14 @@ const auto params_BTranspose = ::testing::Combine(::testing::Values(false),  //
 );
 
 const std::vector<std::vector<std::size_t>> inputShapesA = {
-    {1},        //
-    {3, 3},  //
+    // {1},        //
+    // {3, 3},  //
     {5, 5},  //
 };
 
 const std::vector<std::vector<std::size_t>> inputShapesB = {
-    {1},        //
-    {3, 1},  //
+    // {1},        //
+    // {3, 1},  //
     {5, 2},  //
 };
 
