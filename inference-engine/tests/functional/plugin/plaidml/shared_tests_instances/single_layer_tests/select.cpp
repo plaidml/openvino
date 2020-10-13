@@ -10,11 +10,11 @@
 using LayerTestsDefinitions::SelectLayerTest;
 
 const std::vector<InferenceEngine::Precision> inputPrecision = {
-    InferenceEngine::Precision::I8,    //
+    // InferenceEngine::Precision::I8,    //
     InferenceEngine::Precision::I16,   //
     InferenceEngine::Precision::I32,   //
     InferenceEngine::Precision::FP32,  //
-    InferenceEngine::Precision::I64    //
+    // InferenceEngine::Precision::I64    //
 };
 
 const std::vector<std::vector<std::vector<size_t>>> noneShapes = {
@@ -80,5 +80,5 @@ const auto numpyCases = ::testing::Combine(::testing::ValuesIn(numpyShapes),    
 
 INSTANTIATE_TEST_CASE_P(smoke_PlaidML_TestsSelect_none, SelectLayerTest, noneCases, SelectLayerTest::getTestCaseName);
 
-INSTANTIATE_TEST_CASE_P(smoke_PlaidML_TestsSelect_numpy, SelectLayerTest, numpyCases,
-                         SelectLayerTest::getTestCaseName);
+// INSTANTIATE_TEST_CASE_P(smoke_PlaidML_TestsSelect_numpy, SelectLayerTest, numpyCases,
+//                          SelectLayerTest::getTestCaseName);
