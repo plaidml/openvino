@@ -8,20 +8,25 @@
 #include "single_layer_tests/space_to_batch.hpp"
 
 using LayerTestsDefinitions::SpaceToBatchLayerTest;
+using LayerTestsDefinitions::spaceToBatchParamsTuple;
 
 namespace {
 
-const std::vector<InferenceEngine::Precision> netPrecisions = {
-    InferenceEngine::Precision::FP32  //
+spaceToBatchParamsTuple stb_only_test_cases[] = {
+        spaceToBatchParamsTuple({1, 1, 2, 2}, {0, 0, 0, 0}, {0, 0, 0, 0}, {1, 1, 2, 2},
+                                InferenceEngine::Precision::FP32, CommonTestUtils::DEVICE_PLAIDML),
+        spaceToBatchParamsTuple({1, 1, 2, 2}, {0, 0, 0, 0}, {0, 0, 0, 0}, {1, 3, 2, 2},
+                                InferenceEngine::Precision::FP32, CommonTestUtils::DEVICE_PLAIDML),
+        spaceToBatchParamsTuple({1, 1, 2, 2}, {0, 0, 0, 0}, {0, 0, 0, 0}, {1, 1, 4, 4},
+                                InferenceEngine::Precision::FP32, CommonTestUtils::DEVICE_PLAIDML),
+        spaceToBatchParamsTuple({1, 1, 2, 2}, {0, 0, 0, 2}, {0, 0, 0, 0}, {2, 1, 2, 4},
+                                InferenceEngine::Precision::FP32, CommonTestUtils::DEVICE_PLAIDML),
+        spaceToBatchParamsTuple({1, 1, 3, 2, 2}, {0, 0, 1, 0, 3}, {0, 0, 2, 0, 0}, {1, 1, 3, 2, 1},
+                                InferenceEngine::Precision::FP32, CommonTestUtils::DEVICE_PLAIDML),
 };
 
-INSTANTIATE_TEST_CASE_P(smoke, SpaceToBatchLayerTest,
-                         ::testing::Combine(::testing::Values(1, 1, 2, 2),                        //
-                                            ::testing::Values(0, 0, 0, 0),                        //
-                                            ::testing::Values(0, 0, 0, 0),                        //
-                                            ::testing::Values(1, 1, 2, 2),                        //
-                                            ::testing::ValuesIn(netPrecisions),                   //
-                                            ::testing::Values(CommonTestUtils::DEVICE_PLAIDML)),  //
-                         SpaceToBatchLayerTest::getTestCaseName);
+INSTANTIATE_TEST_CASE_P(
+        smoke_PlaidML, SpaceToBatchLayerTest, ::testing::ValuesIn(stb_only_test_cases),
+        SpaceToBatchLayerTest::getTestCaseName);
 
 }  // namespace
