@@ -41,6 +41,7 @@ PlaidMLExecutableNetwork::PlaidMLExecutableNetwork(const ICNNNetwork& network, c
   auto fcn = network.getFunction();
   IE_ASSERT(fcn);  // PlaidML requires that the nGraph-based API be used
   for (const std::shared_ptr<ngraph::Node>& node : fcn->get_ordered_ops()) {
+    // TODO: Clean up how these cases are selected
     if (node->is_constant() || node->description() == "Constant") {
       handleConstant(node);
     } else if (node->is_parameter() || node->description() == "Parameter") {
