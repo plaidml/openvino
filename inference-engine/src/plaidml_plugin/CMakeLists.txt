@@ -21,7 +21,7 @@ add_library(plaidml SHARED IMPORTED)
 set_target_properties(plaidml PROPERTIES IMPORTED_LOCATION ${PLAIDML_SRC_PATH}/bazel-bin/plaidml/libplaidml.so)
 
 ie_add_plugin(NAME ${TARGET_NAME}
-              DEVICE_NAME "PlaidML"
+              DEVICE_NAME "PLAIDML"
               OBJECT_LIBRARIES ${object_libraries}
               SOURCES ${SOURCES} ${HEADERS})
 
