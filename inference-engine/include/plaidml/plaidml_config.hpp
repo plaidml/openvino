@@ -19,9 +19,9 @@ namespace PlaidMLConfigParams {
 /**
  * @brief shortcut for defining configuration keys
  */
-#define PlaidML_CONFIG_KEY(name) InferenceEngine::PlaidMLConfigParams::_CONFIG_KEY(PlaidML_##name)
-#define DECLARE_PlaidML_CONFIG_KEY(name) DECLARE_CONFIG_KEY(PlaidML_##name)
-#define DECLARE_PlaidML_CONFIG_VALUE(name) DECLARE_CONFIG_VALUE(PlaidML_##name)
+#define PLAIDML_CONFIG_KEY(name) InferenceEngine::PlaidMLConfigParams::_CONFIG_KEY(PLAIDML_##name)
+#define DECLARE_PLAIDML_CONFIG_KEY(name) DECLARE_CONFIG_KEY(PLAIDML_##name)
+#define DECLARE_PLAIDML_CONFIG_VALUE(name) DECLARE_CONFIG_VALUE(PLAIDML_##name)
 
 }  // namespace PlaidMLConfigParams
 }  // namespace InferenceEngine
