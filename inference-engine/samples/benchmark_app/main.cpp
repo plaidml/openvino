@@ -514,7 +514,6 @@ int main(int argc, char *argv[]) {
         next_step(ss.str());
 
         // warming up - out of scope
-        std::cout << "CHKPT A" << std::endl;
         auto inferRequest = inferRequestsQueue.getIdleRequest();
         if (!inferRequest) {
             THROW_IE_EXCEPTION << "No idle Infer Requests!";
@@ -524,7 +523,6 @@ int main(int argc, char *argv[]) {
         } else {
             inferRequest->startAsync();
         }
-        std::cout << "CHKPT C" << std::endl;
         inferRequestsQueue.waitAll();
         auto duration_ms = double_to_string(inferRequestsQueue.getLatencies()[0]);
         slog::info << "First inference took " << duration_ms << " ms" << slog::endl;
@@ -534,11 +532,9 @@ int main(int argc, char *argv[]) {
                                                 {"first inference time (ms)", duration_ms}
                                         });
         inferRequestsQueue.resetTimes();
-        std::cout << "CHKPT D" << std::endl;
 
         auto startTime = Time::now();
         auto execTime = std::chrono::duration_cast<ns>(Time::now() - startTime).count();
-        std::cout << "CHKPT E" << std::endl;
 
         /** Start inference & calculate performance **/
         /** to align number if iterations to guarantee that last infer requests are executed in the same conditions **/

@@ -127,11 +127,8 @@ public:
     }
 
     void waitAll() {
-        std::cout << "CHKPT 1" << std::endl;
         std::unique_lock<std::mutex> lock(_mutex);
-        std::cout << "CHKPT 2" << std::endl;
         _cv.wait(lock, [this]{ return _idleIds.size() == requests.size(); });
-        std::cout << "CHKPT 3" << std::endl;
     }
 
     std::vector<double> getLatencies() {
