@@ -513,27 +513,21 @@ int main(int argc, char *argv[]) {
         next_step(ss.str());
 
         // warming up - out of scope
-        std::cout << "CHKPT A" << std::endl;
         auto inferRequest = inferRequestsQueue.getIdleRequest();
         if (!inferRequest) {
             THROW_IE_EXCEPTION << "No idle Infer Requests!";
         }
-        std::cout << "CHKPT B" << std::endl;
 
         if (FLAGS_api == "sync") {
             inferRequest->infer();
         } else {
             inferRequest->startAsync();
         }
-        std::cout << "CHKPT C" << std::endl;
         inferRequestsQueue.waitAll();
-        std::cout << "CHKPT C2" << std::endl;
         inferRequestsQueue.resetTimes();
-        std::cout << "CHKPT D" << std::endl;
 
         auto startTime = Time::now();
         auto execTime = std::chrono::duration_cast<ns>(Time::now() - startTime).count();
-        std::cout << "CHKPT E" << std::endl;
 
         /** Start inference & calculate performance **/
         /** to align number if iterations to guarantee that last infer requests are executed in the same conditions **/
