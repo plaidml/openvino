@@ -8,7 +8,6 @@
 #include "plaidml_plugin.hpp"
 
 #include "cpp_interfaces/base/ie_plugin_base.hpp"
-#include <memory>  // TODO
 // #include "details/caseless.hpp"
 // #include "details/ie_cnn_network_tools.h"
 #include "ie_plugin_config.hpp"

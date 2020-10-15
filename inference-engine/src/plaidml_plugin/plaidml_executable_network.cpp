@@ -42,11 +42,11 @@ PlaidMLExecutableNetwork::PlaidMLExecutableNetwork(const ICNNNetwork& network, c
   IE_ASSERT(fcn);  // PlaidML requires that the nGraph-based API be used
   for (const std::shared_ptr<ngraph::Node>& node : fcn->get_ordered_ops()) {
     // TODO: Clean up how these cases are selected
-    if (node->is_constant() || node->description() == "Constant") {
+    if (node->description() == "Constant") {
       handleConstant(node);
-    } else if (node->is_parameter() || node->description() == "Parameter") {
+    } else if (node->description() == "Parameter") {
       handleParameter(node);
-    } else if (node->is_output() || node->description() == "Result") {
+    } else if (node->description() == "Result") {
       handleOutput(node);
     } else {
       handleOp(node);
@@ -61,7 +61,6 @@ void PlaidMLExecutableNetwork::handleConstant(const std::shared_ptr<ngraph::Node
   std::vector<int64_t> dims{node->get_shape().begin(), node->get_shape().end()};
   TensorShape shape(type, dims);
   Buffer buffer(shape);
-  // Specially resolve the constant-creating op
   Context ctx{node.get()};
   auto* layer = dynamic_cast<ngraph::opset1::Constant*>(ctx.layer);
   buffer.copy_from(layer->get_data_ptr());
