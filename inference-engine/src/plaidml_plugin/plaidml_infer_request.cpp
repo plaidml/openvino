@@ -41,14 +41,14 @@ PlaidMLInferRequest::PlaidMLInferRequest(const InputsDataMap& networkInputs, con
     : InferRequestInternal(networkInputs, networkOutputs), program_(program) {
   AllocateInputs();
   AllocateOutputs();
-  exec_ = std::make_shared<exec::Executable>(program, input_buffers_, output_buffers_);
+  exec_ = std::make_shared<exec::Executable>(program);
 }
 
 void PlaidMLInferRequest::InferImpl() {
   execDataPreprocessing(_inputs);
 
   SyncInput();
-  exec_->run();
+  exec_->run(input_buffers_, output_buffers_);
   SyncOutput();
 }
 
