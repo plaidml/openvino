@@ -80,5 +80,7 @@ const auto numpyCases = ::testing::Combine(::testing::ValuesIn(numpyShapes),    
 
 INSTANTIATE_TEST_CASE_P(smoke_PlaidML_TestsSelect_none, SelectLayerTest, noneCases, SelectLayerTest::getTestCaseName);
 
+// TODO figure out the removed cases
+
 // INSTANTIATE_TEST_CASE_P(smoke_PlaidML_TestsSelect_numpy, SelectLayerTest, numpyCases,
 //                          SelectLayerTest::getTestCaseName);
