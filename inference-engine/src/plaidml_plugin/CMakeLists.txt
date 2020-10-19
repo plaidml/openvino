@@ -18,7 +18,7 @@ addVersionDefines(plaidml_plugin.cpp CI_BUILD_NUMBER PLAIDML_VERSION)
 
 add_library(plaidml SHARED IMPORTED)
 
-set_target_properties(plaidml PROPERTIES IMPORTED_LOCATION ${PLAIDML_SRC_PATH}/bazel-bin/plaidml/libplaidml.so)
+set_target_properties(plaidml PROPERTIES IMPORTED_LOCATION ${PLAIDML_SO_PATH})
 
 ie_add_plugin(NAME ${TARGET_NAME}
               DEVICE_NAME "PLAIDML"
