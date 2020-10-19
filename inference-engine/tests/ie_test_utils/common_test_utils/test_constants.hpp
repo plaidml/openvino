@@ -15,6 +15,7 @@ const char DEVICE_KEEMBAY[] = "VPUX";
 const char DEVICE_MULTI[] = "MULTI";
 const char DEVICE_TEMPLATE[] = "TEMPLATE";
 const char DEVICE_HETERO[] = "HETERO";
+const char DEVICE_PLAIDML[] = "PLAIDML";
 
 #ifdef _WIN32
     #ifdef __MINGW32__
