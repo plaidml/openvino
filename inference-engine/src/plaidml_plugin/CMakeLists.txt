@@ -31,6 +31,6 @@ find_package(ngraph REQUIRED)
 target_link_libraries(${TARGET_NAME} PRIVATE inference_engine ${NGRAPH_LIBRARIES} plaidml)
 
 include_directories(
-	${PLAIDML_SRC_PATH}
+        ${PLAIDML_SRC_PATH}
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${CMAKE_BINARY_DIR}/include)
