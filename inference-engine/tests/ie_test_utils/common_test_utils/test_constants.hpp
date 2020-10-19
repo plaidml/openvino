@@ -14,6 +14,7 @@ const char DEVICE_MYRIAD[] = "MYRIAD";
 const char DEVICE_KEEMBAY[] = "KMB";
 const char DEVICE_MULTI[] = "MULTI";
 const char DEVICE_HETERO[] = "HETERO";
+const char DEVICE_PLAIDML[] = "PLAIDML";
 
 #ifdef _WIN32
     #ifdef __MINGW32__
