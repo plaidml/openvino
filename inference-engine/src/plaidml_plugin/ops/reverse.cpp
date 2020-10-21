@@ -10,12 +10,8 @@
 
 #include "plaidml/op/op.h"
 
-// using namespace plaidml;          // NOLINT[build/namespaces]
-// using namespace InferenceEngine;  // NOLINT[build/namespaces]
+using namespace plaidml;  // NOLINT[build/namespaces]
 using ngraph::opset1::Reverse;
-using plaidml::edsl::make_tuple;
-using plaidml::edsl::TensorDim;
-using plaidml::edsl::TensorIndex;
 
 namespace {
 
@@ -49,10 +45,10 @@ static OpRegistration reg("reverse", [](const Context& ctx) {
     axes = cast_constant_axis_mask(1, ctx.layer);
   }
 
-  std::vector<TensorDim> dims(I.rank());
+  std::vector<edsl::TensorDim> dims(I.rank());
   I.bind_dims(dims);
-  std::vector<TensorIndex> I_idxs(I.rank());
-  std::vector<TensorIndex> O_idxs;
+  std::vector<edsl::TensorIndex> I_idxs(I.rank());
+  std::vector<edsl::TensorIndex> O_idxs;
 
   for (size_t axis = 0; axis < I.rank(); axis++) {
     if (axes.count(axis)) {
@@ -62,7 +58,7 @@ static OpRegistration reg("reverse", [](const Context& ctx) {
     }
   }
 
-  return make_tuple(plaidml::edsl::Contraction().outShape(dims).outAccess(O_idxs).assign(I(I_idxs)));
+  return edsl::make_tuple(plaidml::edsl::Contraction().outShape(dims).outAccess(O_idxs).assign(I(I_idxs)));
 });
 
 }  // namespace PlaidMLPlugin
