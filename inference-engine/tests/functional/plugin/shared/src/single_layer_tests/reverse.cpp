@@ -2,8 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-// TODO: This version is just a copy from Reshape; update!
-
 #include <tuple>
 #include <string>
 #include <vector>
