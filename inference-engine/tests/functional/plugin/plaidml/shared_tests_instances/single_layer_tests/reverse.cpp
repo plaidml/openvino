@@ -15,15 +15,26 @@ const std::vector<InferenceEngine::Precision> netPrecisions = {
     // InferenceEngine::Precision::I64
 };
 
-std::vector<std::vector<size_t>> shape{{4, 6, 5}, {3, 9, 2}, {1, 4, 2, 1, 1, 3}};
-std::vector<std::vector<size_t>> axes{{0}, {1}, {0, 2}};
-std::vector<std::string> mode{"index", "mask"};
+std::vector<std::vector<size_t>> shape_index{{4, 6, 5}, {3, 9, 2}, {1, 4, 2, 1, 1, 3}};
+std::vector<std::vector<size_t>> axes_index{{0}, {1}, {0, 2}};
 
-INSTANTIATE_TEST_CASE_P(ReverseCheck, ReverseLayerTest,
+std::vector<std::vector<size_t>> shape_mask{{4, 6, 5}, {3, 9, 2}, {1, 4, 2}};
+std::vector<std::vector<size_t>> axes_mask{{1, 0, 0}, {0, 1, 0}, {1, 0, 1}};
+
+INSTANTIATE_TEST_CASE_P(ReverseCheckIndex, ReverseLayerTest,
                          ::testing::Combine(::testing::ValuesIn(netPrecisions),                          //
-                                            ::testing::ValuesIn(shape),                                  //
-                                            ::testing::ValuesIn(axes),                                   //
-                                            ::testing::ValuesIn(mode),                                   //
+                                            ::testing::ValuesIn(shape_index),                            //
+                                            ::testing::ValuesIn(axes_index),                             //
+                                            ::testing::Values("index"),                                  //
+                                            ::testing::Values(CommonTestUtils::DEVICE_PLAIDML),          //
+                                            ::testing::Values(std::map<std::string, std::string>({}))),  //
+                         ReverseLayerTest::getTestCaseName);
+
+INSTANTIATE_TEST_CASE_P(ReverseCheckMask, ReverseLayerTest,
+                         ::testing::Combine(::testing::ValuesIn(netPrecisions),                          //
+                                            ::testing::ValuesIn(shape_mask),                             //
+                                            ::testing::ValuesIn(axes_mask),                              //
+                                            ::testing::Values("mask"),                                   //
                                             ::testing::Values(CommonTestUtils::DEVICE_PLAIDML),          //
                                             ::testing::Values(std::map<std::string, std::string>({}))),  //
                          ReverseLayerTest::getTestCaseName);

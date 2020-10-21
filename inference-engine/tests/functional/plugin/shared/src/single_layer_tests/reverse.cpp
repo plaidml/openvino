@@ -45,19 +45,8 @@ void ReverseLayerTest::SetUp() {
     auto paramIn = ngraph::helpers::convert2OutputVector(
             ngraph::helpers::castOps2Nodes<ngraph::op::Parameter>(paramsIn));
     std::shared_ptr<ngraph::opset1::Constant> constNode;
-    if (mode == "index") {
-        constNode = std::make_shared<ngraph::opset1::Constant>(
-                ngraph::element::Type_t::i64, ngraph::Shape{axes.size()}, axes);
-    } else if (mode == "mask") {
-        std::vector<bool> axesMask(inputShapes.size(), false);  // TODO: Verify
-        for (size_t axis : axes) {
-            axesMask.at(axis) = true;
-        }
-        constNode = std::make_shared<ngraph::opset1::Constant>(
-                ngraph::element::Type_t::boolean, ngraph::Shape{axesMask.size()}, axesMask);
-    } else {
-        THROW_IE_EXCEPTION << "Unrecognized mode requested in Reverse test";
-    }
+    auto axes_dtype = (mode == "index") ? ngraph::element::Type_t::i64 : ngraph::element::Type_t::boolean;
+    constNode = std::make_shared<ngraph::opset1::Constant>(axes_dtype, ngraph::Shape{axes.size()}, axes);
     auto reverse = std::dynamic_pointer_cast<ngraph::opset1::Reverse>(
             std::make_shared<ngraph::opset1::Reverse>(paramIn[0], constNode, mode));
     ngraph::ResultVector results{std::make_shared<ngraph::opset1::Result>(reverse)};
