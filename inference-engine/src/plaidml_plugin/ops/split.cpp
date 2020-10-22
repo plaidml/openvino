@@ -11,7 +11,6 @@
 #include "plaidml/op/op.h"
 
 using namespace plaidml;          // NOLINT[build/namespaces]
-using namespace InferenceEngine;  // NOLINT[build/namespaces]
 
 namespace PlaidMLPlugin {
 
