@@ -26,11 +26,21 @@ InferRequestInternal::Ptr PlaidMLExecutableNetwork::CreateInferRequestImpl(Input
                                                                            OutputsDataMap networkOutputs) {
   std::vector<edsl::Tensor> inputs;
   for (const auto& kvp : networkInputs) {
-    inputs.push_back(tensorIONameMap_.at(kvp.first));
+    try {
+      std::cout << "Reading " << kvp.first << " to inputs from tensorIONameMap_" << std::endl;
+      inputs.push_back(tensorIONameMap_.at(kvp.first));
+    } catch (const std::exception& ex) {
+      throw std::runtime_error("Caught exception reading inputs tensorIONameMap_ at " + kvp.first + ", " + ex.what());
+    }
   }
   std::vector<edsl::Tensor> outputs;
   for (const auto& kvp : networkOutputs) {
-    outputs.push_back(tensorIONameMap_.at(kvp.first));
+    try {
+      std::cout << "Reading " << kvp.first << " to outputs from tensorIONameMap_" << std::endl;
+      outputs.push_back(tensorIONameMap_.at(kvp.first));
+    } catch (const std::exception& ex) {
+      throw std::runtime_error("Caught exception reading outputs tensorIONameMap_ at " + kvp.first + ", " + ex.what());
+    }
   }
   Program program = edsl::buildProgram("ie", inputs, outputs);
   program.compile();
@@ -74,14 +84,25 @@ void PlaidMLExecutableNetwork::handleParameter(const std::shared_ptr<ngraph::Nod
   auto type = to_plaidml(node->get_element_type());
   auto tensor = edsl::Placeholder(type, dims, node->get_friendly_name());
   tensorMap_[std::make_pair(node->get_name(), 0)] = tensor;
+  std::cout << "Adding " << node->get_friendly_name() << " to tensorIONameMap_ in handleParameter" << std::endl;
   tensorIONameMap_[node->get_friendly_name()] = tensor;
 }
 
 void PlaidMLExecutableNetwork::handleOutput(const std::shared_ptr<ngraph::Node>& node) {
   // The OV output name is the name of the node _prior_ to the result
   const auto& src_output = node->input(0).get_source_output();
-  tensorIONameMap_[src_output.get_node()->get_friendly_name()] =
-      tensorMap_.at(std::make_pair(src_output.get_node()->get_name(), src_output.get_index()));
+  const auto& src_node = src_output.get_node();
+  std::string name = src_node->get_friendly_name();
+  if (src_node->get_output_size() > 1) {
+    std::cout << "  In special case from output size " << src_node->get_output_size() << std::endl;
+    name += "." + std::to_string(src_output.get_index());
+  } else {
+    std::cout << "  In normal case as output size is just " << src_node->get_output_size() << std::endl;
+  }
+  std::cout << "Adding " << name << " to tensorIONameMap_ in handleOutput" << std::endl;
+  std::cout << "  (src_output's index is " << src_output.get_index() << ")" << std::endl;
+  tensorIONameMap_[name] =
+      tensorMap_.at(std::make_pair(src_node->get_name(), src_output.get_index()));
 }
 
 void PlaidMLExecutableNetwork::handleOp(const std::shared_ptr<ngraph::Node>& node) {
