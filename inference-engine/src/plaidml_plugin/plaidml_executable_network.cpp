@@ -79,9 +79,14 @@ void PlaidMLExecutableNetwork::handleParameter(const std::shared_ptr<ngraph::Nod
 
 void PlaidMLExecutableNetwork::handleOutput(const std::shared_ptr<ngraph::Node>& node) {
   // The OV output name is the name of the node _prior_ to the result
+  // When there are multiple outputs, it has .# appended, where # is the output index
   const auto& src_output = node->input(0).get_source_output();
-  tensorIONameMap_[src_output.get_node()->get_friendly_name()] =
-      tensorMap_.at(std::make_pair(src_output.get_node()->get_name(), src_output.get_index()));
+  const auto& src_node = src_output.get_node();
+  std::string name = src_node->get_friendly_name();
+  if (src_node->get_output_size() > 1) {
+    name += "." + std::to_string(src_output.get_index());
+  }
+  tensorIONameMap_[name] = tensorMap_.at(std::make_pair(src_node->get_name(), src_output.get_index()));
 }
 
 void PlaidMLExecutableNetwork::handleOp(const std::shared_ptr<ngraph::Node>& node) {
