@@ -58,7 +58,7 @@ static OpRegistration reg("reverse", [](const Context& ctx) {
     }
   }
 
-  return edsl::make_tuple(plaidml::edsl::Contraction().outShape(dims).outAccess(O_idxs).assign(I(I_idxs)));
+  return edsl::make_tuple(edsl::Contraction().outShape(dims).outAccess(O_idxs).assign(I(I_idxs)));
 });
 
 }  // namespace PlaidMLPlugin
