@@ -20,9 +20,18 @@ static OpRegistration reg("binaryconvolution", [](const Context &ctx) {
   IE_ASSERT(ctx.operands.size() == 2);
   auto I = ctx.operands.at(0);
   auto F = ctx.operands.at(1);
+  std::vector<int> strides;
+  for (auto stride : layer->get_strides()) {
+    strides.push_back(stride);
+  }
+  std::vector<int> dilations;
+  for (auto dilation : layer->get_dilations()) {
+    dilations.push_back(dilation);
+  }
 
   auto mode = layer->get_mode();
   auto pad_value = layer->get_pad_value();
+  auto autopad_mode = to_plaidml(layer->get_auto_pad());
   auto result = op::convolution(I, F)
                     .strides(strides)
                     .dilations(dilations)

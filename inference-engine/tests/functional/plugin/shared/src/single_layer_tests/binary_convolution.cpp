@@ -2,25 +2,26 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-#include <tuple>
-#include <vector>
-#include <string>
-#include <memory>
 #include <functional>
 #include <functional_test_utils/skip_tests_config.hpp>
+#include <memory>
+#include <string>
+#include <tuple>
+#include <vector>
 
 #include "ie_core.hpp"
 
 #include "common_test_utils/common_utils.hpp"
 #include "functional_test_utils/blob_utils.hpp"
-#include "functional_test_utils/plugin_cache.hpp"
 #include "functional_test_utils/layer_test_utils.hpp"
+#include "functional_test_utils/plugin_cache.hpp"
 
 #include "single_layer_tests/binary_convolution.hpp"
 
 namespace LayerTestsDefinitions {
 
-std::string BinaryConvolutionLayerTest::getTestCaseName(testing::TestParamInfo<binConvLayerTestParamsSet> obj) {
+std::string BinaryConvolutionLayerTest::getTestCaseName(
+    testing::TestParamInfo<binConvLayerTestParamsSet> obj) {
   binConvSpecificParams binConvParams;
   InferenceEngine::Precision netPrecision;
   InferenceEngine::SizeVector inputShapes;
@@ -30,7 +31,10 @@ std::string BinaryConvolutionLayerTest::getTestCaseName(testing::TestParamInfo<b
   InferenceEngine::SizeVector kernel, stride, dilation;
   std::vector<ptrdiff_t> padBegin, padEnd;
   size_t binConvOutChannels;
-  std::tie(kernel, stride, padBegin, padEnd, dilation, binConvOutChannels, padType) = binConvParams;
+  std::string mode;
+  float padValue;
+  std::tie(kernel, stride, padBegin, padEnd, dilation, binConvOutChannels,
+           padType, mode, padValue) = binConvParams;
 
   std::ostringstream result;
   result << "IS=" << CommonTestUtils::vec2str(inputShapes) << "_";
@@ -49,25 +53,28 @@ std::string BinaryConvolutionLayerTest::getTestCaseName(testing::TestParamInfo<b
 void ConvolutionLayerTest::SetUp() {
   binConvSpecificParams binConvParams;
   std::vector<size_t> inputShape;
-  auto netPrecision   = InferenceEngine::Precision::UNSPECIFIED;
-  std::tie(binConvParams, netPrecision, inputShape, targetDevice) = this->GetParam();
+  auto netPrecision = InferenceEngine::Precision::UNSPECIFIED;
+  std::tie(binConvParams, netPrecision, inputShape, targetDevice) =
+      this->GetParam();
   ngraph::op::PadType padType;
   InferenceEngine::SizeVector kernel, stride, dilation;
   std::vector<ptrdiff_t> padBegin, padEnd;
   size_t binConvOutChannels;
-  std::tie(kernel, stride, padBegin, padEnd, dilation, binConvOutChannels, padType) = binConvParams;
-  auto ngPrc = FuncTestUtils::PrecisionUtils::binConvertIE2nGraphPrc(netPrecision);
+  std::tie(kernel, stride, padBegin, padEnd, dilation, binConvOutChannels,
+           padType) = binConvParams;
+  auto ngPrc =
+      FuncTestUtils::PrecisionUtils::binConvertIE2nGraphPrc(netPrecision);
   auto params = ngraph::builder::makeParams(ngPrc, {inputShape});
   auto paramOuts = ngraph::helpers::binConvert2OutputVector(
       ngraph::helpers::castOps2Nodes<ngraph::op::Parameter>(params));
   auto binConv = std::dynamic_pointer_cast<ngraph::opset1::Convolution>(
-      ngraph::builder::makeConvolution(paramOuts[0], ngPrc, kernel, stride, padBegin,
-                                       padEnd, dilation, padType, binConvOutChannels));
-  ngraph::ResultVector results{std::make_shared<ngraph::opset1::Result>(binConv)};
+      ngraph::builder::makeConvolution(paramOuts[0], ngPrc, kernel, stride,
+                                       padBegin, padEnd, dilation, padType,
+                                       binConvOutChannels));
+  ngraph::ResultVector results{
+      std::make_shared<ngraph::opset1::Result>(binConv)};
   function = std::make_shared<ngraph::Function>(results, params, "convolution");
 }
 
-TEST_P(BinaryConvolutionLayerTest, CompareWithRefs) {
-Run();
-}
-}  // namespace LayerTestsDefinitions
+TEST_P(BinaryConvolutionLayerTest, CompareWithRefs) { Run(); }
+} // namespace LayerTestsDefinitions
