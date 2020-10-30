@@ -37,9 +37,6 @@ namespace LayerTestsDefinitions {
 }
 
 void BucketizeLayerTest::SetUp() {
-    //SetRefMode(LayerTestsUtils::RefMode::CONSTANT_FOLDING);
-    //SetRefMode(LayerTestsUtils::RefMode::INTERPRETER_TRANSFORMATIONS);
-    //SetRefMode(LayerTestsUtils::RefMode::INTERPRETER);
     SetRefMode(LayerTestsUtils::RefMode::IE);
     std::vector<size_t> inputShapes;
     std::vector<size_t> buckets;
@@ -56,13 +53,6 @@ void BucketizeLayerTest::SetUp() {
             std::make_shared<ngraph::opset3::Bucketize>(paramIn[0], paramIn[1], outputType, with_right_bound));
     ngraph::ResultVector results{std::make_shared<ngraph::opset1::Result>(bucketize)};
     function = std::make_shared<ngraph::Function>(results, paramsIn, "Bucketize");
-    //std::cout << "function output element type:" << function->get_output_element_type(0) << std::endl;
-    //auto shape = function->output(0).get_node()->get_output_shape(0);
-    //std::cout << "function output shape:";
-    //for (int i =0; i < shape.size(); i++) {
-    //    std::cout << " " << shape[i];
-    //}
-    //std::cout << std::endl;
 }
 
 TEST_P(BucketizeLayerTest, CompareWithRefsDynamicBath) {
