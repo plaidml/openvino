@@ -31,6 +31,7 @@ class PlaidMLProgramBuilder {
   std::shared_ptr<const ngraph::Function> fcn_;
   InferenceEngine::InputsDataMap networkInputs_;
   InferenceEngine::OutputsDataMap networkOutputs_;
+  bool graph_parsed = false;
 
   // Lets us look up the PlaidML tensor by the name of the node that produces it and the index of which output it is
   std::map<std::pair<std::string, size_t>, plaidml::edsl::Tensor> tensorMap_;

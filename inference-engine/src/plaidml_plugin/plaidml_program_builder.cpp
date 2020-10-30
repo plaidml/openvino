@@ -21,16 +21,19 @@ PlaidMLProgramBuilder::PlaidMLProgramBuilder(const InferenceEngine::ICNNNetwork&
 }
 
 Program PlaidMLProgramBuilder::program() {
-  for (const std::shared_ptr<ngraph::Node>& node : fcn_->get_ordered_ops()) {
-    if (node->description() == "Constant") {
-      handleConstant(node);
-    } else if (node->description() == "Parameter") {
-      handleParameter(node);
-    } else if (node->description() == "Result") {
-      handleOutput(node);
-    } else {
-      handleOp(node);
+  if (!graph_parsed) {
+    for (const std::shared_ptr<ngraph::Node>& node : fcn_->get_ordered_ops()) {
+      if (node->description() == "Constant") {
+        handleConstant(node);
+      } else if (node->description() == "Parameter") {
+        handleParameter(node);
+      } else if (node->description() == "Result") {
+        handleOutput(node);
+      } else {
+        handleOp(node);
+      }
     }
+    graph_parsed = true;
   }
 
   std::vector<edsl::Tensor> inputs;
