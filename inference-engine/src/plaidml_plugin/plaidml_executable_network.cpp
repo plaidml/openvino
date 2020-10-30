@@ -24,21 +24,11 @@ namespace PlaidMLPlugin {
 
 InferRequestInternal::Ptr PlaidMLExecutableNetwork::CreateInferRequestImpl(InputsDataMap networkInputs,
                                                                            OutputsDataMap networkOutputs) {
-  std::vector<edsl::Tensor> inputs;
-  for (const auto& kvp : networkInputs) {
-    inputs.push_back(tensorIONameMap_.at(kvp.first));
-  }
-  std::vector<edsl::Tensor> outputs;
-  for (const auto& kvp : networkOutputs) {
-    outputs.push_back(tensorIONameMap_.at(kvp.first));
-  }
-  Program program = edsl::buildProgram("ie", inputs, outputs);
-  program.compile();
-  return std::make_shared<PlaidMLInferRequest>(networkInputs, networkOutputs, program);
+  return std::make_shared<PlaidMLInferRequest>(networkInputs, networkOutputs, program_);
 }
 
-PlaidMLExecutableNetwork::PlaidMLExecutableNetwork(const ICNNNetwork& network, const std::string& device) {
-  auto fcn = network.getFunction();
+// TODO: need to move out of this class
+Program PlaidMLExecutableNetwork::TODOMakeProgram(std::shared_ptr<const ngraph::Function> fcn, InputsDataMap networkInputs, OutputsDataMap networkOutputs) {
   IE_ASSERT(fcn);  // PlaidML requires that the nGraph-based API be used
   for (const std::shared_ptr<ngraph::Node>& node : fcn->get_ordered_ops()) {
     // TODO: Clean up how these cases are selected
@@ -52,6 +42,21 @@ PlaidMLExecutableNetwork::PlaidMLExecutableNetwork(const ICNNNetwork& network, c
       handleOp(node);
     }
   }
+
+  std::vector<edsl::Tensor> inputs;
+  for (const auto& kvp : networkInputs) {
+    inputs.push_back(tensorIONameMap_.at(kvp.first));
+  }
+  std::vector<edsl::Tensor> outputs;
+  for (const auto& kvp : networkOutputs) {
+    outputs.push_back(tensorIONameMap_.at(kvp.first));
+  }
+  return edsl::buildProgram("ie", inputs, outputs);
+}
+
+PlaidMLExecutableNetwork::PlaidMLExecutableNetwork(const ICNNNetwork& network, const std::string& device)
+    : todo_parts(network), program_(TODOMakeProgram(todo_parts.fcn, todo_parts.networkInputs, todo_parts.networkOutputs)) {
+  program_.compile();
 }
 
 void PlaidMLExecutableNetwork::handleConstant(const std::shared_ptr<ngraph::Node>& node) {
