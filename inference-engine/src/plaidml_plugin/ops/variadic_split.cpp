@@ -28,22 +28,26 @@ static OpRegistration reg("variadicsplit", [](const Context& ctx) {
   std::vector<edsl::Tensor> Os;
   I.bind_dims(I_dims);
   auto O_dims = I_dims;
-  size_t offset = 0;
-  size_t total_size = 0;
+
+  size_t split_size = 0;
   for (auto split : split_lengths) {
-      if (split > -1) {
-        total_size += split;
+      if (split != -1) {
+        split_size += split;
       }
   }
-  // size_t placeholder = I_dims[axis] - total_size;
+  auto placeholder = I_dims[axis] - split_size;
+
+  edsl::TensorDim offset(0);
   for (auto split : split_lengths) {
-    // if (split == -1) {
-    //     split = placeholder;
-    // }
-    O_dims[axis] = static_cast<edsl::TensorDim>(split);
     auto O_idxs = I_idxs;
     O_idxs[axis] = I_idxs[axis] - offset;
-    offset += split;
+    if (split == -1) {
+      O_dims[axis] = placeholder;
+      offset = offset + placeholder;
+    } else {
+      O_dims[axis] = static_cast<edsl::TensorDim>(split);
+      offset = offset + split;
+    }
     Os.push_back(plaidml::edsl::Contraction().outShape(O_dims).outAccess(O_idxs).assign(I(I_idxs)));
   }
   return edsl::make_tuple(Os);
