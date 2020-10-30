@@ -31,7 +31,7 @@ std::string BinaryConvolutionLayerTest::getTestCaseName(
   InferenceEngine::SizeVector kernel, stride, dilation;
   std::vector<ptrdiff_t> padBegin, padEnd;
   size_t binConvOutChannels;
-  std::string mode;
+  ngraph::op::v1::BinaryConvolution::BinaryConvolutionMode mode;
   float padValue;
   std::tie(kernel, stride, padBegin, padEnd, dilation, binConvOutChannels,
            padType, mode, padValue) = binConvParams;
@@ -50,7 +50,7 @@ std::string BinaryConvolutionLayerTest::getTestCaseName(
   return result.str();
 }
 
-void ConvolutionLayerTest::SetUp() {
+void BinaryConvolutionLayerTest::SetUp() {
   binConvSpecificParams binConvParams;
   std::vector<size_t> inputShape;
   auto netPrecision = InferenceEngine::Precision::UNSPECIFIED;
@@ -60,12 +60,13 @@ void ConvolutionLayerTest::SetUp() {
   InferenceEngine::SizeVector kernel, stride, dilation;
   std::vector<ptrdiff_t> padBegin, padEnd;
   size_t binConvOutChannels;
+  ngraph::op::v1::BinaryConvolution::BinaryConvolutionMode mode;
+  float padValue;
   std::tie(kernel, stride, padBegin, padEnd, dilation, binConvOutChannels,
-           padType) = binConvParams;
-  auto ngPrc =
-      FuncTestUtils::PrecisionUtils::binConvertIE2nGraphPrc(netPrecision);
+           padType, mode, padValue) = binConvParams;
+  auto ngPrc = FuncTestUtils::PrecisionUtils::convertIE2nGraphPrc(netPrecision);
   auto params = ngraph::builder::makeParams(ngPrc, {inputShape});
-  auto paramOuts = ngraph::helpers::binConvert2OutputVector(
+  auto paramOuts = ngraph::helpers::convert2OutputVector(
       ngraph::helpers::castOps2Nodes<ngraph::op::Parameter>(params));
   auto binConv = std::dynamic_pointer_cast<ngraph::opset1::Convolution>(
       ngraph::builder::makeConvolution(paramOuts[0], ngPrc, kernel, stride,
@@ -73,7 +74,8 @@ void ConvolutionLayerTest::SetUp() {
                                        binConvOutChannels));
   ngraph::ResultVector results{
       std::make_shared<ngraph::opset1::Result>(binConv)};
-  function = std::make_shared<ngraph::Function>(results, params, "convolution");
+  function =
+      std::make_shared<ngraph::Function>(results, params, "binaryconvolution");
 }
 
 TEST_P(BinaryConvolutionLayerTest, CompareWithRefs) { Run(); }

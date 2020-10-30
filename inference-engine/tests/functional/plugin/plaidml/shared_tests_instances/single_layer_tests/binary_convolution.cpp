@@ -36,7 +36,9 @@ const auto conv2DParams_ExplicitPadding = ::testing::Combine(
     ::testing::ValuesIn(dilations),      //
     ::testing::ValuesIn(numOutChannels), //
     ::testing::Values(ngraph::op::PadType::EXPLICIT),
-    ::testing::Values("xnor-popcount"), ::testing::Values(0.0));
+    ::testing::Values(ngraph::op::v1::BinaryConvolution::BinaryConvolutionMode::
+                          XNOR_POPCOUNT),
+    ::testing::Values(0.0));
 const auto conv2DParams_AutoPadValid = ::testing::Combine(
     ::testing::ValuesIn(kernels),                      //
     ::testing::ValuesIn(strides),                      //
@@ -45,7 +47,9 @@ const auto conv2DParams_AutoPadValid = ::testing::Combine(
     ::testing::ValuesIn(dilations),                    //
     ::testing::ValuesIn(numOutChannels),               //
     ::testing::Values(ngraph::op::PadType::VALID),
-    ::testing::Values("xnor-popcount"), ::testing::Values(0.0));
+    ::testing::Values(ngraph::op::v1::BinaryConvolution::BinaryConvolutionMode::
+                          XNOR_POPCOUNT),
+    ::testing::Values(0.0));
 
 INSTANTIATE_TEST_CASE_P(
     Convolution2D_ExplicitPadding, BinaryConvolutionLayerTest,
@@ -80,16 +84,20 @@ const auto conv3DParams_ExplicitPadding = ::testing::Combine(
     ::testing::ValuesIn(dilations3d), //
     ::testing::Values(5),             //
     ::testing::Values(ngraph::op::PadType::EXPLICIT),
-    ::testing::Values("xnor-popcount"), ::testing::Values(0.0));
+    ::testing::Values(ngraph::op::v1::BinaryConvolution::BinaryConvolutionMode::
+                          XNOR_POPCOUNT),
+    ::testing::Values(0.0));
 const auto conv3DParams_AutoPadValid = ::testing::Combine(
     ::testing::ValuesIn(kernels3d),                       //
     ::testing::ValuesIn(strides3d),                       //
-    ::testing::Values(std::vector<ptrdiff_t>({0, 0, 0})), //
-    ::testing::Values(std::vector<ptrdiff_t>({0, 0, 0})), //
+    ::testing::Values(std::vector<ptrdiff_t>({0, 1, 0})), //
+    ::testing::Values(std::vector<ptrdiff_t>({0, 1, 0})), //
     ::testing::ValuesIn(dilations3d),                     //
     ::testing::Values(5),                                 //
     ::testing::Values(ngraph::op::PadType::VALID),
-    ::testing::Values("xnor-popcount"), ::testing::Values(0.0));
+    ::testing::Values(ngraph::op::v1::BinaryConvolution::BinaryConvolutionMode::
+                          XNOR_POPCOUNT),
+    ::testing::Values(0.0));
 
 INSTANTIATE_TEST_CASE_P(
     Convolution3D_ExplicitPadding, BinaryConvolutionLayerTest,

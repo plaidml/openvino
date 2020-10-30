@@ -13,14 +13,16 @@
 #include "ngraph_functions/builders.hpp"
 #include "ngraph_functions/utils/ngraph_helpers.hpp"
 
-// ! [test_convolution:definition]
+// ! [test_binary_convolution:definition]
 typedef std::tuple<InferenceEngine::SizeVector, // Kernel size
                    InferenceEngine::SizeVector, // Strides
                    std::vector<ptrdiff_t>,      // Pad begin
                    std::vector<ptrdiff_t>,      // Pad end
                    InferenceEngine::SizeVector, // Dilation
                    size_t,                      // Num out channels
-                   ngraph::op::PadType          // Padding type
+                   ngraph::op::PadType,         // Padding type
+                   ngraph::op::v1::BinaryConvolution::BinaryConvolutionMode,
+                   float // Padding Value
                    >
     binConvSpecificParams;
 typedef std::tuple<binConvSpecificParams,
