@@ -61,7 +61,7 @@ static OpRegistration reg("variadicsplit", [](const Context& ctx) {
       O_dims[axis] = placeholder;
       offset = offset + placeholder;
     } else {
-      O_dims[axis] = static_cast<edsl::TensorDim>(split);
+      O_dims[axis] = edsl::TensorDim(split);
       offset = offset + split;
     }
     Os.push_back(plaidml::edsl::Contraction().outShape(O_dims).outAccess(O_idxs).assign(I(I_idxs)));
