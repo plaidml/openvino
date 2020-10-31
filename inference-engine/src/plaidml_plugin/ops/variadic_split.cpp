@@ -11,6 +11,22 @@
 #include "plaidml/op/op.h"
 
 using namespace plaidml;          // NOLINT[build/namespaces]
+using namespace InferenceEngine;  // NOLINT[build/namespaces]
+
+namespace {
+
+template <typename T>
+std::vector<T> cast_constant_operand(size_t operand_idx, ngraph::Node* layer) {
+  auto* ngraph_const = ngraph::as_type<ngraph::op::Constant>(layer->get_input_node_ptr(operand_idx));
+  if (ngraph_const) {
+    return ngraph_const->cast_vector<T>();
+  } else {
+    THROW_IE_EXCEPTION << "Dynamic padding not currently supported by PlaidML plugin; all of pads_begin, pads_end, "
+                          "and pads_value must be Constants";
+  }
+}
+
+}  // namespace
 
 namespace PlaidMLPlugin {
 
@@ -20,7 +36,7 @@ static OpRegistration reg("variadicsplit", [](const Context& ctx) {
   auto axes = get_axis_vector_from_constant_operand(1, ctx.layer);
   IE_ASSERT(axes.size() == 1);
   auto axis = axes[0];
-  auto split_lengths = get_shape_from_constant_operand(2, ctx.layer);
+  auto split_lengths = cast_constant_operand<int32_t>(2, ctx.layer);
 
   auto ndims = I.rank();
   std::vector<edsl::TensorDim> I_dims(ndims);
