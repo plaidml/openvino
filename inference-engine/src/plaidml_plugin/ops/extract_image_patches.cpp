@@ -15,20 +15,49 @@ using namespace plaidml;         // NOLINT[build/namespaces]
 using namespace InferenceEngine; // NOLINT[build/namespaces]
 
 namespace PlaidMLPlugin {
-static edsl::Tensor buildFlatFilter(const std::vector<size_t> &shape){
-
-}
 
 static OpRegistration reg("ExtractImagePatches", [](const Context &ctx) {
   auto *layer = ngraph::as_type<ngraph::opset3::ExtractImagePatches>(ctx.layer);
   IE_ASSERT(ctx.operands.size() == 1);
 
   auto inputTensor = ctx.operands.at(0);
-  std::vector<size_t> filterShape;
-  for (auto dim : layer->get_sizes()){
+  auto inputType = inputTensor.dtype();
+  auto inputShape = inputTensor.compute_shape().sizes();
+
+  std::vector<int64_t> filterShape;
+  for (auto dim : layer->get_sizes()) {
     filterShape.push_back(dim);
   }
-  auto filterTensor = buildFlatFilter(filterShape);
+  // build kernel Tensor dims.
+  auto depths = filterShape[0] * filterShape[1];
+  std::vector<int64_t> kernelDims{
+      /*output channels*/ depths,
+      /*input channels*/ inputShape[1],
+      /*filter width*/ filterShape[0],
+      /*filter height*/ filterShape[1],
+  };
+  // kernel tensor element size.
+  size_t kernelSum = 1;
+  for (auto dim : kernelDims) {
+    kernelSum *= dim;
+  }
+  // build one-zero kernel Tensor.
+  // TODO get element type from DTYPE.
+  std::vector<int> data(kernelSum, 0);
+  for (int64_t depth = 0; depth < depths; depth++) {
+    for (int64_t channel = 0; channel < inputShape[1]; channel++) {
+      auto index = channel * kernelDims[1] * kernelDims[2] * kernelDims[3] +
+                   depth * kernelDims[2] * kernelDims[3] +
+                   depth / filterShape[0] * kernelDims[3] +
+                   depth % filterShape[0];
+      data[index] = 1;
+    }
+  }
+  TensorShape shape(inputType, kernelDims);
+  Buffer buffer(shape);
+  buffer.copy_from(data.data());
+
+  auto kernelTensor = edsl::cast(edsl::Constant(buffer, "Kernel"), inputType);
 
   std::vector<size_t> strides;
   for (auto stride : layer->get_strides()) {
@@ -46,7 +75,7 @@ static OpRegistration reg("ExtractImagePatches", [](const Context &ctx) {
                           "PadType is accepted";
   }
 
-  auto result = op::convolution(inputTensor, filterTensor)
+  auto result = op::convolution(inputTensor, kernelTensor)
                     .strides(strides)
                     .dilations(dilations)
                     .autopad_mode(autopad_mode)

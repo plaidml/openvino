@@ -35,23 +35,30 @@ std::string ExtractImagePatchesTest::getTestCaseName(const testing::TestParamInf
 }
 
 void ExtractImagePatchesTest::SetUp() {
-    std::vector<size_t> inputShape, kernel, strides, rates;
-    ngraph::op::PadType pad_type;
-    InferenceEngine::Precision netPrecision;
-    std::tie(inputShape, kernel, strides, rates, pad_type, netPrecision, targetDevice) = this->GetParam();
-    auto ngPrc = FuncTestUtils::PrecisionUtils::convertIE2nGraphPrc(netPrecision);
+  std::vector<size_t> inputShape;
+  InferenceEngine::SizeVector kernel, strides, rates;
+  ngraph::op::PadType pad_type;
+  InferenceEngine::Precision netPrecision;
+  std::tie(inputShape, kernel, strides, rates, pad_type, netPrecision,
+           targetDevice) = this->GetParam();
 
-    auto inputNode = std::make_shared<ngraph::opset1::Parameter>(ngPrc, ngraph::Shape(inputShape));
-    ngraph::ParameterVector params = {inputNode};
-
-    auto extImgPatches = std::make_shared<ngraph::opset3::ExtractImagePatches>(
-        inputNode, ngraph::Shape(kernel), ngraph::Strides(strides), ngraph::Shape(rates), pad_type);
-    ngraph::ResultVector results{std::make_shared<ngraph::opset1::Result>(extImgPatches)};
-    function = std::make_shared<ngraph::Function>(results, params, "ExtractImagePatches");
+  auto ngPrc = FuncTestUtils::PrecisionUtils::convertIE2nGraphPrc(netPrecision);
+  auto paramsIn = ngraph::builder::makeParams(ngPrc, {inputShape});
+  auto paramOut = ngraph::helpers::convert2OutputVector(
+      ngraph::helpers::castOps2Nodes<ngraph::op::Parameter>(paramsIn));
+  auto extImgPatches =
+      std::dynamic_pointer_cast<ngraph::opset3::ExtractImagePatches>(
+          std::make_shared<ngraph::opset3::ExtractImagePatches>(
+              paramOut[0], ngraph::Shape(kernel), ngraph::Strides(strides),
+              ngraph::Shape(rates), pad_type));
+  ngraph::ResultVector results{
+      std::make_shared<ngraph::opset1::Result>(extImgPatches)};
+  function = std::make_shared<ngraph::Function>(results, paramsIn,
+                                                "ExtractImagePatches");
 }
 
 TEST_P(ExtractImagePatchesTest, CompareWithRefs) {
     Run();
 };
 
-}  // namespace LayerTestsDefinitions
+} // namespace LayerTestsDefinitions
