@@ -12,8 +12,8 @@ using LayerTestsDefinitions::BinaryConvolutionLayerTest;
 namespace {
 
 const std::vector<InferenceEngine::Precision> netPrecisions = {
+    InferenceEngine::Precision::I32,
     InferenceEngine::Precision::FP32,
-    // InferenceEngine::Precision::FP16  // TODO: Not yet working
 };
 
 /* ============= 2D Convolution ============= */

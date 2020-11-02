@@ -33,13 +33,13 @@ static OpRegistration reg("binaryconvolution", [](const Context &ctx) {
   edsl::Tensor inputTensor, filterTensor;
   if (mode ==
       ngraph::op::v1::BinaryConvolution::BinaryConvolutionMode::XNOR_POPCOUNT) {
-    auto one = cast(edsl::Tensor(1.0), DType::FLOAT32);
-    auto minusOne = cast(edsl::Tensor(-1.0), DType::FLOAT32);
+    auto one = cast(edsl::Tensor(1.0), DType::INT32);
+    auto minusOne = cast(edsl::Tensor(-1.0), DType::INT32);
     inputTensor = edsl::select(I == 0, minusOne, one);
     filterTensor = edsl::select(F == 0, minusOne, one);
   } else {
-    auto one = cast(edsl::Tensor(1.0), DType::FLOAT32);
-    auto zero = cast(edsl::Tensor(0.0), DType::FLOAT32);
+    auto one = cast(edsl::Tensor(1.0), DType::INT32);
+    auto zero = cast(edsl::Tensor(0.0), DType::INT32);
     inputTensor = edsl::select(I == 0, zero, one);
     filterTensor = edsl::select(F == 0, zero, one);
   }
@@ -53,8 +53,7 @@ static OpRegistration reg("binaryconvolution", [](const Context &ctx) {
                     .input_layout(plaidml::op::TensorLayout::NCX)
                     .filter_layout(plaidml::op::TensorLayout::KCX);
   if (autopad_mode == plaidml::op::AutoPadMode::EXPLICIT) {
-    // WARNING: float pad value is passes here
-    int padding = pad_value;
+    int padding = static_cast<int>(pad_value);
     result.manual_padding({padding});
   }
   return edsl::make_tuple(result);
