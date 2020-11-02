@@ -30,23 +30,23 @@ static OpRegistration reg("binaryconvolution", [](const Context &ctx) {
   }
 
   auto mode = layer->get_mode();
-  edsl::Tensor inputTensor, filterTensor;
+  edsl::Tensor input_tensor, filter_tensor;
   if (mode ==
       ngraph::op::v1::BinaryConvolution::BinaryConvolutionMode::XNOR_POPCOUNT) {
-    auto one = cast(edsl::Tensor(1.0), DType::INT32);
-    auto minusOne = cast(edsl::Tensor(-1.0), DType::INT32);
-    inputTensor = edsl::select(I == 0, minusOne, one);
-    filterTensor = edsl::select(F == 0, minusOne, one);
+    auto one = cast(edsl::Tensor(1), DType::INT32);
+    auto minus_one = cast(edsl::Tensor(-1), DType::INT32);
+    input_tensor = edsl::select(I == 0, minus_one, one);
+    filter_tensor = edsl::select(F == 0, minus_one, one);
   } else {
-    auto one = cast(edsl::Tensor(1.0), DType::INT32);
-    auto zero = cast(edsl::Tensor(0.0), DType::INT32);
-    inputTensor = edsl::select(I == 0, zero, one);
-    filterTensor = edsl::select(F == 0, zero, one);
+    auto one = cast(edsl::Tensor(1), DType::INT32);
+    auto zero = cast(edsl::Tensor(0), DType::INT32);
+    input_tensor = edsl::select(I == 0, zero, one);
+    filter_tensor = edsl::select(F == 0, zero, one);
   }
 
   auto autopad_mode = to_plaidml(layer->get_auto_pad());
   auto pad_value = layer->get_pad_value();
-  auto result = op::convolution(inputTensor, filterTensor)
+  auto result = op::convolution(input_tensor, filter_tensor)
                     .strides(strides)
                     .dilations(dilations)
                     .autopad_mode(autopad_mode)
