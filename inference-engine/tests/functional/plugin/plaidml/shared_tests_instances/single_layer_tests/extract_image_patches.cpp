@@ -25,11 +25,11 @@ const std::vector<ngraph::op::PadType> padTypes = {
 };
 
 INSTANTIATE_TEST_CASE_P(ExtractImagePatches2DTestCheck, ExtractImagePatchesTest,
-                         ::testing::Combine(::testing::Values(std::vector<size_t>({10, 10, 10, 10})),    //
-                                            ::testing::Values(kernels),                                  //
-                                            ::testing::Values(strides),                                  //
-                                            ::testing::Values(rates),                                    //
-                                            ::testing::Values(padTypes),                                 //
+                         ::testing::Combine(::testing::Values(std::vector<size_t>({1, 1, 10, 10})),    //
+                                            ::testing::ValuesIn(kernels),                                  //
+                                            ::testing::ValuesIn(strides),                                  //
+                                            ::testing::ValuesIn(rates),                                    //
+                                            ::testing::ValuesIn(padTypes),                                 //
                                             ::testing::ValuesIn(netPrecisions),                          //
                                             ::testing::Values(CommonTestUtils::DEVICE_PLAIDML)),         //
                         ExtractImagePatchesTest::getTestCaseName);
