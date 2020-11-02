@@ -13,7 +13,7 @@ namespace {
 
     const std::vector<InferenceEngine::Precision> netPrecisions = {
             InferenceEngine::Precision::FP32,
-            InferenceEngine::Precision::FP16
+            // InferenceEngine::Precision::FP16
     };
 
     // Sum of elements numSplits = inputShapes[Axis]
@@ -31,6 +31,6 @@ namespace {
             ::testing::Values(0, 1, 2, 3),
             ::testing::ValuesIn(netPrecisions),
             ::testing::Values(std::vector<size_t>({30, 30, 30, 30})),
-            ::testing::Values(CommonTestUtils::DEVICE_CPU)),
+            ::testing::Values(CommonTestUtils::DEVICE_PLAIDML)),
             VariadicSplitLayerTest::getTestCaseName);
 }  // namespace
