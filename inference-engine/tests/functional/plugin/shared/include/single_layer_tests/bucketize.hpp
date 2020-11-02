@@ -15,15 +15,15 @@
 
 namespace LayerTestsDefinitions {
 
-typedef std::tuple<
+using bucketizeParams =  std::tuple<
         InferenceEngine::Precision,         // Network precision
         std::vector<size_t>,                // Input data, N-D tensor
         std::vector<size_t>,                // Buckets, 1-D tensor
-        std::string,                        // output_type
-        bool,                               // with_right_bound
+        InferenceEngine::Precision,         // output precision
+        bool,                               // with right bound
         std::string,                        // Device name
         std::map<std::string, std::string>  // Config
-> bucketizeParams;
+>;
 
 class BucketizeLayerTest : public testing::WithParamInterface<bucketizeParams>,
                          virtual public LayerTestsUtils::LayerTestsCommon {

@@ -21,36 +21,37 @@ namespace LayerTestsDefinitions {
     InferenceEngine::Precision netPrecision;
     InferenceEngine::SizeVector inputShapes;
     std::vector<size_t> buckets;
-    std::string output_type;
-    bool with_right_bound;
+    InferenceEngine::Precision outputPrecision;
+    bool withRightBound;
     std::string targetDevice;
     std::map<std::string, std::string> config;
-    std::tie(netPrecision, inputShapes, buckets, output_type, with_right_bound, targetDevice, config) = obj.param;
+    std::tie(netPrecision, inputShapes, buckets, outputPrecision, withRightBound, targetDevice, config) = obj.param;
     std::ostringstream result;
     result << "IS=" << CommonTestUtils::vec2str(inputShapes) << "_";
     result << "Bucket=" << CommonTestUtils::vec2str(buckets) << "_";
-    result << "output_type=" << output_type << "_";
-    result << "with_right_bound=" << with_right_bound << "_";
+    result << "outputPrecision=" << outputPrecision.name() << "_";
+    result << "withRightBound=" << withRightBound << "_";
     result << "netPRC=" << netPrecision.name() << "_";
     result << "targetDevice=" << targetDevice;
     return result.str();
 }
 
 void BucketizeLayerTest::SetUp() {
+    // Use IE ref mode as ngraph can not run this operation now
     SetRefMode(LayerTestsUtils::RefMode::IE);
+    InferenceEngine::Precision netPrecision;
     std::vector<size_t> inputShapes;
     std::vector<size_t> buckets;
-    std::string output_type;
-    bool with_right_bound;
-    InferenceEngine::Precision netPrecision;
-    std::tie(netPrecision, inputShapes, buckets, output_type, with_right_bound, targetDevice, configuration) = this->GetParam();
+    InferenceEngine::Precision outputPrecision;
+    bool withRightBound;
+    std::tie(netPrecision, inputShapes, buckets, outputPrecision, withRightBound, targetDevice, configuration) = this->GetParam();
     auto ngPrc = FuncTestUtils::PrecisionUtils::convertIE2nGraphPrc(netPrecision);
-    auto outputType = (output_type == "i32") ? ngraph::element::Type_t::i32 : ngraph::element::Type_t::i64;
+    auto outputPrc = FuncTestUtils::PrecisionUtils::convertIE2nGraphPrc(outputPrecision);
     auto paramsIn = ngraph::builder::makeParams(ngPrc, {inputShapes, buckets});
     auto paramIn = ngraph::helpers::convert2OutputVector(
             ngraph::helpers::castOps2Nodes<ngraph::op::Parameter>(paramsIn));
     auto bucketize = std::dynamic_pointer_cast<ngraph::opset3::Bucketize>(
-            std::make_shared<ngraph::opset3::Bucketize>(paramIn[0], paramIn[1], outputType, with_right_bound));
+            std::make_shared<ngraph::opset3::Bucketize>(paramIn[0], paramIn[1], outputPrc, withRightBound));
     ngraph::ResultVector results{std::make_shared<ngraph::opset1::Result>(bucketize)};
     function = std::make_shared<ngraph::Function>(results, paramsIn, "Bucketize");
 }

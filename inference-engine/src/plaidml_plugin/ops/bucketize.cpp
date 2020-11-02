@@ -20,30 +20,18 @@ static OpRegistration reg("Bucketize", [](const Context& ctx) {
   IE_ASSERT(ctx.operands.size() == 2);
   auto A = ctx.operands.at(0);
   auto B = ctx.operands.at(1);
-
-  std::vector<int> broadcastShape;
-  std::vector<int> bcast_axes;
-  auto A_shape = A.compute_shape().sizes();
-  int count = A_shape.size();
-  for (int i = 0; i < count; i++) {
-    // broadcast requires shape with int type
-    broadcastShape.push_back(static_cast<int>(A_shape[i]));
-    bcast_axes.push_back(i);
-  }
-  // Bucket is a 1-D tensor, the first dimension shall be tensor size
-  auto B_shape = B.compute_shape().sizes();
-  IE_ASSERT(B_shape.size() == 1);
-  broadcastShape.push_back(static_cast<int>(B_shape[0]));
-  auto broadcastResult = op::broadcast(A, broadcastShape, bcast_axes);
-
-  auto outputType = to_plaidml(layer->get_output_type());
-  auto one = edsl::cast(edsl::Tensor(1), outputType);
-  auto zero = edsl::cast(edsl::Tensor(0), outputType);
+  IE_ASSERT(B.rank() == 1);
+  std::vector<edsl::TensorDim> B_dims(B.rank());
+  B.bind_dims(B_dims);
+  auto broadcast_result = op::repeat(op::unsqueeze(A, {-1}), edsl::Value(B_dims[0]), -1);
+  auto output_type = to_plaidml(layer->get_output_type());
+  auto one = edsl::cast(edsl::Tensor(1), output_type);
+  auto zero = edsl::cast(edsl::Tensor(0), output_type);
   auto C = layer->get_with_right_bound()
-               ? op::sum(select(broadcastResult > B, one, zero),
-                         edsl::make_tuple(count))
-               : op::sum(select(broadcastResult >= B, one, zero),
-                         edsl::make_tuple(count));
+               ? op::sum(select(broadcast_result > B, one, zero),
+                         edsl::make_tuple(-1))
+               : op::sum(select(broadcast_result >= B, one, zero),
+                         edsl::make_tuple(-1));
   return edsl::make_tuple(C);
 });
 

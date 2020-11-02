@@ -15,19 +15,22 @@ const std::vector<InferenceEngine::Precision> netPrecisions = {
     InferenceEngine::Precision::I8,
 };
 
-std::vector<std::vector<size_t>> input_shapes{{2, 2}};
-std::vector<std::vector<size_t>> buckets_shapes{{3}};
+std::vector<std::vector<size_t>> inputShapes{{2, 2}};
+std::vector<std::vector<size_t>> bucketsShapes{{3}};
 
 // Output_type shall support i64 && i32, close i64 for openvino limitation
-std::vector<std::string> output_type{/*"i64",*/ "i32"};
-std::vector<bool> with_right_bound{true, false};
+std::vector<InferenceEngine::Precision> outputPrecision = {
+    InferenceEngine::Precision::I32,
+    //InferenceEngine::Precision::I64,
+};
+std::vector<bool> withRightBound{true, false};
 
 INSTANTIATE_TEST_CASE_P(BucketizeCheckIndex, BucketizeLayerTest,
                          ::testing::Combine(::testing::ValuesIn(netPrecisions),
-                                            ::testing::ValuesIn(input_shapes),
-                                            ::testing::ValuesIn(buckets_shapes),
-                                            ::testing::ValuesIn(output_type),
-                                            ::testing::ValuesIn(with_right_bound),
+                                            ::testing::ValuesIn(inputShapes),
+                                            ::testing::ValuesIn(bucketsShapes),
+                                            ::testing::ValuesIn(outputPrecision),
+                                            ::testing::ValuesIn(withRightBound),
                                             ::testing::Values(CommonTestUtils::DEVICE_PLAIDML),
                                             ::testing::Values(std::map<std::string, std::string>({}))),
                          BucketizeLayerTest::getTestCaseName);
