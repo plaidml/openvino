@@ -13,7 +13,6 @@
 #include "ngraph_functions/builders.hpp"
 #include "ngraph_functions/utils/ngraph_helpers.hpp"
 
-// ! [test_binary_convolution:definition]
 typedef std::tuple<InferenceEngine::SizeVector, // Kernel size
                    InferenceEngine::SizeVector, // Strides
                    std::vector<ptrdiff_t>,      // Pad begin
@@ -43,6 +42,5 @@ public:
 protected:
   void SetUp() override;
 };
-// ! [test_convolution:definition]
 
 } // namespace LayerTestsDefinitions
