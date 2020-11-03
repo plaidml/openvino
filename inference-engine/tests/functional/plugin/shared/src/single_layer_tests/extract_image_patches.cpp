@@ -14,7 +14,6 @@
 #include "functional_test_utils/layer_test_utils.hpp"
 #include "ngraph_functions/builders.hpp"
 
-
 namespace LayerTestsDefinitions {
 
 std::string ExtractImagePatchesTest::getTestCaseName(const testing::TestParamInfo<extractImagePatchesTuple> &obj) {
@@ -41,20 +40,15 @@ void ExtractImagePatchesTest::SetUp() {
   InferenceEngine::Precision netPrecision;
   std::tie(inputShape, kernel, strides, rates, pad_type, netPrecision,
            targetDevice) = this->GetParam();
-
   auto ngPrc = FuncTestUtils::PrecisionUtils::convertIE2nGraphPrc(netPrecision);
   auto paramsIn = ngraph::builder::makeParams(ngPrc, {inputShape});
   auto paramOut = ngraph::helpers::convert2OutputVector(
-      ngraph::helpers::castOps2Nodes<ngraph::op::Parameter>(paramsIn));
-  auto extImgPatches =
-      std::dynamic_pointer_cast<ngraph::opset3::ExtractImagePatches>(
-          std::make_shared<ngraph::opset3::ExtractImagePatches>(
-              paramOut[0], ngraph::Shape(kernel), ngraph::Strides(strides),
-              ngraph::Shape(rates), pad_type));
-  ngraph::ResultVector results{
-      std::make_shared<ngraph::opset1::Result>(extImgPatches)};
-  function = std::make_shared<ngraph::Function>(results, paramsIn,
-                                                "ExtractImagePatches");
+          ngraph::helpers::castOps2Nodes<ngraph::op::Parameter>(paramsIn));
+  auto extImgPatches = std::dynamic_pointer_cast<ngraph::opset3::ExtractImagePatches>(
+          std::make_shared<ngraph::opset3::ExtractImagePatches>(paramOut[0], ngraph::Shape(kernel),
+                                                            ngraph::Strides(strides), ngraph::Shape(rates), pad_type));
+  ngraph::ResultVector results{std::make_shared<ngraph::opset1::Result>(extImgPatches)};
+  function = std::make_shared<ngraph::Function>(results, paramsIn, "ExtractImagePatches");
 }
 
 TEST_P(ExtractImagePatchesTest, CompareWithRefs) {

@@ -6,7 +6,6 @@
 #include "plaidml_util.hpp"
 
 #include "ngraph/opsets/opset.hpp"
-#include "ngraph/opsets/opset1.hpp"
 #include "ngraph/opsets/opset3.hpp"
 
 #include "plaidml/op/op.h"
@@ -17,43 +16,49 @@ using namespace InferenceEngine; // NOLINT[build/namespaces]
 namespace {
 
 template <typename T>
-edsl::Tensor createKernelTensor(std::vector<int64_t> &filterShape,
-                                edsl::Tensor inputTensor) {
-  auto inputType = inputTensor.dtype();
-  auto inputShape = inputTensor.compute_shape().sizes();
-  auto inputChannel = inputShape[1];
-  // build kernel Tensor dims.
-  auto depths = filterShape[0] * filterShape[1] * inputChannel;
-  std::vector<int64_t> kernelDims{
-      /*output channels*/ depths,
-      /*input channels*/ inputChannel,
-      /*filter width*/ filterShape[0],
-      /*filter height*/ filterShape[1],
-  };
-  // kernel tensor element size.
-  size_t kernelSum = 1;
-  for (auto dim : kernelDims) {
-    kernelSum *= dim;
-  }
-  // build one-zero kernel Tensor.
-  std::vector<T> data(kernelSum, 0);
+edsl::Tensor create_kernel_tensor(const int64_t &filter_row,
+                                  const int64_t &filter_col,
+                                  const edsl::Tensor &input_tensor) {
+  auto input_type = input_tensor.dtype();
+  auto input_shape = input_tensor.compute_shape().sizes();
 
-  int64_t channel = 0;
+  // Ops need Tensor order have to be "NCHW".
+  auto input_channel = input_shape[1];
+
+  // build kernel Tensor dims.
+  auto depths = filter_row * filter_col * input_channel;
+  std::vector<int64_t> kernel_dims{
+      /*output channels*/ depths,
+      /*input channels*/ input_channel,
+      /*filter width*/ filter_row,
+      /*filter height*/ filter_col,
+  };
+
+  // kernel tensor element size.
+  size_t kernel_sum = 1;
+  for (auto dim : kernel_dims) {
+    kernel_sum *= dim;
+  }
+
+  // build kernel Tensor buffer.
+  std::vector<T> data(kernel_sum, 0);
+  int64_t channel_index = 0;
   for (int64_t depth = 0; depth < depths; depth++) {
-    auto index = depth * kernelDims[1] * kernelDims[2] * kernelDims[3] +
-                 channel * kernelDims[2] * kernelDims[3] +
-                 (depth / inputChannel) / filterShape[1] * kernelDims[3] +
-                 (depth / inputChannel) % filterShape[1];
+    auto index = depth * kernel_dims[1] * kernel_dims[2] * kernel_dims[3] +
+                 channel_index * kernel_dims[2] * kernel_dims[3] +
+                 (depth / input_channel) / filter_col * kernel_dims[3] +
+                 (depth / input_channel) % filter_col;
     data[index] = 1;
-    if (++channel == inputChannel) {
-      channel = 0;
+    if (++channel_index == input_channel) {
+      channel_index = 0;
     }
   }
-  TensorShape shape(inputType, kernelDims);
+
+  // build one-zero kernel Tensor.
+  TensorShape shape(input_type, kernel_dims);
   Buffer buffer(shape);
   buffer.copy_from(data.data());
-
-  return edsl::cast(edsl::Constant(buffer, "Kernel"), inputType);
+  return edsl::cast(edsl::Constant(buffer, "Kernel"), input_type);
 }
 
 } // namespace
@@ -64,19 +69,19 @@ static OpRegistration reg("ExtractImagePatches", [](const Context &ctx) {
   auto *layer = ngraph::as_type<ngraph::opset3::ExtractImagePatches>(ctx.layer);
   IE_ASSERT(ctx.operands.size() == 1);
 
-  auto inputTensor = ctx.operands.at(0);
-  std::vector<int64_t> filterShape;
-  for (auto dim : layer->get_sizes()) {
-    filterShape.push_back(dim);
-  }
+  auto input_tensor = ctx.operands.at(0);
+  auto filter_row = layer->get_sizes()[0];
+  auto filter_col = layer->get_sizes()[1];
 
-  edsl::Tensor kernelTensor;
-  switch (inputTensor.dtype()) {
+  edsl::Tensor kernel_tensor;
+  switch (input_tensor.dtype()) {
   case DType::FLOAT32:
-    kernelTensor = createKernelTensor<float>(filterShape, inputTensor);
+    kernel_tensor =
+        create_kernel_tensor<float>(filter_row, filter_col, input_tensor);
     break;
   case DType::INT32:
-    kernelTensor = createKernelTensor<int>(filterShape, inputTensor);
+    kernel_tensor =
+        create_kernel_tensor<int>(filter_row, filter_col, input_tensor);
     break;
   }
 
@@ -96,7 +101,7 @@ static OpRegistration reg("ExtractImagePatches", [](const Context &ctx) {
                           "PadType is accepted";
   }
 
-  auto result = op::convolution(inputTensor, kernelTensor)
+  auto result = op::convolution(input_tensor, kernel_tensor)
                     .strides(strides)
                     .dilations(dilations)
                     .autopad_mode(autopad_mode)
