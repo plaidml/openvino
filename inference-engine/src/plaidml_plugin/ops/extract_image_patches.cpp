@@ -14,25 +14,19 @@
 using namespace plaidml;         // NOLINT[build/namespaces]
 using namespace InferenceEngine; // NOLINT[build/namespaces]
 
-namespace PlaidMLPlugin {
+namespace {
 
-static OpRegistration reg("ExtractImagePatches", [](const Context &ctx) {
-  auto *layer = ngraph::as_type<ngraph::opset3::ExtractImagePatches>(ctx.layer);
-  IE_ASSERT(ctx.operands.size() == 1);
-
-  auto inputTensor = ctx.operands.at(0);
+template <typename T>
+edsl::Tensor createKernelTensor(std::vector<int64_t> &filterShape,
+                                edsl::Tensor inputTensor) {
   auto inputType = inputTensor.dtype();
   auto inputShape = inputTensor.compute_shape().sizes();
-
-  std::vector<int64_t> filterShape;
-  for (auto dim : layer->get_sizes()) {
-    filterShape.push_back(dim);
-  }
+  auto inputChannel = inputShape[1];
   // build kernel Tensor dims.
-  auto depths = filterShape[0] * filterShape[1];
+  auto depths = filterShape[0] * filterShape[1] * inputChannel;
   std::vector<int64_t> kernelDims{
       /*output channels*/ depths,
-      /*input channels*/ inputShape[1],
+      /*input channels*/ inputChannel,
       /*filter width*/ filterShape[0],
       /*filter height*/ filterShape[1],
   };
@@ -42,22 +36,49 @@ static OpRegistration reg("ExtractImagePatches", [](const Context &ctx) {
     kernelSum *= dim;
   }
   // build one-zero kernel Tensor.
-  // TODO get element type from DTYPE.
-  std::vector<int> data(kernelSum, 0);
+  std::vector<T> data(kernelSum, 0);
+
+  int64_t channel = 0;
   for (int64_t depth = 0; depth < depths; depth++) {
-    for (int64_t channel = 0; channel < inputShape[1]; channel++) {
-      auto index = channel * kernelDims[1] * kernelDims[2] * kernelDims[3] +
-                   depth * kernelDims[2] * kernelDims[3] +
-                   depth / filterShape[0] * kernelDims[3] +
-                   depth % filterShape[0];
-      data[index] = 1;
+    auto index = depth * kernelDims[1] * kernelDims[2] * kernelDims[3] +
+                 channel * kernelDims[2] * kernelDims[3] +
+                 (depth / inputChannel) / filterShape[1] * kernelDims[3] +
+                 (depth / inputChannel) % filterShape[1];
+    data[index] = 1;
+    if (++channel == inputChannel) {
+      channel = 0;
     }
   }
   TensorShape shape(inputType, kernelDims);
   Buffer buffer(shape);
   buffer.copy_from(data.data());
 
-  auto kernelTensor = edsl::cast(edsl::Constant(buffer, "Kernel"), inputType);
+  return edsl::cast(edsl::Constant(buffer, "Kernel"), inputType);
+}
+
+} // namespace
+
+namespace PlaidMLPlugin {
+
+static OpRegistration reg("ExtractImagePatches", [](const Context &ctx) {
+  auto *layer = ngraph::as_type<ngraph::opset3::ExtractImagePatches>(ctx.layer);
+  IE_ASSERT(ctx.operands.size() == 1);
+
+  auto inputTensor = ctx.operands.at(0);
+  std::vector<int64_t> filterShape;
+  for (auto dim : layer->get_sizes()) {
+    filterShape.push_back(dim);
+  }
+
+  edsl::Tensor kernelTensor;
+  switch (inputTensor.dtype()) {
+  case DType::FLOAT32:
+    kernelTensor = createKernelTensor<float>(filterShape, inputTensor);
+    break;
+  case DType::INT32:
+    kernelTensor = createKernelTensor<int>(filterShape, inputTensor);
+    break;
+  }
 
   std::vector<size_t> strides;
   for (auto stride : layer->get_strides()) {
