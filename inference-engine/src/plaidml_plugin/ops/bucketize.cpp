@@ -23,7 +23,8 @@ static OpRegistration reg("Bucketize", [](const Context& ctx) {
   IE_ASSERT(B.rank() == 1);
   std::vector<edsl::TensorDim> B_dims(B.rank());
   B.bind_dims(B_dims);
-  auto broadcast_result = op::repeat(op::unsqueeze(A, {-1}), edsl::Value(B_dims[0]), -1);
+  auto broadcast_result =
+      op::repeat(op::unsqueeze(A, {-1})).count(B_dims[0]).axis(-1);
   auto output_type = to_plaidml(layer->get_output_type());
   auto one = edsl::cast(edsl::Tensor(1), output_type);
   auto zero = edsl::cast(edsl::Tensor(0), output_type);
