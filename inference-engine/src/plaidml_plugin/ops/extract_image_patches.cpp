@@ -58,7 +58,7 @@ edsl::Tensor create_kernel_tensor(const int64_t &filter_row,
   TensorShape shape(input_type, kernel_dims);
   Buffer buffer(shape);
   buffer.copy_from(data.data());
-  return edsl::cast(edsl::Constant(buffer, "Kernel"), input_type);
+  return edsl::Constant(buffer, "Kernel");
 }
 
 } // namespace
