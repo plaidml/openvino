@@ -53,6 +53,8 @@ std::vector<InputShapesTuple> LogicalLayerTest::combineShapes(const std::map<std
 
 
 void LogicalLayerTest::SetUp() {
+    // Use IE ref mode as ngraph can not run this operation now
+    SetRefMode(LayerTestsUtils::RefMode::IE);
     InputShapesTuple inputShapes;
     InferenceEngine::Precision inputsPrecision;
     ngraph::helpers::LogicalTypes logicalOpType;
