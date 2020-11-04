@@ -5,12 +5,11 @@
 #include "shared_test_classes/single_layer/extract_image_patches.hpp"
 #include "ngraph_functions/builders.hpp"
 
-
 namespace LayerTestsDefinitions {
 
 std::string ExtractImagePatchesTest::getTestCaseName(const testing::TestParamInfo<extractImagePatchesTuple> &obj) {
     std::vector<size_t> inputShape, kernel, strides, rates;
-    ngraph::op::PadType pad_type;
+    ngraph::op::PadType padType;
     InferenceEngine::Precision netPrc;
     InferenceEngine::Precision inPrc, outPrc;
     InferenceEngine::Layout inLayout;
