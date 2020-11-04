@@ -40,29 +40,30 @@ static OpRegistration reg("lstmcell", [](const Context &ctx) {
 
   auto *layer = ngraph::as_type<ngraph::opset4::LSTMCell>(ctx.layer);
   auto hidden_size = layer->get_hidden_size();
+  auto input_size = layer->get_input_size();
   // TODO: apply optional activation and value clip
   // auto activations = layer->get_activations();
   // auto activation_alpha = layer->get_activations_alpha();
   // auto activation_beta = layer->get_activations_beta();
   // auto clip = layer->get_clip();
 
-  auto W_f = op::slice(W).add_dim(0, hidden_size);
-  auto R_f = op::slice(R).add_dim(0, hidden_size);
+  auto W_f = op::slice(W).add_dim(0, hidden_size).add_dim(0, input_size);
+  auto R_f = op::slice(R).add_dim(0, hidden_size).add_dim(0, hidden_size);
   auto B_f = op::slice(B).add_dim(0, hidden_size);
   auto f = op::sigmoid(X * op::transpose(W_f) + H * op::transpose(R_f) + B_f);
 
-  auto W_i = op::slice(W).add_dim(hidden_size, 2 * hidden_size);
-  auto R_i = op::slice(R).add_dim(hidden_size, 2 * hidden_size);
+  auto W_i = op::slice(W).add_dim(hidden_size, 2 * hidden_size).add_dim(0, input_size);
+  auto R_i = op::slice(R).add_dim(hidden_size, 2 * hidden_size).add_dim(0, hidden_size);
   auto B_i = op::slice(B).add_dim(hidden_size, 2 * hidden_size);
   auto i = op::sigmoid(X * op::transpose(W_i) + H * op::transpose(R_i) + B_i);
 
-  auto W_c = op::slice(W).add_dim(2 * hidden_size, 3 * hidden_size);
-  auto R_c = op::slice(R).add_dim(2 * hidden_size, 3 * hidden_size);
+  auto W_c = op::slice(W).add_dim(2 * hidden_size, 3 * hidden_size).add_dim(0, input_size);
+  auto R_c = op::slice(R).add_dim(2 * hidden_size, 3 * hidden_size).add_dim(0, hidden_size);
   auto B_c = op::slice(B).add_dim(2 * hidden_size, 3 * hidden_size);
   auto c = op::sigmoid(X * op::transpose(W_c) + H * op::transpose(R_c) + B_c);
 
-  auto W_o = op::slice(W).add_dim(3 * hidden_size, 4 * hidden_size);
-  auto R_o = op::slice(R).add_dim(3 * hidden_size, 4 * hidden_size);
+  auto W_o = op::slice(W).add_dim(3 * hidden_size, 4 * hidden_size).add_dim(0, input_size);
+  auto R_o = op::slice(R).add_dim(3 * hidden_size, 4 * hidden_size).add_dim(0, hidden_size);
   auto B_o = op::slice(B).add_dim(3 * hidden_size, 4 * hidden_size);
   auto o = op::sigmoid(X * op::transpose(W_o) + H * op::transpose(R_o) + B_o);
 
