@@ -4,6 +4,7 @@
 
 #include "single_layer_tests/lstm_cell.hpp"
 
+#include <limits>
 #include <vector>
 
 #include "common_test_utils/test_constants.hpp"
@@ -15,23 +16,21 @@ std::vector<InferenceEngine::Precision> netPrecisions = {
     InferenceEngine::Precision::FP32,
 };
 
-const std::vector<bool> decomposes = {false};
-const std::vector<size_t> batches = {1};
-const std::vector<size_t> hidden_sizes = {128};
-const std::vector<size_t> input_sizes = {16};
-const std::vector<std::vector<std::string>> activations = {
-    {"sigmoid", "tanh", "tanh"}};
-const std::vector<float> clips = {0.f};
+const bool shouldDecompose = true;  // false will let all test cases fail
+const std::vector<size_t> batches = {1, 4};
+const std::vector<size_t> hiddensizes = {128, 512};
+const std::vector<size_t> inputsizes = {16, 64};
+const std::vector<std::vector<std::string>> activations = {{"sigmoid", "tanh", "tanh"}, {"sigmoid", "sigmoid", "sigmoid"}, {"sigmoid", "relu", "relu"}};
+const std::vector<float> clips = {std::numeric_limits<float>::infinity(), 1.0f};
 
-INSTANTIATE_TEST_CASE_P(
-    LSTMCell_default, LSTMCellTest,
-    ::testing::Combine(::testing::ValuesIn(decomposes),  //
-                       ::testing::ValuesIn(batches),     //
-                       ::testing::ValuesIn(hidden_sizes),
-                       ::testing::ValuesIn(input_sizes),
-                       ::testing::ValuesIn(activations),
-                       ::testing::ValuesIn(clips),
-                       ::testing::ValuesIn(netPrecisions),  //
-                       ::testing::Values(CommonTestUtils::DEVICE_PLAIDML)),
-    LSTMCellTest::getTestCaseName);
+INSTANTIATE_TEST_CASE_P(LSTMCell_default, LSTMCellTest,
+                        ::testing::Combine(::testing::Values(shouldDecompose),                   //
+                                           ::testing::ValuesIn(batches),                         //
+                                           ::testing::ValuesIn(hiddensizes),                     //
+                                           ::testing::ValuesIn(inputsizes),                      //
+                                           ::testing::ValuesIn(activations),                     //
+                                           ::testing::ValuesIn(clips),                           //
+                                           ::testing::ValuesIn(netPrecisions),                   //
+                                           ::testing::Values(CommonTestUtils::DEVICE_PLAIDML)),  //
+                        LSTMCellTest::getTestCaseName);
 }  // namespace
