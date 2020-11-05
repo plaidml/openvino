@@ -28,6 +28,14 @@ Formula in OpenVINO Doc is not very accurate, it should be:
   Ho = o (.) tanh(Co)
 */
 
+void print_shape(edsl::Tensor t) {
+  auto shape = t.compute_shape();
+  for (auto i : shape.sizes()) {
+    std::cout << i << "  ";
+  }
+  std::cout << std::endl;
+}
+
 static OpRegistration reg("lstmcell", [](const Context &ctx) {
   IE_ASSERT(ctx.operands.size() == 6);
   auto X = ctx.operands.at(0);  // input tensor
@@ -39,8 +47,8 @@ static OpRegistration reg("lstmcell", [](const Context &ctx) {
   auto B = ctx.operands.at(5);  // bias tensor [4 * hidden_size]
 
   auto *layer = ngraph::as_type<ngraph::opset4::LSTMCell>(ctx.layer);
+  auto input_size = X.compute_shape().sizes().back();
   auto hidden_size = layer->get_hidden_size();
-  auto input_size = layer->get_input_size();
   // TODO: apply optional activation and value clip
   // auto activations = layer->get_activations();
   // auto activation_alpha = layer->get_activations_alpha();
@@ -50,25 +58,35 @@ static OpRegistration reg("lstmcell", [](const Context &ctx) {
   auto W_f = op::slice(W).add_dim(0, hidden_size).add_dim(0, input_size);
   auto R_f = op::slice(R).add_dim(0, hidden_size).add_dim(0, hidden_size);
   auto B_f = op::slice(B).add_dim(0, hidden_size);
-  auto f = op::sigmoid(X * op::transpose(W_f) + H * op::transpose(R_f) + B_f);
+  auto f = op::sigmoid(op::dot(X, op::transpose(W_f)) + op::dot(H, op::transpose(R_f)) + B_f);
 
   auto W_i = op::slice(W).add_dim(hidden_size, 2 * hidden_size).add_dim(0, input_size);
-  auto R_i = op::slice(R).add_dim(hidden_size, 2 * hidden_size).add_dim(0, hidden_size);
+  auto R_i = op::slice(R)
+                 .add_dim(hidden_size, 2 * hidden_size)
+                 .add_dim(0, hidden_size);
   auto B_i = op::slice(B).add_dim(hidden_size, 2 * hidden_size);
-  auto i = op::sigmoid(X * op::transpose(W_i) + H * op::transpose(R_i) + B_i);
+  auto i = op::sigmoid(op::dot(X, op::transpose(W_i)) + op::dot(H, op::transpose(R_i)) + B_i);
 
-  auto W_c = op::slice(W).add_dim(2 * hidden_size, 3 * hidden_size).add_dim(0, input_size);
-  auto R_c = op::slice(R).add_dim(2 * hidden_size, 3 * hidden_size).add_dim(0, hidden_size);
+  auto W_c = op::slice(W)
+                 .add_dim(2 * hidden_size, 3 * hidden_size)
+                 .add_dim(0, input_size);
+  auto R_c = op::slice(R)
+                 .add_dim(2 * hidden_size, 3 * hidden_size)
+                 .add_dim(0, hidden_size);
   auto B_c = op::slice(B).add_dim(2 * hidden_size, 3 * hidden_size);
-  auto c = op::sigmoid(X * op::transpose(W_c) + H * op::transpose(R_c) + B_c);
+  auto c = op::sigmoid(op::dot(X, op::transpose(W_c)) + op::dot(H, op::transpose(R_c)) + B_c);
 
-  auto W_o = op::slice(W).add_dim(3 * hidden_size, 4 * hidden_size).add_dim(0, input_size);
-  auto R_o = op::slice(R).add_dim(3 * hidden_size, 4 * hidden_size).add_dim(0, hidden_size);
+  auto W_o = op::slice(W)
+                 .add_dim(3 * hidden_size, 4 * hidden_size)
+                 .add_dim(0, input_size);
+  auto R_o = op::slice(R)
+                 .add_dim(3 * hidden_size, 4 * hidden_size)
+                 .add_dim(0, hidden_size);
   auto B_o = op::slice(B).add_dim(3 * hidden_size, 4 * hidden_size);
-  auto o = op::sigmoid(X * op::transpose(W_o) + H * op::transpose(R_o) + B_o);
+  auto o = op::sigmoid(op::dot(X, op::transpose(W_o)) + op::dot(H, op::transpose(R_o)) + B_o);
 
-  auto C_o = op::dot(f, C) + op::dot(i, c);
-  auto H_o = op::dot(o, tanh(C_o));
+  auto C_o = f * C + i * c;
+  auto H_o = o * tanh(C_o);
 
   return edsl::make_tuple(H_o, C_o);
 });
