@@ -23,7 +23,7 @@ edsl::Tensor clip_Tensor(bool should_clip, float clip, const edsl::Tensor& T) {
     }
 }
 
-edsl::Tensor actication_func(std::string func_name, const edsl::Tensor& T) {
+edsl::Tensor activation_func(std::string func_name, const edsl::Tensor& T) {
     if (func_name == "relu") {
         return op::relu(T);
     } else if (func_name == "sigmoid") {
@@ -65,14 +65,14 @@ static OpRegistration reg("lstmcell", [](const Context& ctx) {
     auto B_f = op::slice(B).add_dim(0, hidden_size);
     auto T_f = op::dot(X, op::transpose(W_f)) + op::dot(H, op::transpose(R_f)) + B_f;
     auto T_clipped_f = clip_Tensor(should_clip, clip, T_f);
-    auto f = actication_func(activation_f, T_clipped_f);
+    auto f = activation_func(activation_f, T_clipped_f);
 
     auto W_i = op::slice(W).add_dim(hidden_size, 2 * hidden_size).add_dim(0, input_size);
     auto R_i = op::slice(R).add_dim(hidden_size, 2 * hidden_size).add_dim(0, hidden_size);
     auto B_i = op::slice(B).add_dim(hidden_size, 2 * hidden_size);
     auto T_i = op::dot(X, op::transpose(W_i)) + op::dot(H, op::transpose(R_i)) + B_i;
     auto T_clipped_i = clip_Tensor(should_clip, clip, T_i);
-    auto i = actication_func(activation_i, T_clipped_i);
+    auto i = activation_func(activation_i, T_clipped_i);
 
     auto W_c = op::slice(W).add_dim(2 * hidden_size, 3 * hidden_size).add_dim(0, input_size);
     auto R_c = op::slice(R).add_dim(2 * hidden_size, 3 * hidden_size).add_dim(0, hidden_size);
@@ -84,7 +84,7 @@ static OpRegistration reg("lstmcell", [](const Context& ctx) {
     auto B_o = op::slice(B).add_dim(3 * hidden_size, 4 * hidden_size);
     auto T_o = op::dot(X, op::transpose(W_o)) + op::dot(H, op::transpose(R_o)) + B_o;
     auto T_clipped_o = clip_Tensor(should_clip, clip, T_o);
-    auto o = actication_func(activation_o, T_clipped_o);
+    auto o = activation_func(activation_o, T_clipped_o);
 
     auto C_o = f * C + i * c;
     auto H_o = o * tanh(C_o);

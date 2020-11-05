@@ -18,16 +18,16 @@ std::vector<InferenceEngine::Precision> netPrecisions = {
 
 const bool shouldDecompose = true;  // false will let all test cases fail
 const std::vector<size_t> batches = {1, 4};
-const std::vector<size_t> hiddensizes = {128, 512};
-const std::vector<size_t> inputsizes = {16, 64};
+const std::vector<size_t> hiddenSizes = {128, 512};
+const std::vector<size_t> inputSizes = {16, 64};
 const std::vector<std::vector<std::string>> activations = {{"sigmoid", "tanh", "tanh"}, {"sigmoid", "sigmoid", "sigmoid"}, {"sigmoid", "relu", "relu"}};
 const std::vector<float> clips = {std::numeric_limits<float>::infinity(), 1.0f};
 
 INSTANTIATE_TEST_CASE_P(LSTMCell_default, LSTMCellTest,
                         ::testing::Combine(::testing::Values(shouldDecompose),                   //
                                            ::testing::ValuesIn(batches),                         //
-                                           ::testing::ValuesIn(hiddensizes),                     //
-                                           ::testing::ValuesIn(inputsizes),                      //
+                                           ::testing::ValuesIn(hiddenSizes),                     //
+                                           ::testing::ValuesIn(inputSizes),                      //
                                            ::testing::ValuesIn(activations),                     //
                                            ::testing::ValuesIn(clips),                           //
                                            ::testing::ValuesIn(netPrecisions),                   //
