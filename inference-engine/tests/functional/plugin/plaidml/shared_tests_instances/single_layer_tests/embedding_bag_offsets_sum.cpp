@@ -25,8 +25,8 @@ const std::vector<std::vector<size_t>> indices =
         {{0, 1, 2, 2, 3}, {4, 4, 3, 1, 0}, {1, 2, 1, 2, 1, 2, 1, 2, 1, 2}};
 const std::vector<std::vector<size_t>> offsets = {{0, 2}, {0, 0, 2, 2}, {2, 4}};
 const std::vector<size_t> defaultIndex = {0, 4};
-const std::vector<bool> withWeights = {false};
-const std::vector<bool> withDefaultIndex = {true};
+const std::vector<bool> withWeights = {true, false};
+const std::vector<bool> withDefaultIndex = {true, false};
 
 const auto embBagOffsetSumArgSet = ::testing::Combine(
         ::testing::ValuesIn(embTableShape),

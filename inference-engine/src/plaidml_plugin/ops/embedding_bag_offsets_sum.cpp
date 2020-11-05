@@ -22,7 +22,7 @@ std::vector<T> cast_constant_operand(size_t operand_idx, ngraph::Node* layer) {
   if (ngraph_const) {
     return ngraph_const->cast_vector<T>();
   } else {
-    THROW_IE_EXCEPTION << "Dynamic slicing not currently supported by PlaidML plugin; all of indices, and offsets"
+    THROW_IE_EXCEPTION << "Dynamic slicing not currently supported by PlaidML plugin; all of indices, offsets and default index"
                           "must be Constants.";
   }
 }
@@ -33,13 +33,24 @@ namespace PlaidMLPlugin {
 
 static OpRegistration reg("EmbeddingBagOffsetsSum", [](const Context& ctx) {
   auto* layer = ngraph::as_type<ngraph::opset4::EmbeddingBagOffsetsSum>(ctx.layer);
+  IE_ASSERT(ctx.operands.size() >= 3);
+  IE_ASSERT(ctx.operands.size() <= 5);
   auto I = ctx.operands.at(0);
   auto indices = ctx.operands.at(1);
-  auto indices_cst = cast_constant_operand<size_t>(1, layer);
+  auto num_indices = cast_constant_operand<size_t>(1, layer).size();
   auto offsets = cast_constant_operand<int32_t>(2, layer);
-  auto default_index = cast_constant_operand<int64_t>(3, layer);
+  int32_t default_index = -1;
+  std::vector<float> per_sample_weights(num_indices, 1);
 
-  auto num_indices = indices_cst.size();
+  if (ctx.operands.size() >= 4) {
+    auto default_index_vec = cast_constant_operand<int32_t>(3, layer);
+    default_index = default_index_vec[0];
+    if (ctx.operands.size() == 5) {
+      per_sample_weights.clear();
+      per_sample_weights = cast_constant_operand<float>(4, layer);
+    }
+  }
+
   auto batch = offsets.size();
   offsets.push_back(num_indices);
 
@@ -61,12 +72,17 @@ static OpRegistration reg("EmbeddingBagOffsetsSum", [](const Context& ctx) {
 
   for (uint32_t l = 0; l < batch; ++l) {
     if (offsets[l + 1] == offsets[l]) {
-      O_idxs[0] = I_idxs[0] - default_index[0];
-      Os.push_back(edsl::Contraction(O_dims, O_idxs).sum(I(I_idxs)));
+      if (default_index == -1) {
+        auto zero = cast(Tensor(0.0), slices[0].dtype());
+        Os.push_back(select(slices[0] > 0.0, zero, zero));
+      } else {
+        O_idxs[0] = I_idxs[0] - default_index;
+        Os.push_back(edsl::Contraction(O_dims, O_idxs).sum(I(I_idxs)));
+      }
     } else {
-      Tensor t = slices[offsets[l]];
+      Tensor t = slices[offsets[l]] * per_sample_weights[offsets[l]];
       for (uint32_t i = offsets[l] + 1; i < offsets[l + 1]; ++i) {
-        t = t + slices[i];
+        t = t + slices[i] * per_sample_weights[i];
       }
       Os.push_back(t);
     }
