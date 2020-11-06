@@ -15,10 +15,15 @@ const std::vector<InferenceEngine::Precision> netPrecisions = {
     InferenceEngine::Precision::FP32,
 };
 
+const std::vector<std::vector<size_t>> inputShapes = {
+    {10, 10, 10, 10},  //
+    {1, 3, 30, 30}     //
+};
+
 INSTANTIATE_TEST_CASE_P(reorgYoloCheck, reorgYoloLayerTest,
-                        ::testing::Combine(::testing::Values(std::vector<size_t>({10, 10, 10, 10})),   //
-                                           ::testing::ValuesIn(netPrecisions),                         //
-                                           ::testing::ValuesIn(std::vector<size_t>({1, 2, 5})),        //
-                                           ::testing::Values(CommonTestUtils::DEVICE_PLAIDML)),        //
+                        ::testing::Combine(::testing::ValuesIn(inputShapes),                     //
+                                           ::testing::ValuesIn(netPrecisions),                   //
+                                           ::testing::ValuesIn(std::vector<size_t>({1, 2, 5})),  //
+                                           ::testing::Values(CommonTestUtils::DEVICE_PLAIDML)),  //
                         reorgYoloLayerTest::getTestCaseName);
 }  // namespace
