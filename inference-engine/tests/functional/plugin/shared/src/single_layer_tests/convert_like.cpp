@@ -30,6 +30,8 @@ std::string ConvertLikeLayerTest::getTestCaseName(const testing::TestParamInfo<C
 }
 
 void ConvertLikeLayerTest::SetUp() {
+    // Use IE ref mode as ngraph can not run this operation now
+    SetRefMode(LayerTestsUtils::RefMode::IE);
     InferenceEngine::Precision inputPrecision, targetPrecision;
     std::vector<std::vector<size_t>> inputShape1, inputShape2;
     std::tie(inputShape1, inputPrecision, inputShape2, targetPrecision, targetDevice) = GetParam();
