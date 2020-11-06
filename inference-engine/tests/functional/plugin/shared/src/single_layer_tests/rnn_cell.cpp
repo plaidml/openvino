@@ -27,11 +27,13 @@ std::string RNNCellTest::getTestCaseName(const testing::TestParamInfo<RNNCellPar
     size_t hidden_size;
     size_t input_size;
     std::vector<std::string> activations;
+    std::vector<float> activations_alpha;
+    std::vector<float> activations_beta;
     float clip;
     InferenceEngine::Precision netPrecision;
     std::string targetDevice;
-    std::tie(should_decompose, batch, hidden_size, input_size, activations, clip,
-             netPrecision, targetDevice) = obj.param;
+    std::tie(should_decompose, batch, hidden_size, input_size, activations, activations_alpha,
+             activations_beta, clip, netPrecision, targetDevice) = obj.param;
     std::vector<std::vector<size_t>> inputShapes = {{batch, input_size}, {batch, hidden_size},
                                      {hidden_size, input_size}, {hidden_size, hidden_size}, {hidden_size}};
     std::ostringstream result;
@@ -57,8 +59,8 @@ void RNNCellTest::SetUp() {
     std::vector<float> activations_beta;
     float clip;
     InferenceEngine::Precision netPrecision;
-    std::tie(should_decompose, batch, hidden_size, input_size, activations, clip,
-            netPrecision, targetDevice) = this->GetParam();
+    std::tie(should_decompose, batch, hidden_size, input_size, activations, activations_alpha,
+             activations_beta, clip, netPrecision, targetDevice) = this->GetParam();
     std::vector<std::vector<size_t>> inputShapes = {{batch, input_size}, {batch, hidden_size},
                                                     {hidden_size, input_size}, {hidden_size, hidden_size}, {hidden_size}};
     auto ngPrc = FuncTestUtils::PrecisionUtils::convertIE2nGraphPrc(netPrecision);
@@ -66,7 +68,7 @@ void RNNCellTest::SetUp() {
     std::vector<ngraph::Shape> WRB = {inputShapes[2], inputShapes[3], inputShapes[4]};
     auto rnn_cell = ngraph::builder::makeRNN(
             ngraph::helpers::convert2OutputVector(ngraph::helpers::castOps2Nodes(params)),
-            WRB, hidden_size, activations, {}, {}, clip);
+            WRB, hidden_size, activations, activations_alpha, activations_beta, clip);
     ngraph::ResultVector results{std::make_shared<ngraph::opset1::Result>(rnn_cell)};
     function = std::make_shared<ngraph::Function>(results, params, "rnn_cell");
     if (should_decompose) {

@@ -21,6 +21,8 @@ using RNNCellParams = typename std::tuple<
         size_t,                            // hidden size
         size_t,                            // input size
         std::vector<std::string>,          // activations
+        std::vector<float>,                // activations_alpha
+        std::vector<float>,                // activations_beta
         float,                             // clip
         InferenceEngine::Precision,        // Network precision
         std::string>;                      // Device name
