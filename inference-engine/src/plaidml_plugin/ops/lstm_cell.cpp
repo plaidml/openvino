@@ -37,14 +37,14 @@ edsl::Tensor activation_func(std::string func_name, const edsl::Tensor& T) {
 
 static OpRegistration reg("lstmcell", [](const Context& ctx) {
     IE_ASSERT(ctx.operands.size() == 6);
-    auto X = ctx.operands.at(0);  // input tensor
-    auto H = ctx.operands.at(1);  // hidden state tensor
-    auto C = ctx.operands.at(2);  // cell state tensor
+    auto Xt = ctx.operands.at(0);  // input tensor
+    auto Ht_1 = ctx.operands.at(1);  // hidden state tensor
+    auto Ct_1 = ctx.operands.at(2);  // cell state tensor
     auto W = ctx.operands.at(3);  // weight tensor [4 * hidden_size, input_size]
     auto R = ctx.operands.at(4);  // recurrence weight tensor [4 * hidden_size, input_size]
     auto B = ctx.operands.at(5);  // bias tensor [4 * hidden_size]
 
-    auto input_size = X.compute_shape().sizes().back();
+    auto input_size = Xt.compute_shape().sizes().back();
     auto* layer = ngraph::as_type<ngraph::opset4::LSTMCell>(ctx.layer);
     auto hidden_size = layer->get_hidden_size();
 
@@ -53,6 +53,7 @@ static OpRegistration reg("lstmcell", [](const Context& ctx) {
     auto activation_i = activations.at(1);
     auto activation_o = activations.at(2);
 
+    // TODO: activation_alpha and activation_beta are not used
     auto activation_alpha = layer->get_activations_alpha();
     auto activation_beta = layer->get_activations_beta();
 
@@ -60,36 +61,36 @@ static OpRegistration reg("lstmcell", [](const Context& ctx) {
     IE_ASSERT(clip > 0);
     auto should_clip = clip != std::numeric_limits<float>::infinity();
 
-    auto W_f = op::slice(W).add_dim(0, hidden_size).add_dim(0, input_size);
-    auto R_f = op::slice(R).add_dim(0, hidden_size).add_dim(0, hidden_size);
-    auto B_f = op::slice(B).add_dim(0, hidden_size);
-    auto T_f = op::dot(X, op::transpose(W_f)) + op::dot(H, op::transpose(R_f)) + B_f;
-    auto T_clipped_f = clip_Tensor(should_clip, clip, T_f);
-    auto f = activation_func(activation_f, T_clipped_f);
+    auto Wf = op::slice(W).add_dim(0, hidden_size).add_dim(0, input_size);
+    auto Rf = op::slice(R).add_dim(0, hidden_size).add_dim(0, hidden_size);
+    auto Bf = op::slice(B).add_dim(0, hidden_size);
+    auto Tf = op::dot(Xt, op::transpose(Wf)) + op::dot(Ht_1, op::transpose(Rf)) + Bf;
+    auto T_clipped_f = clip_Tensor(should_clip, clip, Tf);
+    auto ft = activation_func(activation_f, T_clipped_f);
 
-    auto W_i = op::slice(W).add_dim(hidden_size, 2 * hidden_size).add_dim(0, input_size);
-    auto R_i = op::slice(R).add_dim(hidden_size, 2 * hidden_size).add_dim(0, hidden_size);
-    auto B_i = op::slice(B).add_dim(hidden_size, 2 * hidden_size);
-    auto T_i = op::dot(X, op::transpose(W_i)) + op::dot(H, op::transpose(R_i)) + B_i;
-    auto T_clipped_i = clip_Tensor(should_clip, clip, T_i);
-    auto i = activation_func(activation_i, T_clipped_i);
+    auto Wi = op::slice(W).add_dim(hidden_size, 2 * hidden_size).add_dim(0, input_size);
+    auto Ri = op::slice(R).add_dim(hidden_size, 2 * hidden_size).add_dim(0, hidden_size);
+    auto Bi = op::slice(B).add_dim(hidden_size, 2 * hidden_size);
+    auto Ti = op::dot(Xt, op::transpose(Wi)) + op::dot(Ht_1, op::transpose(Ri)) + Bi;
+    auto T_clipped_i = clip_Tensor(should_clip, clip, Ti);
+    auto it = activation_func(activation_i, T_clipped_i);
 
-    auto W_c = op::slice(W).add_dim(2 * hidden_size, 3 * hidden_size).add_dim(0, input_size);
-    auto R_c = op::slice(R).add_dim(2 * hidden_size, 3 * hidden_size).add_dim(0, hidden_size);
-    auto B_c = op::slice(B).add_dim(2 * hidden_size, 3 * hidden_size);
-    auto c = tanh(op::dot(X, op::transpose(W_c)) + op::dot(H, op::transpose(R_c)) + B_c);
+    auto Wc = op::slice(W).add_dim(2 * hidden_size, 3 * hidden_size).add_dim(0, input_size);
+    auto Rc = op::slice(R).add_dim(2 * hidden_size, 3 * hidden_size).add_dim(0, hidden_size);
+    auto Bc = op::slice(B).add_dim(2 * hidden_size, 3 * hidden_size);
+    auto ct = tanh(op::dot(Xt, op::transpose(Wc)) + op::dot(Ht_1, op::transpose(Rc)) + Bc);
 
-    auto W_o = op::slice(W).add_dim(3 * hidden_size, 4 * hidden_size).add_dim(0, input_size);
-    auto R_o = op::slice(R).add_dim(3 * hidden_size, 4 * hidden_size).add_dim(0, hidden_size);
-    auto B_o = op::slice(B).add_dim(3 * hidden_size, 4 * hidden_size);
-    auto T_o = op::dot(X, op::transpose(W_o)) + op::dot(H, op::transpose(R_o)) + B_o;
-    auto T_clipped_o = clip_Tensor(should_clip, clip, T_o);
-    auto o = activation_func(activation_o, T_clipped_o);
+    auto Wo = op::slice(W).add_dim(3 * hidden_size, 4 * hidden_size).add_dim(0, input_size);
+    auto Ro = op::slice(R).add_dim(3 * hidden_size, 4 * hidden_size).add_dim(0, hidden_size);
+    auto Bo = op::slice(B).add_dim(3 * hidden_size, 4 * hidden_size);
+    auto To = op::dot(Xt, op::transpose(Wo)) + op::dot(Ht_1, op::transpose(Ro)) + Bo;
+    auto T_clipped_o = clip_Tensor(should_clip, clip, To);
+    auto ot = activation_func(activation_o, T_clipped_o);
 
-    auto C_o = f * C + i * c;
-    auto H_o = o * tanh(C_o);
+    auto Ct = ft * Ct_1 + it * ct;
+    auto Ht = ot * tanh(Ct);
 
-    return edsl::make_tuple(H_o, C_o);
+    return edsl::make_tuple(Ct, Ht);
 });
 
 }  // namespace PlaidMLPlugin
