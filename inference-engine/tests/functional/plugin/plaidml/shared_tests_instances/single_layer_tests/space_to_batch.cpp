@@ -12,20 +12,36 @@ using LayerTestsDefinitions::spaceToBatchParamsTuple;
 
 namespace {
 
-spaceToBatchParamsTuple bts_only_test_cases[] = {
-    spaceToBatchParamsTuple({1, 1, 2, 2}, {0, 0, 0, 0}, {0, 0, 0, 0}, {4, 1, 1, 1}, InferenceEngine::Precision::FP32,
-                            CommonTestUtils::DEVICE_PLAIDML),
-    spaceToBatchParamsTuple({1, 1, 2, 2}, {0, 0, 0, 0}, {0, 0, 0, 0}, {4, 3, 1, 1}, InferenceEngine::Precision::FP32,
-                            CommonTestUtils::DEVICE_PLAIDML),
-    spaceToBatchParamsTuple({1, 1, 2, 2}, {0, 0, 0, 0}, {0, 0, 0, 0}, {4, 1, 2, 2}, InferenceEngine::Precision::FP32,
-                            CommonTestUtils::DEVICE_PLAIDML),
-    spaceToBatchParamsTuple({1, 1, 2, 2}, {0, 0, 0, 0}, {0, 0, 0, 0}, {8, 1, 1, 2}, InferenceEngine::Precision::FP32,
-                            CommonTestUtils::DEVICE_PLAIDML),
-    spaceToBatchParamsTuple({1, 1, 3, 2, 2}, {0, 0, 1, 0, 3}, {0, 0, 2, 0, 0}, {12, 1, 2, 1, 2},
-                            InferenceEngine::Precision::FP32, CommonTestUtils::DEVICE_PLAIDML),
+const std::vector<InferenceEngine::Precision> inputPrecisions = {
+    InferenceEngine::Precision::FP32,
+    InferenceEngine::Precision::I32,
 };
 
-INSTANTIATE_TEST_CASE_P(SpaceToBatchSmokeCheck, SpaceToBatchLayerTest, ::testing::ValuesIn(bts_only_test_cases),
+const std::vector<std::vector<size_t>> blockShapes = {
+    {1, 2, 2, 1}
+};
+
+const std::vector<std::vector<size_t>> pads_begins = {
+    {0, 0, 0, 0}
+};
+
+const std::vector<std::vector<size_t>> pads_ends = {
+    {0, 0, 0, 0}
+};
+
+const std::vector<std::vector<size_t>> inputShapes = {
+    {1, 2, 2, 1},  //
+//    {1, 9, 2, 2},  //
+//    {2, 36, 3, 3}
+};
+
+INSTANTIATE_TEST_CASE_P(SpaceToBatchSmokeCheck, SpaceToBatchLayerTest,
+                        ::testing::Combine(::testing::ValuesIn(blockShapes),
+                                           ::testing::ValuesIn(pads_begins),
+                                           ::testing::ValuesIn(pads_ends),
+                                           ::testing::ValuesIn(inputShapes),
+                                           ::testing::ValuesIn(inputPrecisions),
+                                           ::testing::Values(CommonTestUtils::DEVICE_PLAIDML)),
                         SpaceToBatchLayerTest::getTestCaseName);
 
 }  // namespace
