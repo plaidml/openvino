@@ -56,8 +56,7 @@ static OpRegistration reg("lstmcell", [](const Context& ctx) {
     auto activation_beta = layer->get_activations_beta();
 
     auto clip = layer->get_clip();
-    IE_ASSERT(clip > 0);
-    auto should_clip = clip != std::numeric_limits<float>::infinity();
+    auto should_clip = (clip > 0.f) && (clip != std::numeric_limits<float>::infinity());
 
     auto Wf = op::slice(W).add_dim(0, hidden_size).add_dim(0, input_size);
     auto Rf = op::slice(R).add_dim(0, hidden_size).add_dim(0, hidden_size);
