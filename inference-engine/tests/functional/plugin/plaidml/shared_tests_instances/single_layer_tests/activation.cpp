@@ -41,6 +41,7 @@ const std::map<ActivationTypes, std::vector<std::vector<float>>> activationTypes
         {Selu,        {{1.6732f, 1.0507f}}},
         {Ceiling,     {{}}},
         {Swish,       {{1.0f}}},
+        {Gelu,        {{}}},
         // {Mish,        {{}}},
         {HSwish,      {{}}}
         // {SoftPlus,    {{}}}
