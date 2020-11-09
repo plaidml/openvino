@@ -22,8 +22,6 @@ const std::vector<size_t> hiddenSizes = {128, 512};
 const std::vector<size_t> inputSizes = {16, 64};
 const std::vector<std::vector<std::string>> activations = {
     {"sigmoid", "tanh", "tanh"}, {"sigmoid", "sigmoid", "sigmoid"}, {"sigmoid", "relu", "relu"}};
-const std::vector<std::vector<float>> activations_alpha = {{}};
-const std::vector<std::vector<float>> activations_beta = {{}};
 const std::vector<float> clips = {std::numeric_limits<float>::infinity(), 1.0f};
 
 INSTANTIATE_TEST_CASE_P(LSTMCell_default, LSTMCellTest,
@@ -32,8 +30,6 @@ INSTANTIATE_TEST_CASE_P(LSTMCell_default, LSTMCellTest,
                                            ::testing::ValuesIn(hiddenSizes),                     //
                                            ::testing::ValuesIn(inputSizes),                      //
                                            ::testing::ValuesIn(activations),                     //
-                                           ::testing::ValuesIn(activations_alpha),               //
-                                           ::testing::ValuesIn(activations_beta),                //
                                            ::testing::ValuesIn(clips),                           //
                                            ::testing::ValuesIn(netPrecisions),                   //
                                            ::testing::Values(CommonTestUtils::DEVICE_PLAIDML)),  //
