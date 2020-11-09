@@ -52,10 +52,15 @@ static OpRegistration reg("SpaceToBatch", [](const Context& ctx) {
     }
     auto reshape_I = edsl::reshape(padding_I, temp_dims);
 
-    // transpose padding tensor
-    std::vector<edsl::TensorDim> reshape_dims(reshape_I.rank());
-    reshape_I.bind_dims(reshape_dims);
+    /** transpose padding tensor, According to openvino op spec.
+     x'' = transpose(x',  [2, 4, ..., (N - 1) + (N - 1), 0, 1, 3, ..., N + (N - 1)])**/
+
+    // setup the dims
+    std::vector<size_t> reshape_dims(reshape_I.rank());
     auto dims_size = reshape_dims.size();
+    for (size_t i = 0; i < dims_size; i++) {
+        reshape_dims[i] = i;
+    }
     // sort the dims.
     for (int i = dims_size - 2; i > 0; i = i - 2) {
         for (int j = 0; j < (dims_size - i) / 2; j++) {
@@ -69,7 +74,6 @@ static OpRegistration reg("SpaceToBatch", [](const Context& ctx) {
     for (auto dim : reshape_dims) {
         dims_wrapper.emplace_back(dim);
     }
-    // TODO transpose got some problem.
     auto transpose_I = op::transpose(reshape_I, edsl::Value(dims_wrapper));
 
     // final reshape.
