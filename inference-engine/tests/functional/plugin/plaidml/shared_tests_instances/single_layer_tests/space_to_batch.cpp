@@ -31,8 +31,7 @@ const std::vector<std::vector<size_t>> pads_ends = {
 
 const std::vector<std::vector<size_t>> inputShapes = {
     {1, 2, 2, 1},  //
-//    {1, 9, 2, 2},  //
-//    {2, 36, 3, 3}
+    {1, 4, 4, 1},  //
 };
 
 INSTANTIATE_TEST_CASE_P(SpaceToBatchSmokeCheck, SpaceToBatchLayerTest,
