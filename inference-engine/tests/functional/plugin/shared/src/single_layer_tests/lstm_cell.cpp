@@ -36,7 +36,7 @@ std::string LSTMCellTest::getTestCaseName(const testing::TestParamInfo<LSTMCellP
             targetDevice) = obj.param;
     std::vector<std::vector<size_t>> inputShapes = {
             {{batch, input_size}, {batch, hidden_size}, {batch, hidden_size}, {4 * hidden_size, input_size},
-                 {4 * hidden_size, hidden_size}, {4 * hidden_size}},
+                    {4 * hidden_size, hidden_size}, {4 * hidden_size}},
     };
     std::ostringstream result;
     result << "decomposition" << should_decompose << "_";
@@ -62,10 +62,10 @@ void LSTMCellTest::SetUp() {
     float clip;
     InferenceEngine::Precision netPrecision;
     std::tie(should_decompose, batch, hidden_size, input_size, activations, clip, netPrecision,
-             targetDevice) = this->GetParam();
+            targetDevice) = this->GetParam();
     std::vector<std::vector<size_t>> inputShapes = {
             {{batch, input_size}, {batch, hidden_size}, {batch, hidden_size}, {4 * hidden_size, input_size},
-                 {4 * hidden_size, hidden_size}, {4 * hidden_size}},
+                    {4 * hidden_size, hidden_size}, {4 * hidden_size}},
     };
     auto ngPrc = FuncTestUtils::PrecisionUtils::convertIE2nGraphPrc(netPrecision);
     auto params = ngraph::builder::makeParams(ngPrc, {inputShapes[0], inputShapes[1], inputShapes[2]});
