@@ -20,8 +20,6 @@ const std::vector<size_t> batches = {1, 4};
 const std::vector<size_t> hiddenSizes = {128, 256};
 const std::vector<size_t> inputSizes = {16, 64};
 const std::vector<std::vector<std::string>> activations = {{"tanh"}, {"sigmoid"}, {"relu"}};
-const std::vector<std::vector<float>> activations_alpha = {{}};
-const std::vector<std::vector<float>> activations_beta = {{}};
 const std::vector<float> clips = {std::numeric_limits<float>::infinity(), 1.0f};
 
 INSTANTIATE_TEST_CASE_P(RNNCell, RNNCellTest,
@@ -30,8 +28,6 @@ INSTANTIATE_TEST_CASE_P(RNNCell, RNNCellTest,
                                            ::testing::ValuesIn(hiddenSizes),                     //
                                            ::testing::ValuesIn(inputSizes),                      //
                                            ::testing::ValuesIn(activations),                     //
-                                           ::testing::ValuesIn(activations_alpha),               //
-                                           ::testing::ValuesIn(activations_beta),                //
                                            ::testing::ValuesIn(clips),                           //
                                            ::testing::ValuesIn(netPrecisions),                   //
                                            ::testing::Values(CommonTestUtils::DEVICE_PLAIDML)),  //
