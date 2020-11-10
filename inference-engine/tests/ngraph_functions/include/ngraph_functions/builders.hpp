@@ -185,7 +185,7 @@ std::shared_ptr<ngraph::Node> makeSplit(const ngraph::Output<Node> &in,
                                         size_t axis);
 
 std::shared_ptr<ngraph::Node> makeVariadicSplit(const ngraph::Output<Node> &in,
-                                                const std::vector<size_t> numSplits,
+                                                const std::vector<int32_t> numSplits,
                                                 size_t axis);
 
 std::shared_ptr<ngraph::Node> makeActivation(const ngraph::Output<Node> &in,
