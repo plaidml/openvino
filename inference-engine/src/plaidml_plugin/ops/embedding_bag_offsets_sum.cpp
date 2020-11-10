@@ -66,22 +66,13 @@ static OpRegistration reg("EmbeddingBagOffsetsSum", [](const Context& ctx) {
   auto O_dims = I_dims;
   auto O_idxs = I_idxs;
 
-  std::vector<TensorDim> w_dim(1);
-  std::vector<TensorIndex> w_idx(1);
-  auto wo_dim = w_dim;
-  auto wo_idx = w_idx;
-  if (with_weights == true) {
-    per_sample_weights.bind_dims(w_dim);
-  }
-
-  wo_dim[0] = edsl::TensorDim(1);
   O_dims[0] = edsl::TensorDim(1);
   for (size_t i = 0; i < num_indices; ++i) {
     O_idxs[0] = I_idxs[0] - i;
     auto slice = edsl::Contraction(O_dims, O_idxs).sum(I_gathered(I_idxs)).build();
     if (with_weights == true) {
-      wo_idx[0] = w_idx[0] - i;
-      slice = slice * edsl::Contraction(wo_dim, wo_idx).sum(per_sample_weights(w_idx)).build();
+      Tensor weight = op::slice(per_sample_weights).add_dim(i, i + 1);
+      slice = slice * weight;
     }
     slices.push_back(slice);
   }
