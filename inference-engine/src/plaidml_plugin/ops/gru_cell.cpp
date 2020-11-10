@@ -14,24 +14,6 @@ using namespace InferenceEngine;  // NOLINT[build/namespaces]
 
 namespace PlaidMLPlugin {
 
-edsl::Tensor clip_activation(const std::string& func_name, bool should_clip, float clip, const edsl::Tensor& T) {
-    edsl::Tensor T_clipped;
-    if (should_clip) {
-        T_clipped = op::clip(T, edsl::Tensor(-clip), edsl::Tensor(clip));
-    } else {
-        T_clipped = T;
-    }
-    if (func_name == "relu") {
-        return op::relu(T_clipped);
-    } else if (func_name == "sigmoid") {
-        return op::sigmoid(T_clipped);
-    } else if (func_name == "tanh") {
-        return edsl::tanh(T_clipped);
-    } else {
-        THROW_IE_EXCEPTION << "Unsupported activation function";
-    }
-}
-
 static OpRegistration reg("grucell", [](const Context& ctx) {
     IE_ASSERT(ctx.operands.size() == 5);
     auto Xt = ctx.operands.at(0);    // input tensor
@@ -48,6 +30,7 @@ static OpRegistration reg("grucell", [](const Context& ctx) {
     auto activation_f = activations.at(0);
     auto activation_g = activations.at(1);
 
+    // TODO: activation_alpha and activation_beta are not used
     auto activations_alpha = layer->get_activations_alpha();
     auto activations_beta = layer->get_activations_beta();
 

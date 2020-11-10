@@ -32,4 +32,6 @@ plaidml::op::PadMode to_plaidml(const ngraph::op::PadMode& ng_type);
 ngraph::Shape get_shape_from_constant_operand(size_t operand_idx, ngraph::Node* layer);
 ngraph::Coordinate get_coords_from_constant_operand(size_t operand_idx, ngraph::Node* layer);
 
+plaidml::edsl::Tensor clip_activation(const std::string& func_name, bool should_clip, float clip, const plaidml::edsl::Tensor& T);
+
 }  // namespace PlaidMLPlugin
