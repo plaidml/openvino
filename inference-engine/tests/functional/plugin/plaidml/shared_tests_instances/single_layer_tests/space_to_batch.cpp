@@ -22,16 +22,20 @@ const std::vector<std::vector<size_t>> blockShapes = {
 };
 
 const std::vector<std::vector<size_t>> pads_begins = {
-    {0, 0, 0, 0}
+    {0, 0, 0, 0},
+    {0, 2, 2, 0},
+    {0, 4, 0, 0}
 };
 
 const std::vector<std::vector<size_t>> pads_ends = {
-    {0, 0, 0, 0}
+    {0, 0, 0, 0},
+    {0, 2, 2, 0},
+    {0, 0, 4, 0},
 };
 
 const std::vector<std::vector<size_t>> inputShapes = {
-    {1, 2, 2, 1},  //
-    {1, 4, 4, 1},  //
+    {1, 8, 8, 1},  //
+    {3, 4, 4, 1},  //
 };
 
 INSTANTIATE_TEST_CASE_P(SpaceToBatchSmokeCheck, SpaceToBatchLayerTest,
@@ -43,4 +47,12 @@ INSTANTIATE_TEST_CASE_P(SpaceToBatchSmokeCheck, SpaceToBatchLayerTest,
                                            ::testing::Values(CommonTestUtils::DEVICE_PLAIDML)),
                         SpaceToBatchLayerTest::getTestCaseName);
 
+INSTANTIATE_TEST_CASE_P(SpaceToBatchTfCaseCheck, SpaceToBatchLayerTest,
+                        ::testing::Combine(::testing::Values(std::vector<size_t>({1, 2, 2, 1})),
+                                           ::testing::Values(std::vector<size_t>({0, 1, 1, 0})),
+                                           ::testing::Values(std::vector<size_t>({0, 1, 1, 0})),
+                                           ::testing::Values(std::vector<size_t>({2, 2, 4, 1})),
+                                           ::testing::ValuesIn(inputPrecisions),
+                                           ::testing::Values(CommonTestUtils::DEVICE_PLAIDML)),
+                        SpaceToBatchLayerTest::getTestCaseName);
 }  // namespace
