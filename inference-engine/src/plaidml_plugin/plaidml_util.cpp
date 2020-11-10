@@ -116,21 +116,21 @@ ngraph::Coordinate get_coords_from_constant_operand(size_t operand_idx, ngraph::
 }
 
 edsl::Tensor clip_activation(const std::string& func_name, bool should_clip, float clip, const edsl::Tensor& T) {
-    edsl::Tensor T_clipped;
-    if (should_clip) {
-        T_clipped = op::clip(T, edsl::Tensor(-clip), edsl::Tensor(clip));
-    } else {
-        T_clipped = T;
-    }
-    if (func_name == "relu") {
-        return op::relu(T_clipped);
-    } else if (func_name == "sigmoid") {
-        return op::sigmoid(T_clipped);
-    } else if (func_name == "tanh") {
-        return edsl::tanh(T_clipped);
-    } else {
-        THROW_IE_EXCEPTION << "Unsupported activation function";
-    }
+  edsl::Tensor T_clipped;
+  if (should_clip) {
+    T_clipped = op::clip(T, edsl::Tensor(-clip), edsl::Tensor(clip));
+  } else {
+    T_clipped = T;
+  }
+  if (func_name == "relu") {
+    return op::relu(T_clipped);
+  } else if (func_name == "sigmoid") {
+    return op::sigmoid(T_clipped);
+  } else if (func_name == "tanh") {
+    return edsl::tanh(T_clipped);
+  } else {
+    THROW_IE_EXCEPTION << "Unsupported activation function";
+  }
 }
 
 }  // namespace PlaidMLPlugin

@@ -23,7 +23,7 @@ namespace LayerTestsDefinitions {
 
     std::string VariadicSplitLayerTest::getTestCaseName(testing::TestParamInfo<VariadicSplitParams> obj) {
         size_t axis;
-        std::vector<size_t> numSplits;
+        std::vector<int32_t> numSplits;
         InferenceEngine::Precision netPrecision;
         InferenceEngine::SizeVector inputShapes;
         std::string targetDevice;
@@ -41,7 +41,8 @@ namespace LayerTestsDefinitions {
     void VariadicSplitLayerTest::SetUp() {
         SetRefMode(LayerTestsUtils::RefMode::CONSTANT_FOLDING);
         size_t axis;
-        std::vector<size_t> inputShape, numSplits;
+        std::vector<size_t> inputShape;
+        std::vector<int32_t> numSplits;
         InferenceEngine::Precision netPrecision;
         std::tie(numSplits, axis, netPrecision, inputShape, targetDevice) = this->GetParam();
         auto ngPrc = FuncTestUtils::PrecisionUtils::convertIE2nGraphPrc(netPrecision);
