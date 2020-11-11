@@ -7,8 +7,12 @@ set(CMAKE_CXX_STANDARD 11)
 
 set(TARGET_NAME "template_extension")
 
-find_package(ngraph REQUIRED OPTIONAL_COMPONENTS onnx_importer)
-find_package(InferenceEngine REQUIRED)
+if(NOT TARGET ngraph)
+  find_package(ngraph REQUIRED OPTIONAL_COMPONENTS onnx_importer)
+endif()
+if(NOT TARGET InferenceEngine)
+  find_package(InferenceEngine REQUIRED)
+endif()
 
 file(GLOB_RECURSE SRC *.cpp)
 
