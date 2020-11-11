@@ -22,15 +22,15 @@ InferenceEngine::details::BlobStream::BlobBuffer::~BlobBuffer() {}
 
 std::streampos InferenceEngine::details::BlobStream::BlobBuffer::seekpos(std::streampos sp, std::ios_base::openmode which) {
     if (!(which & ios_base::in))
-        return streampos(-1);
+        return std::streampos(-1);
     if (sp < 0 || sp > egptr() - eback())
-        return streampos(-1);
+        return std::streampos(-1);
     setg(eback(), eback() + sp, egptr());
     return sp;
 }
 std::streampos InferenceEngine::details::BlobStream::BlobBuffer::seekoff(std::streamoff off, std::ios_base::seekdir way, std::ios_base::openmode which) {
     if (!(which & std::ios_base::in))
-        return streampos(-1);
+        return std::streampos(-1);
     switch (way) {
     default:
     case std::ios_base::beg:
