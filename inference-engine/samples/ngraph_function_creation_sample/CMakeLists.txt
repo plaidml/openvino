@@ -12,5 +12,7 @@ ie_add_sample(NAME ngraph_function_creation_sample
               HEADERS ${MAIN_HEADERS}
               DEPENDENCIES format_reader)
 
-find_package(ngraph REQUIRED)
+if(NOT TARGET ngraph)
+    find_package(ngraph REQUIRED)
+endif()
 target_link_libraries(${TARGET_NAME} PRIVATE ${NGRAPH_LIBRARIES})
