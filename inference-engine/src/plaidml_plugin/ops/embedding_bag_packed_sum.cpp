@@ -22,8 +22,6 @@ static OpRegistration reg("EmbeddingBagPackedSum", [](const Context& ctx) {
   auto I = ctx.operands.at(0);
   auto indices = ctx.operands.at(1);
   IE_ASSERT(indices.rank() == 2);
-  auto batch = indices.compute_shape().sizes()[0];
-  auto indices_per_bag = indices.compute_shape().sizes()[1];
 
   Tensor per_sample_weights;
   bool with_weights = false;
@@ -34,45 +32,17 @@ static OpRegistration reg("EmbeddingBagPackedSum", [](const Context& ctx) {
     with_weights = true;
   }
 
-  std::vector<Tensor> Os;
-
-  for (uint32_t i = 0; i < batch; ++i) {
-    Tensor i_slice = op::slice(indices).add_dim(i, i + 1).add_dim(0, indices_per_bag);
-    i_slice = op::reshape(i_slice, edsl::make_tuple<size_t>(indices_per_bag));
-    Tensor w_slice;
-    if (with_weights == true) {
-      w_slice = op::slice(per_sample_weights).add_dim(i, i + 1).add_dim(0, indices_per_bag);
-      w_slice = op::reshape(w_slice, edsl::make_tuple<size_t>(indices_per_bag));
+  auto I_gathered = gather(I, indices);
+  if (with_weights) {
+    std::vector<int64_t> unsqueeze_axes;
+    for (int64_t i = per_sample_weights.rank(); i < I_gathered.rank(); i++) {
+      unsqueeze_axes.push_back(i);
     }
-    auto I_gathered = gather(I, i_slice);
-    auto ndims = I_gathered.rank();
-    std::vector<TensorDim> I_dims(ndims);
-    std::vector<TensorIndex> I_idxs(ndims);
-    I_gathered.bind_dims(I_dims);
-    auto O_dims = I_dims;
-    auto O_idxs = I_idxs;
-
-    Tensor sum;
-    O_dims[0] = edsl::TensorDim(1);
-    for (uint32_t j = 0; j < indices_per_bag; ++j) {
-      O_idxs[0] = I_idxs[0] - j;
-      auto slice = edsl::Contraction(O_dims, O_idxs).assign(I_gathered(I_idxs)).build();
-      if (with_weights == true) {
-        Tensor weight = op::slice(w_slice).add_dim(j, j+1);
-        slice = slice * weight;
-      }
-      if (j == 0) {
-        sum = slice;
-      } else {
-        sum = sum + slice;
-      }
-    }
-
-    Os.push_back(sum);
+    auto weights_expanded = op::unsqueeze(per_sample_weights, unsqueeze_axes);
+    I_gathered = I_gathered * weights_expanded;
   }
-
-  auto O = op::concatenate(Os, 0);
-  return edsl::make_tuple(O);
+  auto reduced = op::sum(I_gathered, edsl::make_tuple(1), false);
+  return edsl::make_tuple(reduced);
 });
 
 }  // namespace PlaidMLPlugin
