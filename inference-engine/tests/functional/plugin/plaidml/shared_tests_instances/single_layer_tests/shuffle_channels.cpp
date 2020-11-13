@@ -15,12 +15,13 @@ const std::vector<InferenceEngine::Precision> netPrecisions = {
 };
 
 const std::vector<std::vector<size_t>> inputShapes = {
-    {5, 12, 200, 400},
-    {1, 30, 40, 40}
+    {5, 12, 10, 10},
+    {1, 18, 16, 16}
 };
 
 const std::vector<shuffleChannelsSpecificParams> shuffleChannelsParams = {
     {1, 2},
+    {3, 2},
     {1, 6}
 };
 

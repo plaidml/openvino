@@ -17,26 +17,27 @@ static OpRegistration reg("shuffleChannels", [](const Context& ctx) {
   IE_ASSERT(ctx.operands.size() == 1);
   auto I = ctx.operands.at(0);
   auto group = layer->get_group();
-  //  the axis parameter doesn't show in the formula.
-  //  not sure why we need axis, so just leave it alone for now.
+  auto axis = layer->get_axis();
 
   std::vector<edsl::TensorDim> original_dims(I.rank());
   I.bind_dims(original_dims);
   // the channel dim size have to be dividable by group.
-  auto channel_dim = original_dims[1];
+  auto channel_dim = original_dims[axis];
 
   // follow the openvino op spec
   // x' = reshape(x, [N, group, C / group, H * W])
-  std::vector<edsl::TensorDim> channel_group_dims(I.rank());
-  channel_group_dims[0] = original_dims[0];
-  channel_group_dims[1] = edsl::TensorDim(group);
-  channel_group_dims[2] = channel_dim / group;
-  channel_group_dims[3] = original_dims[2] * original_dims[3];
+  std::vector<edsl::TensorDim> channel_group_dims(original_dims);
+  channel_group_dims[axis] = original_dims[axis] / group;
+  channel_group_dims.emplace(channel_group_dims.begin() + axis, group);
   auto reshape_I = edsl::reshape(I, channel_group_dims);
 
   // x'' = transpose(x', [0, 2, 1, 3])
-  std::vector<edsl::Value> dims_wrapper = {edsl::Value(0), edsl::Value(2), edsl::Value(1), edsl::Value(3)};
-  auto transpose_I = op::transpose(reshape_I, edsl::Value(dims_wrapper));
+  std::vector<edsl::Value> order(channel_group_dims.size());
+  for (size_t i = 0; i < order.size(); i++) {
+    order[i] = edsl::Value(i);
+  }
+  std::swap(order[axis], order[axis + 1]);
+  auto transpose_I = op::transpose(reshape_I, edsl::Value(order));
 
   // y = reshape(x'', [N, C, H, W])
   auto O = edsl::reshape(transpose_I, original_dims);
