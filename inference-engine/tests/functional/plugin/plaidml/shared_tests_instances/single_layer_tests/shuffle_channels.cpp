@@ -15,21 +15,38 @@ const std::vector<InferenceEngine::Precision> netPrecisions = {
 };
 
 const std::vector<std::vector<size_t>> inputShapes = {
+    // tensor order 'NCHW'
     {5, 12, 10, 10},
     {1, 18, 16, 16}
 };
 
-const std::vector<shuffleChannelsSpecificParams> shuffleChannelsParams = {
+const std::vector<shuffleChannelsSpecificParams> shuffleChannelOneParams = {
     {1, 2},
-    {3, 2},
     {1, 6}
 };
 
-INSTANTIATE_TEST_CASE_P(ShuffleChannelsSmokeCheck, ShuffleChannelsLayerTest,
-                         ::testing::Combine(::testing::ValuesIn(shuffleChannelsParams),                //
+INSTANTIATE_TEST_CASE_P(ShuffleChannelOneSmokeCheck, ShuffleChannelsLayerTest,
+                         ::testing::Combine(::testing::ValuesIn(shuffleChannelOneParams),              //
                                             ::testing::ValuesIn(netPrecisions),                        //
                                             ::testing::ValuesIn(inputShapes),                          //
                                             ::testing::Values(CommonTestUtils::DEVICE_PLAIDML)),       //
                         ShuffleChannelsLayerTest::getTestCaseName);
 
+const std::vector<std::vector<size_t>> diffOrderInputShape = {
+    // tensor order 'NHWC'
+    {5, 10, 10, 6},
+    {1, 16, 16, 12}
+};
+
+const std::vector<shuffleChannelsSpecificParams> shuffleChannelThirdParams = {
+    {3, 2},
+    {3, 6}
+};
+
+INSTANTIATE_TEST_CASE_P(ShuffleChannelThreeSmokeCheck, ShuffleChannelsLayerTest,
+                        ::testing::Combine(::testing::ValuesIn(shuffleChannelThirdParams),              //
+                                           ::testing::ValuesIn(netPrecisions),                        //
+                                           ::testing::ValuesIn(diffOrderInputShape),                  //
+                                           ::testing::Values(CommonTestUtils::DEVICE_PLAIDML)),       //
+                        ShuffleChannelsLayerTest::getTestCaseName);
 }  // namespace
