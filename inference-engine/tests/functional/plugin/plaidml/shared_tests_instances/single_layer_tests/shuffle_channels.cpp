@@ -22,7 +22,8 @@ const std::vector<std::vector<size_t>> inputShapes = {
 
 const std::vector<shuffleChannelsSpecificParams> shuffleChannelOneParams = {
     {1, 2},
-    {1, 6}
+    {1, 6},
+    {-3, 3}
 };
 
 INSTANTIATE_TEST_CASE_P(ShuffleChannelOneSmokeCheck, ShuffleChannelsLayerTest,
@@ -40,7 +41,8 @@ const std::vector<std::vector<size_t>> diffOrderInputShape = {
 
 const std::vector<shuffleChannelsSpecificParams> shuffleChannelThirdParams = {
     {3, 2},
-    {3, 6}
+    {3, 6},
+    {-1, 3}
 };
 
 INSTANTIATE_TEST_CASE_P(ShuffleChannelThreeSmokeCheck, ShuffleChannelsLayerTest,
