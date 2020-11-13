@@ -17,7 +17,7 @@ const std::vector<InferenceEngine::Precision> netPrecisions = {
 };
 
 const std::vector<std::vector<std::size_t>> inputShapes = {
-    {1, 30}, {1, 30}
+    {1, 30}, {1, 10, 30}
 };
 
 INSTANTIATE_TEST_CASE_P(CompareWithRefs, SquaredDifferenceLayerTest,
