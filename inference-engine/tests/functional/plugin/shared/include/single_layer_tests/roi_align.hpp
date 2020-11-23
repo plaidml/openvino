@@ -15,18 +15,22 @@
 
 namespace LayerTestsDefinitions {
 
-using ROIAlignParams = typename std::tuple<std::vector<size_t>,        // input shape N C H W
-                                           size_t,                     // num_ROIs
-                                           size_t,                     // pooled height
-                                           size_t,                     // pooled width
-                                           size_t,                     // sampling ratio
-                                           float,                      // spatial scale
-                                           std::string,                // mode of pooling
+using ROIAlignSpecificParams = typename std::tuple<InferenceEngine::SizeVector,       // input Shape N C H W
+                                                   std::vector<std::vector<int64_t>>, // ROI boxes
+                                                   std::vector<int64_t>,              // ROI indices
+                                                   size_t,                            // num_ROIs
+                                                   size_t,                            // pooled height
+                                                   size_t,                            // pooled width
+                                                   size_t,                            // sampling ratio
+                                                   float,                             // spatial scale
+                                                   std::string                        // mode of pooling
+                                                   >;
+
+using ROIAlignParams = typename std::tuple<ROIAlignSpecificParams,     // ROIAlignSpecificParams
                                            InferenceEngine::Precision, // Network precision
                                            std::string>;               // Device name
 
-class ROIAlignLayerTest : public testing::WithParamInterface<ROIAlignParams>,
-                          virtual public LayerTestsUtils::LayerTestsCommon {
+class ROIAlignLayerTest : public testing::WithParamInterface<ROIAlignParams>, virtual public LayerTestsUtils::LayerTestsCommon {
   public:
     static std::string getTestCaseName(const testing::TestParamInfo<ROIAlignParams> &obj);
 
