@@ -59,6 +59,9 @@ std::string ROIAlignLayerTest::getTestCaseName(const testing::TestParamInfo<ROIA
 }
 
 void ROIAlignLayerTest::SetUp() {
+    // Use IE ref mode as ngraph can not run this operation now
+    SetRefMode(LayerTestsUtils::RefMode::IE);
+
     ROIAlignSpecificParams roiParams;
     InferenceEngine::Precision netPrecision;
     std::string targetDevice;
@@ -88,7 +91,7 @@ void ROIAlignLayerTest::SetUp() {
     function = std::make_shared<ngraph::Function>(results, params, "ROIAlign");
 }
 
-TEST_P(ROIAlignLayerTest, CompareWithRefs)
+TEST_P(ROIAlignLayerTest, CompareWithRefs) {
     Run();
 }
 
