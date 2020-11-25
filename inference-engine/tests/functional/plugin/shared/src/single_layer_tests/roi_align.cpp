@@ -20,6 +20,15 @@
 
 namespace LayerTestsDefinitions {
 
+template <template <typename...> class R = std::vector, typename Top, typename Sub = typename Top::value_type>
+R<typename Sub::value_type> flatten(Top const &all) {
+    R<typename Sub::value_type> accum;
+    for (auto &sub : all)
+        accum.insert(std::end(accum), std::begin(sub), std::end(sub));
+
+    return accum;
+}
+
 std::string ROIAlignLayerTest::getTestCaseName(const testing::TestParamInfo<ROIAlignParams> &obj) {
     ROIAlignSpecificParams roiParams;
     InferenceEngine::Precision netPrecision;
@@ -69,8 +78,9 @@ void ROIAlignLayerTest::SetUp() {
     auto params = ngraph::builder::makeParams(ngPrc, {inputShape});
     auto paramOuts = ngraph::helpers::convert2OutputVector(ngraph::helpers::castOps2Nodes<ngraph::op::Parameter>(params));
 
-    ngraph::Shape roisShape = {rois.size()};
-    auto roisNode = std::make_shared<ngraph::opset1::Constant>(ngraph::element::i64, roisShape, rois.data());
+    auto flatRois = flatten(rois);
+    ngraph::Shape roisShape = {flatRois.size()};
+    auto roisNode = std::make_shared<ngraph::opset1::Constant>(ngraph::element::i64, roisShape, flatRois.data());
     ngraph::Shape batchIndicesShape = {batchIndices.size()};
     auto batchIndicesNode = std::make_shared<ngraph::opset1::Constant>(ngraph::element::i64, batchIndicesShape, batchIndices.data());
     auto roiAlign = std::make_shared<ngraph::opset3::ROIAlign>(paramOuts[0], roisNode, batchIndicesNode, pooledH, pooledW, samplingRatio, spatialScale, mode);
@@ -78,7 +88,7 @@ void ROIAlignLayerTest::SetUp() {
     function = std::make_shared<ngraph::Function>(results, params, "ROIAlign");
 }
 
-TEST_P(ROIAlignLayerTest, CompareWithRefs) {
+TEST_P(ROIAlignLayerTest, CompareWithRefs)
     Run();
 }
 
