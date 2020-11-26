@@ -34,8 +34,8 @@ std::string ROIAlignLayerTest::getTestCaseName(const testing::TestParamInfo<ROIA
     InferenceEngine::Precision netPrecision;
     std::string targetDevice;
     std::tie(roiParams, netPrecision, targetDevice) = obj.param;
-    InferenceEngine::SizeVector inputShape;
-    std::vector<std::vector<size_t>> rois;
+    std::vector<size_t> inputShape;
+    std::vector<std::vector<float>> rois;
     std::vector<size_t> batchIndices;
     size_t numROIs;
     size_t pooledH;
@@ -64,10 +64,9 @@ void ROIAlignLayerTest::SetUp() {
 
     ROIAlignSpecificParams roiParams;
     InferenceEngine::Precision netPrecision;
-    std::string targetDevice;
     std::tie(roiParams, netPrecision, targetDevice) = this->GetParam();
-    InferenceEngine::SizeVector inputShape;
-    std::vector<std::vector<size_t>> rois;
+    std::vector<size_t> inputShape;
+    std::vector<std::vector<float>> rois;
     std::vector<size_t> batchIndices;
     size_t numROIs;
     size_t pooledH;
@@ -82,17 +81,15 @@ void ROIAlignLayerTest::SetUp() {
     auto paramOuts = ngraph::helpers::convert2OutputVector(ngraph::helpers::castOps2Nodes<ngraph::op::Parameter>(params));
 
     auto flatRois = flatten(rois);
-    ngraph::Shape roisShape = {flatRois.size()};
-    auto roisNode = std::make_shared<ngraph::opset1::Constant>(ngraph::element::i64, roisShape, flatRois.data());
+    ngraph::Shape roisShape = {rois.size(), rois[0].size()};
+    auto roisNode = std::make_shared<ngraph::opset1::Constant>(ngraph::element::f32, roisShape, flatRois.data());
     ngraph::Shape batchIndicesShape = {batchIndices.size()};
-    auto batchIndicesNode = std::make_shared<ngraph::opset1::Constant>(ngraph::element::i64, batchIndicesShape, batchIndices.data());
+    auto batchIndicesNode = std::make_shared<ngraph::opset1::Constant>(ngraph::element::u32, batchIndicesShape, batchIndices.data());
     auto roiAlign = std::make_shared<ngraph::opset3::ROIAlign>(paramOuts[0], roisNode, batchIndicesNode, pooledH, pooledW, samplingRatio, spatialScale, mode);
     ngraph::ResultVector results{std::make_shared<ngraph::opset1::Result>(roiAlign)};
     function = std::make_shared<ngraph::Function>(results, params, "ROIAlign");
 }
 
-TEST_P(ROIAlignLayerTest, CompareWithRefs) {
-    Run();
-}
+TEST_P(ROIAlignLayerTest, CompareWithRefs) { Run(); }
 
 } // namespace LayerTestsDefinitions

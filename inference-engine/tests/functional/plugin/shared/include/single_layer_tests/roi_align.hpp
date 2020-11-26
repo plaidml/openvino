@@ -15,15 +15,15 @@
 
 namespace LayerTestsDefinitions {
 
-using ROIAlignSpecificParams = typename std::tuple<InferenceEngine::SizeVector,       // input Shape N C H W
-                                                   std::vector<std::vector<int64_t>>, // ROI boxes
-                                                   std::vector<int64_t>,              // ROI indices
-                                                   size_t,                            // num_ROIs
-                                                   size_t,                            // pooled height
-                                                   size_t,                            // pooled width
-                                                   size_t,                            // sampling ratio
-                                                   float,                             // spatial scale
-                                                   std::string                        // mode of pooling
+using ROIAlignSpecificParams = typename std::tuple<std::vector<size_t>,             // input Shape N C H W
+                                                   std::vector<std::vector<float>>, // ROI boxes
+                                                   std::vector<size_t>,             // ROI indices
+                                                   size_t,                          // num_ROIs
+                                                   size_t,                          // pooled height
+                                                   size_t,                          // pooled width
+                                                   size_t,                          // sampling ratio
+                                                   float,                           // spatial scale
+                                                   std::string                      // mode of pooling
                                                    >;
 
 using ROIAlignParams = typename std::tuple<ROIAlignSpecificParams,     // ROIAlignSpecificParams
