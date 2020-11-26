@@ -90,6 +90,8 @@ void ROIAlignLayerTest::SetUp() {
     function = std::make_shared<ngraph::Function>(results, params, "ROIAlign");
 }
 
-TEST_P(ROIAlignLayerTest, CompareWithRefs) { Run(); }
+TEST_P(ROIAlignLayerTest, CompareWithRefs) {
+    Run();
+}
 
 } // namespace LayerTestsDefinitions
