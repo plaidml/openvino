@@ -2,16 +2,16 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-#include "single_layer_tests/reverse_sequence.hpp"
-
-#include <memory>
-#include <string>
 #include <tuple>
+#include <string>
 #include <vector>
+#include <memory>
 
 #include "common_test_utils/common_utils.hpp"
 #include "functional_test_utils/precision_utils.hpp"
 #include "functional_test_utils/skip_tests_config.hpp"
+
+#include "single_layer_tests/reverse_sequence.hpp"
 
 namespace LayerTestsDefinitions {
 std::string ReverseSequenceLayerTest::getTestCaseName(const testing::TestParamInfo<ReverseSequenceParamsTuple> &obj) {
@@ -60,6 +60,8 @@ void ReverseSequenceLayerTest::SetUp() {
     function = std::make_shared<ngraph::Function>(results, paramsIn, "ReverseSequence");
 }
 
-TEST_P(ReverseSequenceLayerTest, CompareWithRefs) { Run(); };
+TEST_P(ReverseSequenceLayerTest, CompareWithRefs) {
+    Run();
+};
 
-}  // namespace LayerTestsDefinitions
+} // namespace LayerTestsDefinitions
