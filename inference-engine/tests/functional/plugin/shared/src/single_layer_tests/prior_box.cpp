@@ -78,17 +78,13 @@ void PriorBoxLayerTest::SetUp() {
   std::tie(minSize, maxSize, aspectRatio, density, fixedRatio, fixedSize, clip,
            flip, step, offset) = specAttrs;
 
-  auto ngPrc = FuncTestUtils::PrecisionUtils::convertIE2nGraphPrc(netPrecision);
   auto inputPrc = ngraph::element::Type_t::i32;
   std::shared_ptr<ngraph::opset1::Constant> layerShapeConstNode =
       std::make_shared<ngraph::opset1::Constant>(
           inputPrc, ngraph::Shape{inputShape.size()}, inputShape);
-  std::shared_ptr<ngraph::opset1::Constant> imageShapeConstNode =
-      std::make_shared<ngraph::opset1::Constant>(
-          inputPrc, ngraph::Shape{imageShape.size()}, imageShape);
 
-  auto paramsIn = ngraph::builder::makeParams(ngPrc, {inputShape, imageShape});
-  auto paramsOut = ngraph::helpers::convert2OutputVector(
+  auto paramsIn = ngraph::builder::makeParams(inputPrc, {inputShape, imageShape});
+  auto paramIn = ngraph::helpers::convert2OutputVector(
       ngraph::helpers::castOps2Nodes<ngraph::op::Parameter>(paramsIn));
 
   // priorBoxAttrs
@@ -126,7 +122,7 @@ void PriorBoxLayerTest::SetUp() {
   attributes.scale_all_sizes = scaleAllSizes;
   auto priorBox = std::dynamic_pointer_cast<ngraph::opset4::PriorBox>(
       std::make_shared<ngraph::opset4::PriorBox>(
-          layerShapeConstNode, imageShapeConstNode, attributes));
+          layerShapeConstNode, paramIn[1], attributes));
   ngraph::ResultVector results{
       std::make_shared<ngraph::opset1::Result>(priorBox)};
   function = std::make_shared<ngraph::Function>(results, paramsIn, "PriorBox");
