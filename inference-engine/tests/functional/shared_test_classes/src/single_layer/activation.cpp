@@ -77,6 +77,17 @@ InferenceEngine::Blob::Ptr ActivationLayerTest::GenerateInput(const InferenceEng
             resolution = 32768;
             break;
         }
+        case ngraph::helpers::ActivationTypes::Acosh: {
+            data_start_from = 1;
+            data_range = 20;
+            break;
+        }
+        case ngraph::helpers::ActivationTypes::Atanh: {
+            // TODO: Atanh domain is (-1, 1), but here expresses [-1, 1] and fails test, so uses 0 instead
+            data_start_from = 0;
+            data_range = 1;
+            break;
+        }
         case ngraph::helpers::ActivationTypes::Ceiling: {
             data_start_from = -1000;
             data_range = 2000;
