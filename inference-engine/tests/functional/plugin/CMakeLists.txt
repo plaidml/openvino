@@ -19,7 +19,3 @@ endif()
 if (ENABLE_MYRIAD)
     add_subdirectory(myriad)
 endif()
-
-if (ENABLE_PLAIDML)
-    add_subdirectory(plaidml)
-endif()
