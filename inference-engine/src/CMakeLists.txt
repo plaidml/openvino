@@ -24,10 +24,6 @@ if(ENABLE_GNA)
     add_subdirectory(gna_plugin)
 endif()
 
-if (ENABLE_PLAIDML)
-    add_subdirectory(plaidml_plugin)
-endif()
-
 add_subdirectory(hetero_plugin)
 
 add_subdirectory(multi_device)
