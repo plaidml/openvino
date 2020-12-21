@@ -50,6 +50,8 @@ void OnehotLayerTest::SetUp() {
     function = std::make_shared<ngraph::Function>(results, params, "onehot");
 }
 
-TEST_P(OnehotLayerTest, CompareWithRefs) { Run(); }
+TEST_P(OnehotLayerTest, CompareWithRefs) {
+    Run();
+}
 
 } // namespace LayerTestsDefinitions
