@@ -14,7 +14,7 @@ using oneHotParams = typename std::tuple<
     float,                      // off_value
     std::vector<size_t>,        // Input shapes
     InferenceEngine::Precision, // Net precision
-    LayerTestsUtils::TargetDevice // Target device name                   >
+    LayerTestsUtils::TargetDevice // Target device name
     >;
 
 namespace LayerTestsDefinitions {
