@@ -4,30 +4,14 @@
 
 #include <functional>
 #include <memory>
-#include <string>
-#include <tuple>
-#include <vector>
-
-#include "ie_core.hpp"
 
 #include "common_test_utils/common_utils.hpp"
-#include "functional_test_utils/blob_utils.hpp"
-#include "functional_test_utils/plugin_cache.hpp"
 #include "functional_test_utils/precision_utils.hpp"
 #include "functional_test_utils/skip_tests_config.hpp"
 
 #include "single_layer_tests/roi_align.hpp"
 
 namespace LayerTestsDefinitions {
-
-template <template <typename...> class R = std::vector, typename Top, typename Sub = typename Top::value_type>
-R<typename Sub::value_type> flatten(Top const &all) {
-    R<typename Sub::value_type> accum;
-    for (auto &sub : all)
-        accum.insert(std::end(accum), std::begin(sub), std::end(sub));
-
-    return accum;
-}
 
 std::string ROIAlignLayerTest::getTestCaseName(const testing::TestParamInfo<ROIAlignParams> &obj) {
     ROIAlignSpecificParams roiParams;
@@ -59,7 +43,6 @@ std::string ROIAlignLayerTest::getTestCaseName(const testing::TestParamInfo<ROIA
 }
 
 void ROIAlignLayerTest::SetUp() {
-    // Use IE ref mode as ngraph can not run this operation now
     SetRefMode(LayerTestsUtils::RefMode::IE);
 
     ROIAlignSpecificParams roiParams;
@@ -80,11 +63,17 @@ void ROIAlignLayerTest::SetUp() {
     auto params = ngraph::builder::makeParams(ngPrc, {inputShape});
     auto paramOuts = ngraph::helpers::convert2OutputVector(ngraph::helpers::castOps2Nodes<ngraph::op::Parameter>(params));
 
-    auto flatRois = flatten(rois);
+    // flat rois for building ngraph constant node.
     ngraph::Shape roisShape = {rois.size(), rois[0].size()};
+    std::vector<float> flatRois;
+    for (auto roi : rois) {
+        flatRois.insert(flatRois.end(), roi.begin(), roi.end());
+    }
     auto roisNode = std::make_shared<ngraph::opset1::Constant>(ngraph::element::f32, roisShape, flatRois.data());
+
     ngraph::Shape batchIndicesShape = {batchIndices.size()};
     auto batchIndicesNode = std::make_shared<ngraph::opset1::Constant>(ngraph::element::u32, batchIndicesShape, batchIndices.data());
+
     auto roiAlign = std::make_shared<ngraph::opset3::ROIAlign>(paramOuts[0], roisNode, batchIndicesNode, pooledH, pooledW, samplingRatio, spatialScale, mode);
     ngraph::ResultVector results{std::make_shared<ngraph::opset1::Result>(roiAlign)};
     function = std::make_shared<ngraph::Function>(results, params, "ROIAlign");
