@@ -61,3 +61,4 @@ TEST_P(RegionYoloLayerTest, CompareWithRefs) {
 };
 
 } // namespace LayerTestsDefinitions
+
