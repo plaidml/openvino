@@ -28,11 +28,18 @@ namespace ngraph {
             const std::vector<float>& biasesWeights) {
             bool randomFilterWeights = filterWeights.empty();
             auto shape = in.get_shape();
+	    auto offset_shape = deformablein.get_shape();
             std::vector<size_t> filterWeightsShape = { numOutChannels, shape[1] };
+	    if (filterWeightsShape[0] % group || filterWeightsShape[1] % group)
+                throw std::runtime_error("incorrected shape for DeformableConvolution");
+            if (offset_shape[1] % deformableGroup || filterWeightsShape[1] % deformableGroup)
+                throw std::runtime_error("incorrected shape for DeformableConvolution");
+            filterWeightsShape[0] /= group;
+            filterWeightsShape[1] /= group;
+            filterWeightsShape.insert(filterWeightsShape.begin(), group);
             filterWeightsShape.insert(filterWeightsShape.end(), filterSize.begin(), filterSize.end());
             auto filterWeightsNode = makeConstant(type, filterWeightsShape, filterWeights, randomFilterWeights);
-            auto conv = std::make_shared<opset1::DeformableConvolution>(in,deformablein, filterWeightsNode, strides, padsBegin, padsEnd, dilations,
-                autoPad, group, deformableGroup);
+            auto conv = std::make_shared<opset1::DeformableConvolution>(in,deformablein, filterWeightsNode, strides, padsBegin, padsEnd, dilations, autoPad, group, deformableGroup);
             if (addBiases) {
                 bool randomBiases = biasesWeights.empty();
                 auto biasesWeightsNode = makeConstant(type, {}, biasesWeights, randomBiases);
