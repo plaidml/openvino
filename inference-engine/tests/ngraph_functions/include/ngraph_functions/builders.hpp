@@ -426,5 +426,21 @@ std::shared_ptr<ngraph::Node> makeRNN(const OutputVector& in,
 
 std::shared_ptr<ngraph::Node> makeTile(const ngraph::Output<Node>& in,
                                        const std::vector<size_t>& repeats);
+
+std::shared_ptr<Node> makeDeformableConvolution(const ngraph::Output<Node>& in,
+    const ngraph::Output<Node>& deformablein,
+    const element::Type& type,
+    const std::vector<size_t>& filterSize,
+    const std::vector<size_t>& strides,
+    const std::vector<ptrdiff_t>& padsBegin,
+    const std::vector<ptrdiff_t>& padsEnd,
+    const std::vector<size_t>& dilations,
+    const op::PadType& autoPad,
+    size_t numOutChannels,
+    int64_t group,
+    int64_t deformableGroup,
+    bool addBiases = false,
+    const std::vector<float>& filterWeights = {},
+    const std::vector<float>& biasesWeights = {});
 }  // namespace builder
 }  // namespace ngraph
