@@ -33,7 +33,7 @@ std::string DeformableConvolutionLayerTest::getTestCaseName(testing::TestParamIn
     size_t convOutChannels;
     int64_t group;
     int64_t deformableGroup;
-    std::tie(kernel, stride, padBegin, padEnd, dilation, convOutChannels, padType, group, deformableGroup) = convParams;
+    std::tie(kernel, stride, padBegin, padEnd, dilation, convOutChannels, group, deformableGroup, padType) = convParams;
 
     std::ostringstream result;
     result << "IS=" << CommonTestUtils::vec2str(inputShapes) << "_";
@@ -53,10 +53,11 @@ std::string DeformableConvolutionLayerTest::getTestCaseName(testing::TestParamIn
 }
 
 void DeformableConvolutionLayerTest::SetUp() {
+    SetRefMode(LayerTestsUtils::RefMode::IE);
     deformableConvSpecificParams convParams;
     std::vector<size_t> inputShape;
     std::vector<size_t> deformableShape;
-    auto netPrecision   = InferenceEngine::Precision::UNSPECIFIED;
+    InferenceEngine::Precision netPrecision;
     std::tie(convParams, netPrecision, inputShape, deformableShape, targetDevice) = this->GetParam();
     ngraph::op::PadType padType;
     InferenceEngine::SizeVector kernel, stride, dilation;
@@ -64,19 +65,31 @@ void DeformableConvolutionLayerTest::SetUp() {
     size_t convOutChannels;
     int64_t group;
     int64_t deformableGroup;
-    std::tie(kernel, stride, padBegin, padEnd, dilation, convOutChannels, padType, group, deformableGroup) = convParams;
+    std::tie(kernel, stride, padBegin, padEnd, dilation, convOutChannels, group, deformableGroup, padType) = convParams;
     auto ngPrc = FuncTestUtils::PrecisionUtils::convertIE2nGraphPrc(netPrecision);
     auto params = ngraph::builder::makeParams(ngPrc, {inputShape, deformableShape});
     auto paramOuts = ngraph::helpers::convert2OutputVector(
             ngraph::helpers::castOps2Nodes<ngraph::op::Parameter>(params));
-    auto deformableConv = std::dynamic_pointer_cast<ngraph::opset1::DeformableConvolution>(
+    /*
+    auto deformableConv = std::dynamic_pointer_cast<ngraph::opset4::DeformableConvolution>(
             ngraph::builder::makeDeformableConvolution(paramOuts[0], paramOuts[1], ngPrc, kernel, stride, padBegin,
                                              padEnd, dilation, padType, convOutChannels, group, deformableGroup));
+    */
+    std::vector<float> filterweights = {};
+    auto shape = paramOuts[0].get_shape();
+    std::vector<size_t> filterWeightsShape = { convOutChannels, shape[1] };
+    filterWeightsShape.insert(filterWeightsShape.end(), kernel.begin(), kernel.end());
+    auto filterWeightsNode = ngraph::builder::makeConstant(ngPrc, filterWeightsShape, filterweights, true);
+    auto deformableConv = std::make_shared<ngraph::opset4::DeformableConvolution>(paramOuts[0], paramOuts[1],
+        filterWeightsNode, stride, padBegin, padEnd, dilation, padType, group, deformableGroup);
+    //auto deformableConv = std::dynamic_pointer_cast<ngraph::opset1::Convolution>(
+            //ngraph::builder::makeConvolution(paramOuts[0], ngPrc, kernel, stride, padBegin,
+                                             //padEnd, dilation, padType, convOutChannels));
     ngraph::ResultVector results{std::make_shared<ngraph::opset1::Result>(deformableConv)};
     function = std::make_shared<ngraph::Function>(results, params, "deformableConvolution");
 }
 
-TEST_P(DeformableConvolutionLayerTest, CompareWithRefs) {
+TEST_P(DeformableConvolutionLayerTest, CompareWithRefsDynamicBath) {
     Run();
 }
 }  // namespace LayerTestsDefinitions

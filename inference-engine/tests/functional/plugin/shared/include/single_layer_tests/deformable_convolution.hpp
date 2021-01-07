@@ -13,7 +13,7 @@
 #include "ngraph_functions/builders.hpp"
 #include "ngraph_functions/utils/ngraph_helpers.hpp"
 
-// ! [test_convolution:definition]
+// ! [test_deformableConvolution:definition]
 typedef std::tuple<
         InferenceEngine::SizeVector,    // Kernel size
         InferenceEngine::SizeVector,    // Strides
@@ -21,9 +21,9 @@ typedef std::tuple<
         std::vector<ptrdiff_t>,         // Pad end
         InferenceEngine::SizeVector,    // Dilation
         size_t,                         // Num out channels
-        ngraph::op::PadType,            // Padding type
         int64_t,                        // Group
-        int64_t                         // Deformable_group
+        int64_t,                        // Deformable group
+	ngraph::op::PadType             // Padding type
 > deformableConvSpecificParams;
 typedef std::tuple<
         deformableConvSpecificParams,
@@ -43,6 +43,6 @@ public:
 protected:
     void SetUp() override;
 };
-// ! [test_deformableconvolution:definition]
+// ! [test_deformableConvolution:definition]
 
 }  // namespace LayerTestsDefinitions
