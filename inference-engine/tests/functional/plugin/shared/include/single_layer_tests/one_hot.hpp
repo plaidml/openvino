@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "functional_test_utils/layer_test_utils.hpp"
+#include "shared_test_classes/base/layer_test_utils.hpp"
 #include "ngraph_functions/builders.hpp"
 
 using oneHotParams = typename std::tuple<
