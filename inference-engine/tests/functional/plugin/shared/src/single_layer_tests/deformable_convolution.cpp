@@ -17,6 +17,7 @@
 #include "functional_test_utils/layer_test_utils.hpp"
 
 #include "single_layer_tests/deformable_convolution.hpp"
+#include <iostream>
 
 namespace LayerTestsDefinitions {
 
@@ -31,8 +32,8 @@ std::string DeformableConvolutionLayerTest::getTestCaseName(testing::TestParamIn
     InferenceEngine::SizeVector kernel, stride, dilation;
     std::vector<ptrdiff_t> padBegin, padEnd;
     size_t convOutChannels;
-    int64_t group;
-    int64_t deformableGroup;
+    size_t group;
+    size_t deformableGroup;
     std::tie(kernel, stride, padBegin, padEnd, dilation, convOutChannels, group, deformableGroup, padType) = convParams;
 
     std::ostringstream result;
@@ -58,13 +59,14 @@ void DeformableConvolutionLayerTest::SetUp() {
     std::vector<size_t> inputShape;
     std::vector<size_t> deformableShape;
     InferenceEngine::Precision netPrecision;
+    //auto netPrecision = InferenceEngine::Precision::UNSPECIFIED;
     std::tie(convParams, netPrecision, inputShape, deformableShape, targetDevice) = this->GetParam();
     ngraph::op::PadType padType;
     InferenceEngine::SizeVector kernel, stride, dilation;
     std::vector<ptrdiff_t> padBegin, padEnd;
     size_t convOutChannels;
-    int64_t group;
-    int64_t deformableGroup;
+    size_t group;
+    size_t deformableGroup;
     std::tie(kernel, stride, padBegin, padEnd, dilation, convOutChannels, group, deformableGroup, padType) = convParams;
     auto ngPrc = FuncTestUtils::PrecisionUtils::convertIE2nGraphPrc(netPrecision);
     auto params = ngraph::builder::makeParams(ngPrc, {inputShape, deformableShape});
@@ -78,10 +80,11 @@ void DeformableConvolutionLayerTest::SetUp() {
     std::vector<float> filterweights = {};
     auto shape = paramOuts[0].get_shape();
     std::vector<size_t> filterWeightsShape = { convOutChannels, shape[1] };
+    filterWeightsShape[1] /= group;
     filterWeightsShape.insert(filterWeightsShape.end(), kernel.begin(), kernel.end());
     auto filterWeightsNode = ngraph::builder::makeConstant(ngPrc, filterWeightsShape, filterweights, true);
     auto deformableConv = std::make_shared<ngraph::opset4::DeformableConvolution>(paramOuts[0], paramOuts[1],
-        filterWeightsNode, stride, padBegin, padEnd, dilation, padType, group, deformableGroup);
+         filterWeightsNode, stride, padBegin, padEnd, dilation, padType, group, deformableGroup);
     //auto deformableConv = std::dynamic_pointer_cast<ngraph::opset1::Convolution>(
             //ngraph::builder::makeConvolution(paramOuts[0], ngPrc, kernel, stride, padBegin,
                                              //padEnd, dilation, padType, convOutChannels));

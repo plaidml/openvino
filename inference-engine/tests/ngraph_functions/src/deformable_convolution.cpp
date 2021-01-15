@@ -21,8 +21,8 @@ namespace ngraph {
             const std::vector<size_t>& dilations,
             const op::PadType& autoPad,
             size_t numOutChannels,
-            int64_t group,
-            int64_t deformableGroup,
+            size_t group,
+            size_t deformableGroup,
             bool addBiases,
             const std::vector<float>& filterWeights,
             const std::vector<float>& biasesWeights) {
@@ -34,9 +34,7 @@ namespace ngraph {
                 throw std::runtime_error("incorrected shape for DeformableConvolution");
             if (offset_shape[1] % deformableGroup || filterWeightsShape[1] % deformableGroup)
                 throw std::runtime_error("incorrected shape for DeformableConvolution");
-            //filterWeightsShape[0] /= group;
-            //filterWeightsShape[1] /= group;
-            //filterWeightsShape.insert(filterWeightsShape.begin(), group);
+            filterWeightsShape[1] /= group;
             filterWeightsShape.insert(filterWeightsShape.end(), filterSize.begin(), filterSize.end());
             auto filterWeightsNode = makeConstant(type, filterWeightsShape, filterWeights, randomFilterWeights);
             auto conv = std::make_shared<opset4::DeformableConvolution>(in,deformablein, filterWeightsNode, strides, padsBegin, padsEnd, dilations, autoPad, group, deformableGroup);
