@@ -31,4 +31,3 @@ void ReorgYoloLayerTest::SetUp() {
 }
 
 } // namespace LayerTestsDefinitions
-
