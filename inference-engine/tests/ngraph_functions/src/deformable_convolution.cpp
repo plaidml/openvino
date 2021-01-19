@@ -20,7 +20,7 @@ namespace ngraph {
             const std::vector<ptrdiff_t>& padsEnd,
             const std::vector<size_t>& dilations,
             const op::PadType& autoPad,
-            size_t numOutChannels,
+            size_t numOutChannels,    //
             size_t group,
             size_t deformableGroup,
             bool addBiases,
