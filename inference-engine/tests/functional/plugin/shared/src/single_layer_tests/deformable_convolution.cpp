@@ -17,7 +17,6 @@
 #include "functional_test_utils/layer_test_utils.hpp"
 
 #include "single_layer_tests/deformable_convolution.hpp"
-#include <iostream>
 
 namespace LayerTestsDefinitions {
 
@@ -59,7 +58,6 @@ void DeformableConvolutionLayerTest::SetUp() {
     std::vector<size_t> inputShape;
     std::vector<size_t> deformableShape;
     InferenceEngine::Precision netPrecision;
-    //auto netPrecision = InferenceEngine::Precision::UNSPECIFIED;
     std::tie(convParams, netPrecision, inputShape, deformableShape, targetDevice) = this->GetParam();
     ngraph::op::PadType padType;
     InferenceEngine::SizeVector kernel, stride, dilation;
@@ -72,16 +70,9 @@ void DeformableConvolutionLayerTest::SetUp() {
     auto params = ngraph::builder::makeParams(ngPrc, {inputShape, deformableShape});
     auto paramOuts = ngraph::helpers::convert2OutputVector(
             ngraph::helpers::castOps2Nodes<ngraph::op::Parameter>(params));
-    /* 
-    // makeDeformableConvolution
-    auto deformableConv = std::dynamic_pointer_cast<ngraph::opset4::DeformableConvolution>(
-            ngraph::builder::makeDeformableConvolution(paramOuts[0], paramOuts[1], ngPrc, kernel, stride, padBegin,
-                                             padEnd, dilation, padType, convOutChannels, group, deformableGroup));
-    */ 
     std::vector<float> filterweights = {};
     auto shape = paramOuts[0].get_shape();
     std::vector<size_t> filterWeightsShape = { convOutChannels, shape[1] };
-    filterWeightsShape[1] /= group;
     filterWeightsShape.insert(filterWeightsShape.end(), kernel.begin(), kernel.end());
     auto filterWeightsNode = ngraph::builder::makeConstant(ngPrc, filterWeightsShape, filterweights, true);
     auto deformableConv = std::make_shared<ngraph::opset4::DeformableConvolution>(paramOuts[0], paramOuts[1],

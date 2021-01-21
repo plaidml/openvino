@@ -34,7 +34,7 @@ namespace ngraph {
                 throw std::runtime_error("incorrected shape for DeformableConvolution");
             if (offset_shape[1] % deformableGroup || filterWeightsShape[1] % deformableGroup)
                 throw std::runtime_error("incorrected shape for DeformableConvolution");
-            filterWeightsShape[1] /= group;
+            //filterWeightsShape[1] /= group;
             filterWeightsShape.insert(filterWeightsShape.end(), filterSize.begin(), filterSize.end());
             auto filterWeightsNode = makeConstant(type, filterWeightsShape, filterWeights, randomFilterWeights);
             auto conv = std::make_shared<opset4::DeformableConvolution>(in,deformablein, filterWeightsNode, strides, padsBegin, padsEnd, dilations, autoPad, group, deformableGroup);
