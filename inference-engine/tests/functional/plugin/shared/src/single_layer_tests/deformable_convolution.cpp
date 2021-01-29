@@ -46,7 +46,7 @@ std::string DeformableConvolutionLayerTest::getTestCaseName(testing::TestParamIn
     result << "O=" << convOutChannels << "_";
     result << "AP=" << padType << "_";
     result << "G=" << group << "_";
-    result << "DG" << deformableGroup << "_";
+    result << "DG=" << deformableGroup << "_";
     result << "netPRC=" << netPrecision.name() << "_";
     result << "targetDevice=" << targetDevice;
     return result.str();
