@@ -20,7 +20,6 @@ std::string DeformableConvolutionLayerTest::getTestCaseName(testing::TestParamIn
     size_t group;
     size_t deformableGroup;
     std::tie(kernel, stride, padBegin, padEnd, dilation, convOutChannels, group, deformableGroup, padType) = convParams;
-
     std::ostringstream result;
     result << "IS=" << CommonTestUtils::vec2str(inputShapes) << "_";
     result << "DS=" << CommonTestUtils::vec2str(deformableShapes) << "_";
@@ -62,7 +61,7 @@ void DeformableConvolutionLayerTest::SetUp() {
     filterWeightsShape.insert(filterWeightsShape.end(), kernel.begin(), kernel.end());
     auto filterWeightsNode = ngraph::builder::makeConstant(ngPrc, filterWeightsShape, filterweights, true);
     auto deformableConv = std::make_shared<ngraph::opset4::DeformableConvolution>(paramOuts[0], paramOuts[1],
-         filterWeightsNode, stride, padBegin, padEnd, dilation, padType, group, deformableGroup);
+            filterWeightsNode, stride, padBegin, padEnd, dilation, padType, group, deformableGroup);
     ngraph::ResultVector results{std::make_shared<ngraph::opset1::Result>(deformableConv)};
     function = std::make_shared<ngraph::Function>(results, params, "deformableConvolution");
 }
