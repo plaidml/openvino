@@ -98,6 +98,9 @@ void PriorBoxClusteredLayerTest::SetUp() {
           attributes);
     } else {
       auto inputPrc = ngraph::element::Type_t::i64;
+      if(inPrc != InferenceEngine::Precision::UNSPECIFIED) {
+        inputPrc = FuncTestUtils::PrecisionUtils::convertIE2nGraphPrc(inPrc);
+      }
       auto constInput1 = std::make_shared<ngraph::opset5::Constant>(
             inputPrc, ngraph::Shape{inputShapes.size()}, inputShapes);
       auto constInput2 = std::make_shared<ngraph::opset5::Constant>(
