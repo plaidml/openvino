@@ -91,7 +91,7 @@ namespace LayerTestsDefinitions {
         auto paramOuts = ngraph::helpers::convert2OutputVector(
                 ngraph::helpers::castOps2Nodes<ngraph::op::Parameter>(params));
         size_t size = 1;
-        for (auto dim : coordsShape){
+        for (auto dim : coordsShape) {
             size *= dim;
         }
         std::vector<float> coords(size);
