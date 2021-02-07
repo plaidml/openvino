@@ -89,7 +89,7 @@ void PriorBoxClusteredLayerTest::SetUp() {
     attributes.variances = variances;
 
     std::shared_ptr<ngraph::op::PriorBoxClustered> priorBoxClustered;
-    if(inputType == ngraph::helpers::InputLayerType::PARAMETER) {
+    if (inputType == ngraph::helpers::InputLayerType::PARAMETER) {
       auto shape_of_1 = std::make_shared<ngraph::opset3::ShapeOf>(params[0]);
       auto shape_of_2 = std::make_shared<ngraph::opset3::ShapeOf>(params[1]);
       priorBoxClustered = std::make_shared<ngraph::op::PriorBoxClustered>(
@@ -98,7 +98,7 @@ void PriorBoxClusteredLayerTest::SetUp() {
           attributes);
     } else {
       auto inputPrc = ngraph::element::Type_t::i64;
-      if(inPrc != InferenceEngine::Precision::UNSPECIFIED) {
+      if (inPrc != InferenceEngine::Precision::UNSPECIFIED) {
         inputPrc = FuncTestUtils::PrecisionUtils::convertIE2nGraphPrc(inPrc);
       }
       auto constInput1 = std::make_shared<ngraph::opset5::Constant>(
