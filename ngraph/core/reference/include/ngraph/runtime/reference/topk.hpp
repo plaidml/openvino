@@ -135,9 +135,11 @@ namespace ngraph
                         break;
                     case op::v1::TopK::SortType::SORT_VALUES:
                         if (compute_max)
-                            std::sort(workspace.begin(), workspace.begin() + k, compare_max<T, U>);
+                            std::stable_sort(
+                                workspace.begin(), workspace.begin() + k, compare_max<T, U>);
                         else
-                            std::sort(workspace.begin(), workspace.begin() + k, compare_min<T, U>);
+                            std::stable_sort(
+                                workspace.begin(), workspace.begin() + k, compare_min<T, U>);
                     }
                     for (size_t j = 0; j < k; j++)
                     {
@@ -148,8 +150,8 @@ namespace ngraph
                     }
                 }
             }
-        }
-    }
-}
+        } // namespace reference
+    }     // namespace runtime
+} // namespace ngraph
 
 NGRAPH_SUPPRESS_DEPRECATED_END
