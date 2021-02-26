@@ -52,6 +52,11 @@ namespace {
     const std::vector<size_t> inputShape = {4, 4};
     const std::vector<size_t> imageShape = {50, 50};
 
+    const std::vector<ngraph::helpers::InputLayerType> inputTypes = {
+        ngraph::helpers::InputLayerType::CONSTANT,
+        ngraph::helpers::InputLayerType::PARAMETER,
+    };
+
     const auto layerSpeficParams = ::testing::Combine(
         ::testing::ValuesIn(widths),
         ::testing::ValuesIn(heights),
@@ -71,6 +76,7 @@ namespace {
                 ::testing::Values(InferenceEngine::Layout::ANY),
                 ::testing::Values(inputShape),
                 ::testing::Values(imageShape),
+                ::testing::ValuesIn(inputTypes),
                 ::testing::Values(CommonTestUtils::DEVICE_CPU)),
             PriorBoxClusteredLayerTest::getTestCaseName);
 
