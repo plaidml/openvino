@@ -41,6 +41,11 @@ const std::vector<InferenceEngine::Precision> netPRCs = {
 
 const std::vector<float> spatial_scales = {0.625f, 1.f};
 
+const std::vector<ngraph::helpers::InputLayerType> secondaryInputTypes = {
+    ngraph::helpers::InputLayerType::CONSTANT,
+    ngraph::helpers::InputLayerType::PARAMETER,
+};
+
 const auto test_ROIPooling_max = ::testing::Combine(
     ::testing::ValuesIn(inShapes),
     ::testing::ValuesIn(coordShapes),
@@ -48,6 +53,7 @@ const auto test_ROIPooling_max = ::testing::Combine(
     ::testing::ValuesIn(spatial_scales),
     ::testing::Values(ngraph::helpers::ROIPoolingTypes::ROI_MAX),
     ::testing::ValuesIn(netPRCs),
+    ::testing::ValuesIn(secondaryInputTypes),
     ::testing::Values(CommonTestUtils::DEVICE_CPU)
 );
 
@@ -58,6 +64,7 @@ const auto test_ROIPooling_bilinear = ::testing::Combine(
     ::testing::Values(spatial_scales[1]),
     ::testing::Values(ngraph::helpers::ROIPoolingTypes::ROI_BILINEAR),
     ::testing::ValuesIn(netPRCs),
+    ::testing::ValuesIn(secondaryInputTypes),
     ::testing::Values(CommonTestUtils::DEVICE_CPU)
 );
 
