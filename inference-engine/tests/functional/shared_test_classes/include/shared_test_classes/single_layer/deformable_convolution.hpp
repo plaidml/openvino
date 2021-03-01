@@ -15,7 +15,7 @@
 
 namespace LayerTestsDefinitions {
 typedef std::tuple<
-	InferenceEngine::SizeVector,  // Kernel size
+        InferenceEngine::SizeVector,  // Kernel size
         InferenceEngine::SizeVector,  // Strides
         std::vector<int64_t>,         // Pad begin
         std::vector<int64_t>,         // Pad end
@@ -26,7 +26,7 @@ typedef std::tuple<
         ngraph::op::PadType           // Padding type
 > deformableConvSpecificParams;
 typedef std::tuple<
-	deformableConvSpecificParams,
+        deformableConvSpecificParams,
         InferenceEngine::Precision,    // Net precision
         InferenceEngine::SizeVector,   // Input shapes
         InferenceEngine::SizeVector,   // Deformable shape
