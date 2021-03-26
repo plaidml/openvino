@@ -9,7 +9,7 @@ namespace LayerTestsDefinitions {
 
 std::string PSROIPoolingLayerTest::getTestCaseName(testing::TestParamInfo<psroiParams> obj) {
     std::vector<size_t> inputShape;
-    std::vector<size_t> coordsShape;
+    std::vector<float> coordsValue;
     size_t outputDim;
     size_t groupSize;
     float spatialScale;
@@ -18,12 +18,12 @@ std::string PSROIPoolingLayerTest::getTestCaseName(testing::TestParamInfo<psroiP
     std::string mode;
     InferenceEngine::Precision netPrecision;
     std::string targetDevice;
-    std::tie(inputShape, coordsShape, outputDim, groupSize, spatialScale, spatialBinsX, spatialBinsY, mode, netPrecision, targetDevice) = obj.param;
+    std::tie(inputShape, coordsValue, outputDim, groupSize, spatialScale, spatialBinsX, spatialBinsY, mode, netPrecision, targetDevice) = obj.param;
 
     std::ostringstream result;
 
     result << "in_shape=" << CommonTestUtils::vec2str(inputShape) << "_";
-    result << "coord_shape=" << CommonTestUtils::vec2str(coordsShape) << "_";
+    result << "coord_shape={" << coordsValue.size() / 5 << ", " << 5 << "}"<< "_";
     result << "out_dim=" << outputDim << "_";
     result << "group_size=" << groupSize << "_";
     result << "scale=" << spatialScale << "_";
@@ -105,19 +105,23 @@ void PSROIPoolingLayerTest::Infer() {
 }
 
 void PSROIPoolingLayerTest::SetUp() {
+    //SetRefMode(LayerTestsUtils::RefMode::IE);
     std::vector<size_t> inputShape;
-    std::vector<size_t> coordsShape;
+    std::vector<float> coordsValue;
     size_t outputDim;
     InferenceEngine::Precision netPrecision;
-    std::tie(inputShape, coordsShape, outputDim, groupSize_, spatialScale_,
+    std::tie(inputShape, coordsValue, outputDim, groupSize_, spatialScale_,
              spatialBinsX_, spatialBinsY_, mode_, netPrecision, targetDevice) = this->GetParam();
 
     auto ngPrc = FuncTestUtils::PrecisionUtils::convertIE2nGraphPrc(netPrecision);
-    auto params = ngraph::builder::makeParams(ngPrc, {inputShape, coordsShape});
+    auto params = ngraph::builder::makeParams(ngPrc, {inputShape});
     auto paramOuts = ngraph::helpers::convert2OutputVector(
             ngraph::helpers::castOps2Nodes<ngraph::op::Parameter>(params));
+    std::vector<float> values = {0, 0, 0, 2, 2};
+    auto constNode = std::make_shared<ngraph::opset1::Constant>(
+            ngraph::element::Type_t::f32, ngraph::Shape({coordsValue.size() / 5, 5}), coordsValue);
     std::shared_ptr<ngraph::Node> psroiPooling = std::make_shared<ngraph::op::v0::PSROIPooling>(paramOuts[0],
-                                                                                                paramOuts[1],
+                                                                                                constNode,
                                                                                                 outputDim,
                                                                                                 groupSize_,
                                                                                                 spatialScale_,

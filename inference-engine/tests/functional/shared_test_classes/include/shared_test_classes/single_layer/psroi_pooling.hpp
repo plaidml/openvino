@@ -18,7 +18,7 @@
 namespace LayerTestsDefinitions {
 
 using psroiParams = std::tuple<std::vector<size_t>,            // input shape
-                               std::vector<size_t>,            // coords shape
+                               std::vector<float>,             // coords value
                                size_t,                         // output_dim
                                size_t,                         // group_size
                                float,                          // Spatial scale
