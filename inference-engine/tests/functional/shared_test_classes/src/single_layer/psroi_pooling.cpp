@@ -105,7 +105,6 @@ void PSROIPoolingLayerTest::Infer() {
 }
 
 void PSROIPoolingLayerTest::SetUp() {
-    //SetRefMode(LayerTestsUtils::RefMode::IE);
     std::vector<size_t> inputShape;
     std::vector<float> coordsValue;
     size_t outputDim;
@@ -117,7 +116,6 @@ void PSROIPoolingLayerTest::SetUp() {
     auto params = ngraph::builder::makeParams(ngPrc, {inputShape});
     auto paramOuts = ngraph::helpers::convert2OutputVector(
             ngraph::helpers::castOps2Nodes<ngraph::op::Parameter>(params));
-    std::vector<float> values = {0, 0, 0, 2, 2};
     auto constNode = std::make_shared<ngraph::opset1::Constant>(
             ngraph::element::Type_t::f32, ngraph::Shape({coordsValue.size() / 5, 5}), coordsValue);
     std::shared_ptr<ngraph::Node> psroiPooling = std::make_shared<ngraph::op::v0::PSROIPooling>(paramOuts[0],
