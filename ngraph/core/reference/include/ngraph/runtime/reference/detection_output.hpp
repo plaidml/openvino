@@ -503,9 +503,9 @@ namespace ngraph
                             scoreIndexPairs.push_back(std::make_pair(conf, std::make_pair(id, p)));
                         }
                     }
-                    std::sort(scoreIndexPairs.begin(),
-                              scoreIndexPairs.end(),
-                              SortScorePairDescend<std::pair<int, int>>);
+                    std::stable_sort(scoreIndexPairs.begin(),
+                                     scoreIndexPairs.end(),
+                                     SortScorePairDescend<std::pair<int, int>>);
 
                     if (attrs.top_k != -1)
                         if (scoreIndexPairs.size() > attrs.top_k)
@@ -649,9 +649,9 @@ namespace ngraph
                                         std::make_pair(scores[idx], std::make_pair(label, idx)));
                                 }
                             }
-                            std::sort(scoreIndexPairs.begin(),
-                                      scoreIndexPairs.end(),
-                                      SortScorePairDescend<std::pair<int, int>>);
+                            std::stable_sort(scoreIndexPairs.begin(),
+                                             scoreIndexPairs.end(),
+                                             SortScorePairDescend<std::pair<int, int>>);
                             scoreIndexPairs.resize(attrs.keep_top_k[0]);
                             std::map<int, std::vector<int>> newIndices;
                             for (int j = 0; j < scoreIndexPairs.size(); ++j)
