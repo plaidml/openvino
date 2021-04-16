@@ -391,8 +391,8 @@ std::vector<std::vector<std::uint8_t>> LayerTestsCommon::CalculateRefs() {
         }
         return result;
       }
-    } nameLess;
-    std::sort(outputsInfo.begin(), outputsInfo.end(), nameLess);
+    } reverseNameLess;
+    std::sort(outputsInfo.begin(), outputsInfo.end(), reverseNameLess);
     std::vector<ngraph::element::Type_t> convertType;
     convertType.reserve(outputsInfo.size());
         for (const auto &output : outputsInfo) {
@@ -438,8 +438,8 @@ std::vector<InferenceEngine::Blob::Ptr> LayerTestsCommon::GetOutputs() {
         }
         return result;
       }
-    } nameLess;
-    std::sort(outputsInfo.begin(), outputsInfo.end(), nameLess);
+    } reverseNameLess;
+    std::sort(outputsInfo.begin(), outputsInfo.end(), reverseNameLess);
     for (const auto &output : outputsInfo) {
         const auto &name = output.first;
         outputs.push_back(inferRequest.GetBlob(name));
