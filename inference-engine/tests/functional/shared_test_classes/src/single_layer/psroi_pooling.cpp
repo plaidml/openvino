@@ -73,6 +73,12 @@ static void fillROITensor(float* buffer, int numROIs, int batchSize,
         int startY = randInt(0, std::max(1, height - sizeY - 1));
 
         float* roi = buffer + i * 5;
+        roi[0] = batchId;
+        roi[1] = startX / scaleX;
+        roi[2] = startY / scaleY;
+        roi[3] = (startX + sizeX - 1) / scaleX;
+        roi[4] = (startY + sizeY - 1) / scaleY;
+
         batchId = (batchId + 1) % batchSize;
     }
 }
