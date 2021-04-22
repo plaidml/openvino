@@ -18,7 +18,7 @@
 namespace LayerTestsDefinitions {
 
 using psroiParams = std::tuple<std::vector<size_t>,            // input shape
-                               std::vector<float>,             // coords value
+                               std::vector<size_t>,            // coords shape
                                size_t,                         // output_dim
                                size_t,                         // group_size
                                float,                          // Spatial scale
@@ -36,6 +36,7 @@ class PSROIPoolingLayerTest : public testing::WithParamInterface<psroiParams>,
 
         protected:
             void SetUp() override;
+            void GenerateCoords(const std::vector<size_t>& feat_map_shape, float* buffer, size_t size);
 
         private:
             size_t groupSize_;

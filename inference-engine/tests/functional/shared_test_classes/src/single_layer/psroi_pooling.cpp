@@ -9,7 +9,7 @@ namespace LayerTestsDefinitions {
 
 std::string PSROIPoolingLayerTest::getTestCaseName(testing::TestParamInfo<psroiParams> obj) {
     std::vector<size_t> inputShape;
-    std::vector<float> coordsValue;
+    std::vector<size_t> coordsShape;
     size_t outputDim;
     size_t groupSize;
     float spatialScale;
@@ -18,12 +18,12 @@ std::string PSROIPoolingLayerTest::getTestCaseName(testing::TestParamInfo<psroiP
     std::string mode;
     InferenceEngine::Precision netPrecision;
     std::string targetDevice;
-    std::tie(inputShape, coordsValue, outputDim, groupSize, spatialScale, spatialBinsX, spatialBinsY, mode, netPrecision, targetDevice) = obj.param;
+    std::tie(inputShape, coordsShape, outputDim, groupSize, spatialScale, spatialBinsX, spatialBinsY, mode, netPrecision, targetDevice) = obj.param;
 
     std::ostringstream result;
 
     result << "in_shape=" << CommonTestUtils::vec2str(inputShape) << "_";
-    result << "coord_shape={" << coordsValue.size() / 5 << ", " << 5 << "}"<< "_";
+    result << "coord_shape=" << CommonTestUtils::vec2str(coordsShape) << "_";
     result << "out_dim=" << outputDim << "_";
     result << "group_size=" << groupSize << "_";
     result << "scale=" << spatialScale << "_";
@@ -33,6 +33,12 @@ std::string PSROIPoolingLayerTest::getTestCaseName(testing::TestParamInfo<psroiP
     result << "prec=" << netPrecision.name() << "_";
     result << "dev=" << targetDevice;
     return result.str();
+}
+
+void PSROIPoolingLayerTest::GenerateCoords(const std::vector<size_t>& feat_map_shape, float* buffer, size_t size) {
+    const int height = feat_map_shape[2] / spatialScale_;
+    const int width = feat_map_shape[3] / spatialScale_;
+    CommonTestUtils::fill_data_roi(buffer, size, feat_map_shape[0] - 1, height, width, 1.0f, true);
 }
 
 static int randInt(int low, int high) {
@@ -67,12 +73,6 @@ static void fillROITensor(float* buffer, int numROIs, int batchSize,
         int startY = randInt(0, std::max(1, height - sizeY - 1));
 
         float* roi = buffer + i * 5;
-        roi[0] = batchId;
-        roi[1] = startX / scaleX;
-        roi[2] = startY / scaleY;
-        roi[3] = (startX + sizeX - 1) / scaleX;
-        roi[4] = (startY + sizeY - 1) / scaleY;
-
         batchId = (batchId + 1) % batchSize;
     }
 }
@@ -106,18 +106,23 @@ void PSROIPoolingLayerTest::Infer() {
 
 void PSROIPoolingLayerTest::SetUp() {
     std::vector<size_t> inputShape;
-    std::vector<float> coordsValue;
+    std::vector<size_t> coordsShape;
     size_t outputDim;
     InferenceEngine::Precision netPrecision;
-    std::tie(inputShape, coordsValue, outputDim, groupSize_, spatialScale_,
+    std::tie(inputShape, coordsShape, outputDim, groupSize_, spatialScale_,
              spatialBinsX_, spatialBinsY_, mode_, netPrecision, targetDevice) = this->GetParam();
 
     auto ngPrc = FuncTestUtils::PrecisionUtils::convertIE2nGraphPrc(netPrecision);
     auto params = ngraph::builder::makeParams(ngPrc, {inputShape});
     auto paramOuts = ngraph::helpers::convert2OutputVector(
             ngraph::helpers::castOps2Nodes<ngraph::op::Parameter>(params));
-    auto constNode = std::make_shared<ngraph::opset1::Constant>(
-            ngraph::element::Type_t::f32, ngraph::Shape({coordsValue.size() / 5, 5}), coordsValue);
+    size_t size = 1;
+    for (auto dim : coordsShape) {
+        size *= dim;
+    }
+    std::vector<float> coordsValue(size);
+    GenerateCoords(inputShape, coordsValue.data(), size);
+    auto constNode = ngraph::builder::makeConstant(ngPrc, coordsShape, coordsValue, false);
     std::shared_ptr<ngraph::Node> psroiPooling = std::make_shared<ngraph::op::v0::PSROIPooling>(paramOuts[0],
                                                                                                 constNode,
                                                                                                 outputDim,
