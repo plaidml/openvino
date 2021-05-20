@@ -443,9 +443,8 @@ namespace ngraph
                                             swap_xy,
                                             attrs.clip_before_nms);
 
-                        std::partial_sort(
+                        std::stable_sort(
                             proposals.begin(),
-                            proposals.begin() + pre_nms_topn,
                             proposals.end(),
                             [](const ProposalBox<T>& box1, const ProposalBox<T>& box2) {
                                 return (box1.score > box2.score);

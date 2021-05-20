@@ -113,7 +113,7 @@ void ProposalLayerTest::Compare(
 
 void ProposalLayerTest::SetUp() {
     proposalSpecificParams proposalParams;
-    std::vector<float> img_info = {225.0f, 225.0f, 1.0f};
+    std::vector<float> img_info = {3.0f, 3.0f, 1.0f};
 
     std::tie(proposalParams, targetDevice) = this->GetParam();
     base_size_type base_size;
