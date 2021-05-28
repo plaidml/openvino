@@ -10,6 +10,5 @@ namespace LayerTestsDefinitions {
 
 TEST_P(BinaryConvolutionLayerTest, CompareWithRefs) {
     Run();
-};
-
-} // namespace LayerTestsDefinitions
+}
+}  // namespace LayerTestsDefinitions
