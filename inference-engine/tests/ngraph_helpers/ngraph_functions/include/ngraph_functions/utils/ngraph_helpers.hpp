@@ -123,7 +123,9 @@ enum ActivationTypes {
     Swish,
     HSigmoid,
     RoundHalfToEven,
-    RoundHalfAwayFromZero
+    RoundHalfAwayFromZero,
+    GeluErf,
+    GeluTanh
 };
 
 enum EltwiseTypes {

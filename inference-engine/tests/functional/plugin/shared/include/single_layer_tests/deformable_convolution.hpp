@@ -7,7 +7,9 @@
 #include "shared_test_classes/single_layer/deformable_convolution.hpp"
 
 namespace LayerTestsDefinitions {
+
 TEST_P(DeformableConvolutionLayerTest, CompareWithRefs) {
     Run();
 }
+
 }  // namespace LayerTestsDefinitions
