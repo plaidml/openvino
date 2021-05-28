@@ -6,6 +6,7 @@
 set(TARGET_NAME ieFuncTests)
 
 set(INCLUDES ${IE_MAIN_SOURCE_DIR}/src/inference_engine)
+
 set(LINK_LIBRARIES
     gmock
     funcTestUtils
@@ -16,6 +17,7 @@ set(LINK_LIBRARIES
     openvino::conditional_compilation
     sharedTestClasses
 )
+
 set(DEPENDENCIES
     mock_engine
     inference_engine_ir_reader
@@ -41,15 +43,16 @@ addIeTargetTest(
         IE
 )
 
-ie_faster_build(${TARGET_NAME}
-    PCH PRIVATE "precomp.hpp"
-)
-
-if(TARGET inference_engine_onnx_reader)
+if(NGRAPH_ONNX_IMPORT_ENABLE)
+    target_compile_definitions(${TARGET_NAME} PRIVATE
+        NGRAPH_ONNX_IMPORT_ENABLE
+        ONNX_TEST_MODELS="${CMAKE_CURRENT_SOURCE_DIR}/onnx_reader/models/")
     add_dependencies(${TARGET_NAME} inference_engine_onnx_reader)
 endif()
 
-target_compile_definitions(${TARGET_NAME} PRIVATE ONNX_TEST_MODELS="${CMAKE_CURRENT_SOURCE_DIR}/onnx_reader/models/")
+ie_faster_build(${TARGET_NAME}
+    PCH PRIVATE "precomp.hpp"
+)
 
 include(CMakeParseArguments)
 
@@ -203,13 +206,11 @@ endif()
 #
 
 ie_headers_compilation_with_custom_flags(TEST_SUFFIX PluginApiCxx17
-                                         HEADERS_TO_SKIP "generic_ie.hpp"
                                          CXX_STANDARD 17 PLUGIN_API)
 
 if(UNIX)
     if(CMAKE_CXX_COMPILER_ID STREQUAL "Intel")
         ie_headers_compilation_with_custom_flags(TEST_SUFFIX PluginApiWarningsAreErrors
-                                                 HEADERS_TO_SKIP "generic_ie.hpp"
                                                  FLAGS "-Werror-all -Werror -Wall"
                                                  PLUGIN_API)
     else()

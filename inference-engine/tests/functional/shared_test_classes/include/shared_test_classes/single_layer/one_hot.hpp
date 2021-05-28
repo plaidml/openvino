@@ -1,27 +1,33 @@
-// Copyright (C) 2021 Intel Corporation
+// Copyright (C) 2020 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 //
 
 #pragma once
 
-#include "ngraph_functions/builders.hpp"
+#include <tuple>
+#include <vector>
+#include <string>
+#include <memory>
+
 #include "shared_test_classes/base/layer_test_utils.hpp"
-
-typedef std::tuple<int64_t,                       // axis
-                   size_t,                        // depth
-                   float,                         // on_value
-                   float,                         // off_value
-                   std::vector<size_t>,           // Input shapes
-                   InferenceEngine::Precision,    // Net precision
-                   LayerTestsUtils::TargetDevice  // Target device name
-                   >
-        oneHotParams;
-
+#include "ngraph_functions/builders.hpp"
 namespace LayerTestsDefinitions {
+typedef std::tuple<
+        ngraph::element::Type,          // depth type (any integer type)
+        int64_t,                        // depth value
+        ngraph::element::Type,          // On & Off values type (any supported type)
+        float,                          // OnValue
+        float,                          // OffValue
+        int64_t,                        // axis
+        InferenceEngine::Precision,     // Net precision
+        InferenceEngine::SizeVector,    // Input shapes
+        LayerTestsUtils::TargetDevice   // Target device name
+> oneHotLayerTestParamsSet;
 
-class OnehotLayerTest : public testing::WithParamInterface<oneHotParams>, public LayerTestsUtils::LayerTestsCommon {
+class OneHotLayerTest : public testing::WithParamInterface<oneHotLayerTestParamsSet>,
+                     virtual public LayerTestsUtils::LayerTestsCommon {
 public:
-    static std::string getTestCaseName(testing::TestParamInfo<oneHotParams> obj);
+    static std::string getTestCaseName(testing::TestParamInfo<oneHotLayerTestParamsSet> obj);
 
 protected:
     void SetUp() override;
