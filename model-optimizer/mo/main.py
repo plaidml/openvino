@@ -6,15 +6,19 @@ import datetime
 import logging as log
 import os
 import platform
-import sys
 import subprocess
+import sys
 import traceback
 from collections import OrderedDict
 from copy import deepcopy
 
 import numpy as np
 
-import telemetry.telemetry as tm
+try:
+    import openvino_telemetry as tm
+except ImportError:
+    import mo.utils.telemetry_stub as tm
+
 from extensions.back.SpecialNodesFinalization import RemoveConstOps, CreateConstNodesReplacement, NormalizeTI
 from mo.back.ie_ir_ver_2.emitter import append_ir_info
 from mo.graph.graph import Graph
@@ -33,6 +37,7 @@ from mo.utils.guess_framework import deduce_framework_by_namespace
 from mo.utils.logger import init_logger
 from mo.utils.model_analysis import AnalysisResults
 from mo.utils.utils import refer_to_faq_msg
+from mo.utils.telemetry_utils import send_params_info, send_framework_info
 from mo.utils.version import get_version, get_simplified_mo_version, get_simplified_ie_version
 from mo.utils.versions_checker import check_requirements  # pylint: disable=no-name-in-module
 
@@ -106,8 +111,6 @@ def prepare_ir(argv: argparse.Namespace):
 
     log.debug(str(argv))
     log.debug("Model Optimizer started")
-    t = tm.Telemetry()
-    t.start_session()
 
     model_name = "<UNKNOWN_NAME>"
     if argv.model_name:
@@ -228,23 +231,22 @@ def prepare_ir(argv: argparse.Namespace):
     argv.freeze_placeholder_with_value, argv.input = get_freeze_placeholder_values(argv.input,
                                                                                    argv.freeze_placeholder_with_value)
     if is_tf:
-        t.send_event('mo', 'framework', 'tf')
         from mo.front.tf.register_custom_ops import get_front_classes
         import_extensions.load_dirs(argv.framework, extensions, get_front_classes)
     elif is_caffe:
-        t.send_event('mo', 'framework', 'caffe')
+        send_framework_info('caffe')
         from mo.front.caffe.register_custom_ops import get_front_classes
         import_extensions.load_dirs(argv.framework, extensions, get_front_classes)
     elif is_mxnet:
-        t.send_event('mo', 'framework', 'mxnet')
+        send_framework_info('mxnet')
         from mo.front.mxnet.register_custom_ops import get_front_classes
         import_extensions.load_dirs(argv.framework, extensions, get_front_classes)
     elif is_kaldi:
-        t.send_event('mo', 'framework', 'kaldi')
+        send_framework_info('kaldi')
         from mo.front.kaldi.register_custom_ops import get_front_classes
         import_extensions.load_dirs(argv.framework, extensions, get_front_classes)
     elif is_onnx:
-        t.send_event('mo', 'framework', 'onnx')
+        send_framework_info('onnx')
         from mo.front.onnx.register_custom_ops import get_front_classes
         import_extensions.load_dirs(argv.framework, extensions, get_front_classes)
     graph = unified_pipeline(argv)
@@ -373,7 +375,7 @@ def driver(argv: argparse.Namespace):
 
 def main(cli_parser: argparse.ArgumentParser, framework: str):
     telemetry = tm.Telemetry(app_name='Model Optimizer', app_version=get_simplified_mo_version())
-    telemetry.start_session()
+    telemetry.start_session('mo')
     telemetry.send_event('mo', 'version', get_simplified_mo_version())
     try:
         # Initialize logger with 'ERROR' as default level to be able to form nice messages
@@ -381,6 +383,8 @@ def main(cli_parser: argparse.ArgumentParser, framework: str):
         init_logger('ERROR', False)
 
         argv = cli_parser.parse_args()
+        send_params_info(argv, cli_parser)
+
         if framework:
             argv.framework = framework
 
@@ -391,7 +395,7 @@ def main(cli_parser: argparse.ArgumentParser, framework: str):
         if ov_update_message:
             print(ov_update_message)
         telemetry.send_event('mo', 'conversion_result', 'success')
-        telemetry.end_session()
+        telemetry.end_session('mo')
         telemetry.force_shutdown(1.0)
         return ret_code
     except (FileNotFoundError, NotADirectoryError) as e:
@@ -418,7 +422,7 @@ def main(cli_parser: argparse.ArgumentParser, framework: str):
         log.error("-------------------------------------------------")
 
     telemetry.send_event('mo', 'conversion_result', 'fail')
-    telemetry.end_session()
+    telemetry.end_session('mo')
     telemetry.force_shutdown(1.0)
     return 1
 
