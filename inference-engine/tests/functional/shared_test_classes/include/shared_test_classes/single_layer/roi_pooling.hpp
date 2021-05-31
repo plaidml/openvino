@@ -23,22 +23,19 @@ using roiPoolingParamsTuple = std::tuple<
         float,                                      // Spatial scale
         ngraph::helpers::ROIPoolingTypes,           // ROIPooling method
         InferenceEngine::Precision,                 // Net precision
-        ngraph::helpers::InputLayerType,            // Secondary input type
         LayerTestsUtils::TargetDevice>;             // Device name
 
 class ROIPoolingLayerTest : public testing::WithParamInterface<roiPoolingParamsTuple>,
                             virtual public LayerTestsUtils::LayerTestsCommon {
 public:
     static std::string getTestCaseName(testing::TestParamInfo<roiPoolingParamsTuple> obj);
-    void Infer() override;
+    void GenerateInputs() override;
 
 protected:
     void SetUp() override;
-    void GenerateCoords(const std::vector<size_t> &feat_map_shape, float *buffer, size_t size);
 
 private:
     ngraph::helpers::ROIPoolingTypes pool_method;
-    ngraph::helpers::InputLayerType secondaryInputType;
     float spatial_scale;
 };
 
