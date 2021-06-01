@@ -48,7 +48,6 @@ public:
 protected:
     void SetUp() override;
 };
-
 // ! [test_convolution:definition]
 
 }  // namespace LayerTestsDefinitions
