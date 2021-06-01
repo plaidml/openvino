@@ -59,7 +59,6 @@ std::string PriorBoxClusteredLayerTest::getTestCaseName(const testing::TestParam
 }
 
 void PriorBoxClusteredLayerTest::SetUp() {
-    SetRefMode(LayerTestsUtils::RefMode::CONSTANT_FOLDING);
     ngraph::helpers::InputLayerType inputType;
     priorBoxClusteredSpecificParams specParams;
     std::tie(specParams, netPrecision,
