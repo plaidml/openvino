@@ -141,7 +141,7 @@ namespace ngraph
                             {
                                 auto deformable_group_idx =
                                     (filter_channels_count * group_idx + fc) /
-                                    (filter_channels_count * groups /deformable_groups);
+                                    (filter_channels_count * groups / deformable_groups);
                                 for (int f_y = 0; f_y < filter_size_y; ++f_y)
                                 {
                                     for (int f_x = 0; f_x < filter_size_x; ++f_x)
@@ -152,8 +152,8 @@ namespace ngraph
                                                              out_idx];
                                         T x_offset = offsets[deformable_group_idx * offsets_size +
                                                              ((f_y * filter_size_x + f_x) * 2 + 1) *
-                                                                  offsets_spatial_size +
-                                                              out_idx];
+                                                                 offsets_spatial_size +
+                                                             out_idx];
                                         T rel_i_y = i_y + (f_y * p.dilation[0]) + y_offset;
                                         T rel_i_x = i_x + (f_x * p.dilation[1]) + x_offset;
 
@@ -219,7 +219,8 @@ namespace ngraph
                 const Shape group_in_shape = shape_scale(shape_reduce(in_shape), groups);
                 const size_t group_in_size = shape_size(group_in_shape);
 
-                const Shape group_offset_shape = shape_scale(shape_reduce(o_shape), deformable_groups);
+                const Shape group_offset_shape =
+                    shape_scale(shape_reduce(o_shape), deformable_groups);
                 const size_t group_offset_size = shape_size(group_offset_shape);
                 const size_t group_offset_batch_size = shape_size(shape_reduce(o_shape));
 
