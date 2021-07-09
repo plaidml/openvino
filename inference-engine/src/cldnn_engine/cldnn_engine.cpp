@@ -61,6 +61,7 @@
 #include <transformations/op_conversions/convert_nms_to_nms_ie_internal.hpp>
 #include <transformations/op_conversions/convert_interpolate1_to_interpolate4.hpp>
 #include <transformations/op_conversions/convert_gather_0d.hpp>
+#include <transformations/op_conversions/convert_deformable_conv_v8_to_v1.hpp>
 #include <transformations/op_conversions/simplify_ctc_greedy_decoder_seq_len.hpp>
 #include <transformations/convert_precision.hpp>
 #include <transformations/init_node_info.hpp>
@@ -80,6 +81,8 @@
 #include "cldnn_custom_layer.h"
 #include "cldnn_itt.h"
 #include "gpu/gpu_config.hpp"
+
+#include "cldnn/runtime/device_query.hpp"
 
 #ifdef __linux__
 # include <dlfcn.h>
@@ -117,13 +120,13 @@ struct clDNNEngine::impl {
 };
 
 cldnn::device_info clDNNEngine::GetDeviceInfo(const std::map<std::string, std::string> &config) const {
-    auto device_info = device_map.begin()->second.get_info();
+    auto device_info = device_map.begin()->second->get_info();
     if (config.find(PluginConfigParams::KEY_DEVICE_ID) != config.end()) {
         auto val = config.at(PluginConfigParams::KEY_DEVICE_ID);
         if (device_map.find(val) == device_map.end()) {
             IE_THROW() << "Invalid device ID: " << val;
         }
-        device_info = device_map.at(val).get_info();
+        device_info = device_map.at(val)->get_info();
     }
 
     return device_info;
@@ -132,11 +135,8 @@ cldnn::device_info clDNNEngine::GetDeviceInfo(const std::map<std::string, std::s
 template<typename T>
 static bool disableReduceDecomposition(const std::shared_ptr<const ngraph::Node> node) {
     if (auto op = std::dynamic_pointer_cast<const T>(node)) {
-        auto reduction_axes = op->get_reduction_axes().to_vector();
-        bool reduce_along_f = op->get_reduction_axes().size() == 1 && std::count(reduction_axes.begin(), reduction_axes.end(), 1) != 0;
         bool fp16_batch_not_1 = op->get_element_type() == ngraph::element::f16 && op->input(0).get_shape()[0] != 1;
-        bool can_use_reduce = !reduce_along_f && !fp16_batch_not_1;
-        return can_use_reduce;
+        return !fp16_batch_not_1;
     }
     return false;
 }
@@ -192,6 +192,7 @@ InferenceEngine::CNNNetwork clDNNEngine::CloneAndTransformNetwork(const Inferenc
             manager.register_pass<ngraph::pass::ConvertNMS4ToNMS5>();
             manager.register_pass<ngraph::pass::ConvertNMSToNMSIEInternal>();
             manager.register_pass<ngraph::pass::ConvertGather0D>();
+            manager.register_pass<ngraph::pass::ConvertDeformableConv8To1>();
 
             static const precisions_array convert_precision_list {
                     {ngraph::element::i64, ngraph::element::i32},
@@ -445,7 +446,8 @@ clDNNEngine::clDNNEngine() : m_defaultContext(nullptr) {
     RegisterPrimitives();
     // try loading clDNN engine and get info from it
     {
-        cldnn::device_query device_query;
+        // Set OCL runtime which should be always available
+        cldnn::device_query device_query(cldnn::engine_types::ocl, cldnn::runtime_types::ocl);
         device_map = device_query.get_available_devices();
     }
     // locate global custom kernel config
@@ -851,8 +853,8 @@ auto StringRightTrim = [](std::string string, std::string substring, bool case_s
 };
 
 static float GetGOPS(cldnn::device_info info, cldnn::data_types dt) {
-    auto freqGHz = info.core_frequency / 1000.f;
-    auto numEUs = info.cores_count;
+    auto freqGHz = info.gpu_frequency / 1000.f;
+    auto numEUs = info.execution_units_count;
     auto opsPerComputeBlock = 0;
     auto computeBlockIPC = 1.0f;
     switch (dt) {
@@ -894,8 +896,8 @@ Parameter clDNNEngine::GetMetric(const std::string& name, const std::map<std::st
 
     auto iter = device_map.find(device_id);
     auto device_info = iter != device_map.end() ?
-        iter->second.get_info() :
-        device_map.begin()->second.get_info();
+        iter->second->get_info() :
+        device_map.begin()->second->get_info();
 
     if (name == METRIC_KEY(SUPPORTED_METRICS)) {
         std::vector<std::string> metrics;
@@ -931,7 +933,7 @@ Parameter clDNNEngine::GetMetric(const std::string& name, const std::map<std::st
         gops[InferenceEngine::Precision::FP32] = GetGOPS(device_info, cldnn::data_types::f32);
         IE_SET_METRIC_RETURN(DEVICE_GOPS, gops);
     } else if (name == GPU_METRIC_KEY(EXECUTION_UNITS_COUNT)) {
-        IE_SET_METRIC_RETURN(GPU_EXECUTION_UNITS_COUNT, device_info.cores_count);
+        IE_SET_METRIC_RETURN(GPU_EXECUTION_UNITS_COUNT, device_info.execution_units_count);
     } else if (name == GPU_METRIC_KEY(UARCH_VERSION)) {
         std::stringstream s;
         if (device_info.gfx_ver.major == 0 && device_info.gfx_ver.minor == 0 && device_info.gfx_ver.revision == 0) {
