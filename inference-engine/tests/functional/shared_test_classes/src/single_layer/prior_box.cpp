@@ -1,106 +1,91 @@
-// Copyright (C) 2021 Intel Corporation
+// Copyright (C) 2018-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 //
 
 #include "shared_test_classes/single_layer/prior_box.hpp"
 
-namespace LayerTestsDefinitions {
-std::string PriorBoxLayerTest::getTestCaseName(const testing::TestParamInfo<priorBoxParams> &obj) {
-    priorBoxAttrs specAttrs;
-    std::vector<float> variance;
-    bool scaleAllSizes;
-    bool useFixedSizes;
-    bool useFixedRatios;
+namespace LayerTestDefinitions {
+std::string PriorBoxLayerTest::getTestCaseName(const testing::TestParamInfo<priorBoxLayerParams>& obj) {
     InferenceEngine::Precision netPrecision;
-    InferenceEngine::SizeVector inputShape, imageShape;
+    InferenceEngine::Precision inPrc, outPrc;
+    InferenceEngine::Layout inLayout, outLayout;
+    InferenceEngine::SizeVector inputShapes, imageShapes;
     std::string targetDevice;
-    std::map<std::string, std::string> config;
-    std::tie(specAttrs, variance, scaleAllSizes, useFixedSizes, useFixedRatios, netPrecision, inputShape, imageShape, targetDevice,
-             config) = obj.param;
-    std::vector<float> minSize, maxSize, aspectRatio, density, fixedRatio, fixedSize;
-    bool clip, flip;
+    priorBoxSpecificParams specParams;
+    std::tie(specParams,
+        netPrecision,
+        inPrc, outPrc, inLayout, outLayout,
+        inputShapes,
+        imageShapes,
+        targetDevice) = obj.param;
+
+    std::vector<float> min_size, max_size, aspect_ratio, density, fixed_ratio, fixed_size, variance;
     float step, offset;
-    std::tie(minSize, maxSize, aspectRatio, density, fixedRatio, fixedSize, clip, flip, step, offset) = specAttrs;
+    bool clip, flip, scale_all_sizes;
+    std::tie(min_size, max_size, aspect_ratio,
+             density, fixed_ratio, fixed_size, clip,
+             flip, step, offset, variance, scale_all_sizes) = specParams;
+
     std::ostringstream result;
-    result << "min_size=" << CommonTestUtils::vec2str(minSize) << "_";
-    result << "max_size=" << CommonTestUtils::vec2str(maxSize) << "_";
-    result << "aspect_ratio=" << CommonTestUtils::vec2str(aspectRatio) << "_";
-    result << "density=" << CommonTestUtils::vec2str(density) << "_";
-    result << "fixed_ratio=" << CommonTestUtils::vec2str(fixedRatio) << "_";
-    result << "fixed_Size=" << CommonTestUtils::vec2str(fixedSize) << "_";
-    result << "clip=" << clip << "_";
-    result << "flip=" << flip << "_";
-    result << "step=" << step << "_";
-    result << "offset=" << offset << "_";
-    result << "variance=" << CommonTestUtils::vec2str(variance) << "_";
-    result << "scale_all_sizes=" << scaleAllSizes << "_";
-    result << "use_fixed_size=" << useFixedSizes << "_";
-    result << "use_fixed_ratio=" << useFixedRatios << "_";
-    result << "net_precision=" << netPrecision.name() << "_";
-    result << "input_shape=" << CommonTestUtils::vec2str(inputShape) << "_";
-    result << "imageShape=" << CommonTestUtils::vec2str(imageShape) << "_";
-    result << "targetDevice=" << targetDevice;
+    const char separator = '_';
+    result << "IS="      << CommonTestUtils::vec2str(inputShapes) << separator;
+    result << "imageS="  << CommonTestUtils::vec2str(imageShapes) << separator;
+    result << "netPRC="  << netPrecision.name()   << separator;
+    result << "inPRC="   << inPrc.name() << separator;
+    result << "outPRC="  << outPrc.name() << separator;
+    result << "inL="     << inLayout << separator;
+    result << "outL="    << outLayout << separator;
+    result << "min_s=" << CommonTestUtils::vec2str(min_size) << separator;
+    result << "max_s=" << CommonTestUtils::vec2str(max_size)<< separator;
+    result << "asp_r=" << CommonTestUtils::vec2str(aspect_ratio)<< separator;
+    result << "dens=" << CommonTestUtils::vec2str(density)<< separator;
+    result << "fix_r=" << CommonTestUtils::vec2str(fixed_ratio)<< separator;
+    result << "fix_s=" << CommonTestUtils::vec2str(fixed_size)<< separator;
+    result << "var=" << CommonTestUtils::vec2str(variance)<< separator;
+    result << "step=" << step << separator;
+    result << "off=" << offset << separator;
+    result << "clip=" << clip << separator;
+    result << "flip=" << flip<< separator;
+    result << "scale_all=" << scale_all_sizes << separator;
+    result << "trgDev=" << targetDevice;
+
     return result.str();
 }
 
 void PriorBoxLayerTest::SetUp() {
-    priorBoxAttrs specAttrs;
-    std::vector<float> variance;
-    bool scaleAllSizes;
-    bool useFixedSizes;
-    bool useFixedRatios;
-    InferenceEngine::Precision netPrecision;
-    InferenceEngine::SizeVector inputShape, imageShape;
-    std::tie(specAttrs, variance, scaleAllSizes, useFixedSizes, useFixedRatios, netPrecision, inputShape, imageShape, targetDevice,
-             configuration) = this->GetParam();
-    std::vector<float> minSize, maxSize, aspectRatio, density, fixedRatio, fixedSize;
-    bool clip, flip;
-    float step, offset;
-    std::tie(minSize, maxSize, aspectRatio, density, fixedRatio, fixedSize, clip, flip, step, offset) = specAttrs;
+    priorBoxSpecificParams specParams;
+    std::tie(specParams, netPrecision,
+             inPrc, outPrc, inLayout, outLayout,
+             inputShapes, imageShapes, targetDevice) = GetParam();
 
-    auto inputPrc = ngraph::element::Type_t::i32;
-    std::shared_ptr<ngraph::opset1::Constant> layerShapeConstNode = std::make_shared<ngraph::opset1::Constant>(
-            inputPrc, ngraph::Shape{inputShape.size()}, inputShape);
+    std::tie(min_size, max_size, aspect_ratio,
+             density, fixed_ratio, fixed_size, clip,
+             flip, step, offset, variance, scale_all_sizes) = specParams;
 
-    auto paramsIn = ngraph::builder::makeParams(inputPrc, {inputShape, imageShape});
-    auto paramIn = ngraph::helpers::convert2OutputVector(ngraph::helpers::castOps2Nodes<ngraph::op::Parameter>(paramsIn));
+    auto ngPrc = FuncTestUtils::PrecisionUtils::convertIE2nGraphPrc(netPrecision);
+    auto params = ngraph::builder::makeParams(ngPrc, {inputShapes, imageShapes});
 
-    // priorBoxAttrs
     ngraph::op::PriorBoxAttrs attributes;
-    if (useFixedSizes && fixedSize.size() > 0) {
-        attributes.fixed_size = fixedSize;
-        if (useFixedRatios && fixedRatio.size() > 0) {
-            attributes.fixed_ratio = fixedRatio;
-        } else {
-            attributes.aspect_ratio = aspectRatio;
-        }
-        // the count of fixed_size and density shall be same for limit of ngraph
-        // implementation, cut here
-        int densityCount = density.size();
-        int fixedCount = fixedSize.size();
-        int dstCount = densityCount < fixedCount ? densityCount : fixedCount;
-        IE_ASSERT(dstCount > 0);
-        std::vector<float> dstFixedSize(fixedSize.begin(), fixedSize.begin() + dstCount);
-        std::vector<float> dstDensity(density.begin(), density.begin() + dstCount);
-        attributes.fixed_size = dstFixedSize;
-        attributes.density = dstDensity;
-    } else {
-        attributes.min_size = minSize;
-        if (scaleAllSizes) {
-            attributes.max_size = maxSize;
-        }
-        attributes.aspect_ratio = aspectRatio;
-    }
-    attributes.clip = clip;
-    attributes.flip = flip;
+    attributes.min_size = min_size;
+    attributes.max_size = max_size;
+    attributes.aspect_ratio = aspect_ratio;
+    attributes.density = density;
+    attributes.fixed_ratio = fixed_ratio;
+    attributes.fixed_size = fixed_size;
+    attributes.variance = variance;
     attributes.step = step;
     attributes.offset = offset;
-    attributes.variance = variance;
-    attributes.scale_all_sizes = scaleAllSizes;
-    auto priorBox = std::dynamic_pointer_cast<ngraph::opset4::PriorBox>(
-            std::make_shared<ngraph::opset4::PriorBox>(layerShapeConstNode, paramIn[1], attributes));
-    ngraph::ResultVector results{std::make_shared<ngraph::opset1::Result>(priorBox)};
-    function = std::make_shared<ngraph::Function>(results, paramsIn, "PriorBox");
-}
+    attributes.clip = clip;
+    attributes.flip = flip;
 
-}  // namespace LayerTestsDefinitions
+    auto shape_of_1 = std::make_shared<ngraph::opset3::ShapeOf>(params[0]);
+    auto shape_of_2 = std::make_shared<ngraph::opset3::ShapeOf>(params[1]);
+    auto priorBox = std::make_shared<ngraph::op::PriorBox>(
+        shape_of_1,
+        shape_of_2,
+        attributes);
+
+    ngraph::ResultVector results{std::make_shared<ngraph::opset1::Result>(priorBox)};
+    function = std::make_shared <ngraph::Function>(results, params, "PriorBoxFunction");
+}
+} // namespace LayerTestDefinitions
