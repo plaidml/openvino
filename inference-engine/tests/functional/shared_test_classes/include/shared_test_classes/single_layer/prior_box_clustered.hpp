@@ -34,6 +34,7 @@ typedef std::tuple<
         bool,                // clip
         float,               // step_width
         float,               // step_height
+        float,               // step
         float,               // offset
         std::vector<float>> priorBoxClusteredSpecificParams;
 
@@ -46,7 +47,6 @@ typedef std::tuple<
         InferenceEngine::Layout,      // Output layout
         InferenceEngine::SizeVector,  // input shape
         InferenceEngine::SizeVector,  // image shape
-        ngraph::helpers::InputLayerType,  // input type
         std::string> priorBoxClusteredLayerParams;
 
 class PriorBoxClusteredLayerTest
@@ -64,6 +64,7 @@ protected:
     std::vector<float> variances;
     float step_width;
     float step_height;
+    float step;
     float offset;
     bool clip;
 

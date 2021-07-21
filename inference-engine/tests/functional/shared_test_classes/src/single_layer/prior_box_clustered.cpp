@@ -1,4 +1,4 @@
-// Copyright (C) 2018-2021 Intel Corporation
+/ Copyright (C) 2018-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 //
 
@@ -11,24 +11,23 @@ std::string PriorBoxClusteredLayerTest::getTestCaseName(const testing::TestParam
     InferenceEngine::Layout inLayout, outLayout;
     InferenceEngine::SizeVector inputShapes, imageShapes;
     std::string targetDevice;
-    ngraph::helpers::InputLayerType inputType;
     priorBoxClusteredSpecificParams specParams;
     std::tie(specParams,
         netPrecision,
         inPrc, outPrc, inLayout, outLayout,
         inputShapes,
         imageShapes,
-        inputType,
         targetDevice) = obj.param;
 
     std::vector<float> widths, heights, variances;
-    float step_width, step_height, offset;
+    float step_width, step_height, step, offset;
     bool clip;
     std::tie(widths,
         heights,
         clip,
         step_width,
         step_height,
+        step,
         offset,
         variances) = specParams;
 
@@ -51,25 +50,25 @@ std::string PriorBoxClusteredLayerTest::getTestCaseName(const testing::TestParam
         result << CommonTestUtils::vec2str(variances) << separator;
     result << "stepWidth="  << step_width  << separator;
     result << "stepHeight=" << step_height << separator;
+    result << "step="       << step << separator;
     result << "offset="     << offset      << separator;
-    result << "clip=" << std::boolalpha << clip << separator;
-    result << "inputType=" << inputType;
-    result << "trgDev=" << targetDevice;
+    result << "clip="       << std::boolalpha << clip << separator;
+    result << "trgDev="     << targetDevice;
     return result.str();
 }
 
 void PriorBoxClusteredLayerTest::SetUp() {
-    ngraph::helpers::InputLayerType inputType;
     priorBoxClusteredSpecificParams specParams;
     std::tie(specParams, netPrecision,
         inPrc, outPrc, inLayout, outLayout,
-        inputShapes, imageShapes, inputType, targetDevice) = GetParam();
+        inputShapes, imageShapes, targetDevice) = GetParam();
 
     std::tie(widths,
         heights,
         clip,
         step_width,
         step_height,
+        step,
         offset,
         variances) = specParams;
 
@@ -82,31 +81,16 @@ void PriorBoxClusteredLayerTest::SetUp() {
     attributes.clip = clip;
     attributes.step_widths = step_width;
     attributes.step_heights = step_height;
+    attributes.step = step;
     attributes.offset = offset;
     attributes.variances = variances;
 
-    std::shared_ptr<ngraph::op::PriorBoxClustered> priorBoxClustered;
-    if (inputType == ngraph::helpers::InputLayerType::PARAMETER) {
-      auto shape_of_1 = std::make_shared<ngraph::opset3::ShapeOf>(params[0]);
-      auto shape_of_2 = std::make_shared<ngraph::opset3::ShapeOf>(params[1]);
-      priorBoxClustered = std::make_shared<ngraph::op::PriorBoxClustered>(
-          shape_of_1,
-          shape_of_2,
-          attributes);
-    } else {
-      auto inputPrc = ngraph::element::Type_t::i64;
-      if (inPrc != InferenceEngine::Precision::UNSPECIFIED) {
-        inputPrc = FuncTestUtils::PrecisionUtils::convertIE2nGraphPrc(inPrc);
-      }
-      auto constInput1 = std::make_shared<ngraph::opset5::Constant>(
-            inputPrc, ngraph::Shape{inputShapes.size()}, inputShapes);
-      auto constInput2 = std::make_shared<ngraph::opset5::Constant>(
-            inputPrc, ngraph::Shape{imageShapes.size()}, imageShapes);
-      priorBoxClustered = std::make_shared<ngraph::op::PriorBoxClustered>(
-          constInput1,
-          constInput2,
-          attributes);
-    }
+    auto shape_of_1 = std::make_shared<ngraph::opset3::ShapeOf>(params[0]);
+    auto shape_of_2 = std::make_shared<ngraph::opset3::ShapeOf>(params[1]);
+    auto priorBoxClustered = std::make_shared<ngraph::op::PriorBoxClustered>(
+        shape_of_1,
+        shape_of_2,
+        attributes);
 
     ngraph::ResultVector results{ std::make_shared<ngraph::opset1::Result>(priorBoxClustered) };
     function = std::make_shared<ngraph::Function>(results, params, "PB_Clustered");
