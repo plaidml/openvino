@@ -504,11 +504,6 @@ namespace ngraph
                             scoreIndexPairs.push_back(std::make_pair(conf, std::make_pair(id, p)));
                         }
                     }
-/*
-                    std::stable_sort(scoreIndexPairs.begin(),
-                                     scoreIndexPairs.end(),
-                                     SortScorePairDescend<std::pair<int, int>>);
-*/
                     std::sort(scoreIndexPairs.begin(),
                               scoreIndexPairs.end(),
                               [](const std::pair<dataType, std::pair<int, int>>& p1,
@@ -517,7 +512,6 @@ namespace ngraph
                                          (p1.first == p2.first &&
                                           p1.second.second < p2.second.second);
                               });
-//
 
                     if (attrs.top_k != -1)
                         if (scoreIndexPairs.size() > static_cast<size_t>(attrs.top_k))
@@ -661,11 +655,6 @@ namespace ngraph
                                         std::make_pair(scores[idx], std::make_pair(label, idx)));
                                 }
                             }
-/*
-                            std::stable_sort(scoreIndexPairs.begin(),
-                                             scoreIndexPairs.end(),
-                                             SortScorePairDescend<std::pair<int, int>>);
-*/
                             std::sort(scoreIndexPairs.begin(),
                                       scoreIndexPairs.end(),
                                       [](const std::pair<dataType, std::pair<int, int>>& p1,
@@ -674,7 +663,6 @@ namespace ngraph
                                                  (p1.first == p2.first &&
                                                   p1.second.second < p2.second.second);
                                       });
-//
                             scoreIndexPairs.resize(attrs.keep_top_k[0]);
                             std::map<int, std::vector<int>> newIndices;
                             for (size_t j = 0; j < scoreIndexPairs.size(); ++j)
